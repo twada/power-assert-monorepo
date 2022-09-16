@@ -1,0 +1,792 @@
+{
+  "type": "CallExpression",
+  "callee": {
+    "type": "FunctionExpression",
+    "id": null,
+    "params": [],
+    "body": {
+      "type": "BlockStatement",
+      "body": [
+        {
+          "type": "VariableDeclaration",
+          "declarations": [
+            {
+              "type": "VariableDeclarator",
+              "id": {
+                "type": "Identifier",
+                "name": "_s"
+              },
+              "init": {
+                "type": "Literal",
+                "value": "\n\n      "
+              }
+            }
+          ],
+          "kind": "const"
+        },
+        {
+          "type": "ClassDeclaration",
+          "id": {
+            "type": "Identifier",
+            "name": "AssertionMessage"
+          },
+          "superClass": null,
+          "body": {
+            "type": "ClassBody",
+            "body": [
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "constructor"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [
+                    {
+                      "type": "Identifier",
+                      "name": "am"
+                    },
+                    {
+                      "type": "Identifier",
+                      "name": "matchIndex"
+                    },
+                    {
+                      "type": "Identifier",
+                      "name": "msgOrRec"
+                    }
+                  ],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "=",
+                          "left": {
+                            "type": "MemberExpression",
+                            "object": {
+                              "type": "ThisExpression"
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "_am"
+                            },
+                            "computed": false
+                          },
+                          "right": {
+                            "type": "Identifier",
+                            "name": "am"
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "=",
+                          "left": {
+                            "type": "MemberExpression",
+                            "object": {
+                              "type": "ThisExpression"
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "_idx"
+                            },
+                            "computed": false
+                          },
+                          "right": {
+                            "type": "Identifier",
+                            "name": "matchIndex"
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "=",
+                          "left": {
+                            "type": "MemberExpression",
+                            "object": {
+                              "type": "ThisExpression"
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "_msgOrRec"
+                            },
+                            "computed": false
+                          },
+                          "right": {
+                            "type": "Identifier",
+                            "name": "msgOrRec"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "constructor",
+                "computed": false,
+                "static": false
+              },
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "metadata"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "ReturnStatement",
+                        "argument": {
+                          "type": "MemberExpression",
+                          "object": {
+                            "type": "ThisExpression"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "name": "_am"
+                          },
+                          "computed": false
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false
+              },
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "matchIndex"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "ReturnStatement",
+                        "argument": {
+                          "type": "MemberExpression",
+                          "object": {
+                            "type": "ThisExpression"
+                          },
+                          "property": {
+                            "type": "Identifier",
+                            "name": "_idx"
+                          },
+                          "computed": false
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false
+              },
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "val"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "IfStatement",
+                        "test": {
+                          "type": "LogicalExpression",
+                          "operator": "&&",
+                          "left": {
+                            "type": "MemberExpression",
+                            "object": {
+                              "type": "ThisExpression"
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "_msgOrRec"
+                            },
+                            "computed": false
+                          },
+                          "right": {
+                            "type": "BinaryExpression",
+                            "operator": "===",
+                            "left": {
+                              "type": "UnaryExpression",
+                              "operator": "typeof",
+                              "prefix": true,
+                              "argument": {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "ThisExpression"
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "_msgOrRec"
+                                  },
+                                  "computed": false
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "val"
+                                },
+                                "computed": false
+                              }
+                            },
+                            "right": {
+                              "type": "Literal",
+                              "value": "function"
+                            }
+                          }
+                        },
+                        "consequent": {
+                          "type": "BlockStatement",
+                          "body": [
+                            {
+                              "type": "ReturnStatement",
+                              "argument": {
+                                "type": "CallExpression",
+                                "callee": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "MemberExpression",
+                                    "object": {
+                                      "type": "ThisExpression"
+                                    },
+                                    "property": {
+                                      "type": "Identifier",
+                                      "name": "_msgOrRec"
+                                    },
+                                    "computed": false
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "val"
+                                  },
+                                  "computed": false
+                                },
+                                "arguments": []
+                              }
+                            }
+                          ]
+                        },
+                        "alternate": {
+                          "type": "BlockStatement",
+                          "body": [
+                            {
+                              "type": "ReturnStatement",
+                              "argument": {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "ThisExpression"
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "_msgOrRec"
+                                },
+                                "computed": false
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false
+              },
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "eject"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "IfStatement",
+                        "test": {
+                          "type": "LogicalExpression",
+                          "operator": "&&",
+                          "left": {
+                            "type": "MemberExpression",
+                            "object": {
+                              "type": "ThisExpression"
+                            },
+                            "property": {
+                              "type": "Identifier",
+                              "name": "_msgOrRec"
+                            },
+                            "computed": false
+                          },
+                          "right": {
+                            "type": "BinaryExpression",
+                            "operator": "===",
+                            "left": {
+                              "type": "UnaryExpression",
+                              "operator": "typeof",
+                              "prefix": true,
+                              "argument": {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "ThisExpression"
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "_msgOrRec"
+                                  },
+                                  "computed": false
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "eject"
+                                },
+                                "computed": false
+                              }
+                            },
+                            "right": {
+                              "type": "Literal",
+                              "value": "function"
+                            }
+                          }
+                        },
+                        "consequent": {
+                          "type": "BlockStatement",
+                          "body": [
+                            {
+                              "type": "ReturnStatement",
+                              "argument": {
+                                "type": "CallExpression",
+                                "callee": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "MemberExpression",
+                                    "object": {
+                                      "type": "ThisExpression"
+                                    },
+                                    "property": {
+                                      "type": "Identifier",
+                                      "name": "_msgOrRec"
+                                    },
+                                    "computed": false
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "eject"
+                                  },
+                                  "computed": false
+                                },
+                                "arguments": []
+                              }
+                            }
+                          ]
+                        },
+                        "alternate": {
+                          "type": "BlockStatement",
+                          "body": [
+                            {
+                              "type": "ReturnStatement",
+                              "argument": {
+                                "type": "ObjectExpression",
+                                "properties": [
+                                  {
+                                    "type": "Property",
+                                    "key": {
+                                      "type": "Identifier",
+                                      "name": "value"
+                                    },
+                                    "value": {
+                                      "type": "CallExpression",
+                                      "callee": {
+                                        "type": "MemberExpression",
+                                        "object": {
+                                          "type": "ThisExpression"
+                                        },
+                                        "property": {
+                                          "type": "Identifier",
+                                          "name": "val"
+                                        },
+                                        "computed": false
+                                      },
+                                      "arguments": []
+                                    },
+                                    "kind": "init",
+                                    "method": false,
+                                    "shorthand": false,
+                                    "computed": false
+                                  },
+                                  {
+                                    "type": "Property",
+                                    "key": {
+                                      "type": "Identifier",
+                                      "name": "logs"
+                                    },
+                                    "value": {
+                                      "type": "ArrayExpression",
+                                      "elements": []
+                                    },
+                                    "kind": "init",
+                                    "method": false,
+                                    "shorthand": false,
+                                    "computed": false
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false
+              },
+              {
+                "type": "MethodDefinition",
+                "key": {
+                  "type": "Identifier",
+                  "name": "toString"
+                },
+                "value": {
+                  "type": "FunctionExpression",
+                  "id": null,
+                  "params": [],
+                  "body": {
+                    "type": "BlockStatement",
+                    "body": [
+                      {
+                        "type": "VariableDeclaration",
+                        "declarations": [
+                          {
+                            "type": "VariableDeclarator",
+                            "id": {
+                              "type": "Identifier",
+                              "name": "msg"
+                            },
+                            "init": {
+                              "type": "ConditionalExpression",
+                              "test": {
+                                "type": "BinaryExpression",
+                                "operator": "===",
+                                "left": {
+                                  "type": "UnaryExpression",
+                                  "operator": "typeof",
+                                  "prefix": true,
+                                  "argument": {
+                                    "type": "MemberExpression",
+                                    "object": {
+                                      "type": "ThisExpression"
+                                    },
+                                    "property": {
+                                      "type": "Identifier",
+                                      "name": "_msgOrRec"
+                                    },
+                                    "computed": false
+                                  }
+                                },
+                                "right": {
+                                  "type": "Literal",
+                                  "value": "string"
+                                }
+                              },
+                              "consequent": {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "ThisExpression"
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "_msgOrRec"
+                                },
+                                "computed": false
+                              },
+                              "alternate": {
+                                "type": "Literal",
+                                "value": ""
+                              }
+                            }
+                          }
+                        ],
+                        "kind": "let"
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "+=",
+                          "left": {
+                            "type": "Identifier",
+                            "name": "msg"
+                          },
+                          "right": {
+                            "type": "TemplateLiteral",
+                            "quasis": [
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": "# ",
+                                  "cooked": "# "
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": ":",
+                                  "cooked": ":"
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": true,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              }
+                            ],
+                            "expressions": [
+                              {
+                                "type": "Identifier",
+                                "name": "_s"
+                              },
+                              {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "ThisExpression"
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "_am"
+                                  },
+                                  "computed": false
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "filepath"
+                                },
+                                "computed": false
+                              },
+                              {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "ThisExpression"
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "_am"
+                                  },
+                                  "computed": false
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "line"
+                                },
+                                "computed": false
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "+=",
+                          "left": {
+                            "type": "Identifier",
+                            "name": "msg"
+                          },
+                          "right": {
+                            "type": "TemplateLiteral",
+                            "quasis": [
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": true,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              }
+                            ],
+                            "expressions": [
+                              {
+                                "type": "Identifier",
+                                "name": "_s"
+                              },
+                              {
+                                "type": "MemberExpression",
+                                "object": {
+                                  "type": "MemberExpression",
+                                  "object": {
+                                    "type": "ThisExpression"
+                                  },
+                                  "property": {
+                                    "type": "Identifier",
+                                    "name": "_am"
+                                  },
+                                  "computed": false
+                                },
+                                "property": {
+                                  "type": "Identifier",
+                                  "name": "content"
+                                },
+                                "computed": false
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "+=",
+                          "left": {
+                            "type": "Identifier",
+                            "name": "msg"
+                          },
+                          "right": {
+                            "type": "TemplateLiteral",
+                            "quasis": [
+                              {
+                                "type": "TemplateElement",
+                                "tail": false,
+                                "value": {
+                                  "raw": "",
+                                  "cooked": ""
+                                }
+                              },
+                              {
+                                "type": "TemplateElement",
+                                "tail": true,
+                                "value": {
+                                  "raw": "[WARNING] power-assert is not configured. see: https://github.com/power-assert-js/power-assert",
+                                  "cooked": "[WARNING] power-assert is not configured. see: https://github.com/power-assert-js/power-assert"
+                                }
+                              }
+                            ],
+                            "expressions": [
+                              {
+                                "type": "Identifier",
+                                "name": "_s"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                          "type": "AssignmentExpression",
+                          "operator": "+=",
+                          "left": {
+                            "type": "Identifier",
+                            "name": "msg"
+                          },
+                          "right": {
+                            "type": "Literal",
+                            "value": "\n"
+                          }
+                        }
+                      },
+                      {
+                        "type": "ReturnStatement",
+                        "argument": {
+                          "type": "Identifier",
+                          "name": "msg"
+                        }
+                      }
+                    ]
+                  },
+                  "generator": false
+                },
+                "kind": "method",
+                "computed": false,
+                "static": false
+              }
+            ]
+          }
+        },
+        {
+          "type": "ReturnStatement",
+          "argument": {
+            "type": "Identifier",
+            "name": "AssertionMessage"
+          }
+        }
+      ]
+    },
+    "generator": false
+  },
+  "arguments": []
+}

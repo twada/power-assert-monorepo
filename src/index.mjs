@@ -1,4 +1,5 @@
 import { replace } from 'estraverse';
+// import { Transformation } from './transformation.mjs';
 
 function isLiteral (node) {
   return node && node.type === 'Literal';
@@ -115,6 +116,8 @@ function createVisitor (options) {
 
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
+
+  // const transformation = new Transformation();
 
   return {
     enter: function (currentNode, parentNode) {
