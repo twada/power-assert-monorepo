@@ -24,5 +24,7 @@ describe('espowerAst', () => {
     const actual = generate(modifiedAst);
 
     assert.equal(actual + '\n', expected);
+    console.log(expected);
+    assert(false);
   });
 });

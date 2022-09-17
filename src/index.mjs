@@ -2,11 +2,11 @@ import { replace } from 'estraverse';
 // import { Transformation } from './transformation.mjs';
 // import { AssertionVisitor } from './assertion-visitor.mjs';
 // import { analyze } from 'escope';
-// import { getCurrentKey } from './controller-utils.mjs';
+import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 // import { locationOf } from './location.mjs';
-// import { generate, Precedence } from 'escodegen';
 import { generateCanonicalCode } from './generate-canonical-code.mjs';
 import { parseCanonicalCode } from './parse-canonical-code.mjs';
+import { toBeSkipped } from './rules/to-be-skipped.mjs';
 
 function isLiteral (node) {
   return node && node.type === 'Literal';
@@ -125,13 +125,28 @@ function createVisitor (ast, options) {
   //   return parentNode.type === 'CallExpression' && currentKey === 'callee';
   // }
 
+  function isNodeToBeSkipped (controller) {
+    const currentNode = controller.current();
+    const parentNode = getParentNode(controller);
+    const currentKey = getCurrentKey(controller);
+    return toBeSkipped({ currentNode, parentNode, currentKey });
+  }
+
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
   let capturing = false;
+  let skipping = false;
 
   return {
     enter: function (currentNode, parentNode) {
+      const controller = this;
       if (capturing) {
+        if (isNodeToBeSkipped(controller)) {
+          skipping = true;
+          console.log(`##### skipping ${this.path().join('/')} #####`);
+          return controller.skip();
+        }
+
         console.log(`##### enter ${this.path().join('/')} #####`);
       } else {
         switch (currentNode.type) {
@@ -199,6 +214,10 @@ function createVisitor (ast, options) {
     },
     leave: function (currentNode, parentNode) {
       if (capturing) {
+        if (skipping) {
+          skipping = false;
+          return undefined;
+        }
         console.log(`##### leave ${this.path().join('/')} #####`);
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
