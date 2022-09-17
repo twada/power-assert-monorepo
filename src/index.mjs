@@ -127,79 +127,94 @@ function createVisitor (ast, options) {
 
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
+  let capturing = false;
 
   return {
     enter: function (currentNode, parentNode) {
-      switch (currentNode.type) {
-        case 'ImportDeclaration': {
-          const source = currentNode.source;
-          if (!(isAssertionModuleName(source))) {
-            return;
-          }
-          // enhance current ImportDeclaration
-          nodeToEnhance.add(currentNode);
-          this.skip();
-          // register local identifier(s) as assertion variable
-          registerAssertionVariables(currentNode);
-          break;
-        }
-        case 'VariableDeclarator': {
-          if (isEnhanceTargetRequire(currentNode.id, currentNode.init)) {
-            // enhance current VariableDeclarator
+      if (capturing) {
+        console.log(`##### enter ${this.path().join('/')} #####`);
+      } else {
+        switch (currentNode.type) {
+          case 'ImportDeclaration': {
+            const source = currentNode.source;
+            if (!(isAssertionModuleName(source))) {
+              return undefined;
+            }
+            // enhance current ImportDeclaration
             nodeToEnhance.add(currentNode);
             this.skip();
             // register local identifier(s) as assertion variable
-            registerAssertionVariables(currentNode.id);
+            registerAssertionVariables(currentNode);
+            break;
           }
-          break;
-        }
-        case 'AssignmentExpression': {
-          if (currentNode.operator !== '=') {
-            return;
+          case 'VariableDeclarator': {
+            if (isEnhanceTargetRequire(currentNode.id, currentNode.init)) {
+              // enhance current VariableDeclarator
+              nodeToEnhance.add(currentNode);
+              this.skip();
+              // register local identifier(s) as assertion variable
+              registerAssertionVariables(currentNode.id);
+            }
+            break;
           }
-          if (isEnhanceTargetRequire(currentNode.left, currentNode.right)) {
-            // enhance current AssignmentExpression
-            nodeToEnhance.add(currentNode);
-            this.skip();
-            // register local identifier(s) as assertion variable
-            registerAssertionVariables(currentNode.left);
+          case 'AssignmentExpression': {
+            if (currentNode.operator !== '=') {
+              return undefined;
+            }
+            if (isEnhanceTargetRequire(currentNode.left, currentNode.right)) {
+              // enhance current AssignmentExpression
+              nodeToEnhance.add(currentNode);
+              this.skip();
+              // register local identifier(s) as assertion variable
+              registerAssertionVariables(currentNode.left);
+            }
+            break;
           }
-          break;
-        }
-        case 'CallExpression': {
-          const callee = currentNode.callee;
-          if (isCaptureTargetAssertion(callee)) {
-            // capture parent ExpressionStatement
-            nodeToCapture.add(currentNode);
+          case 'CallExpression': {
+            const callee = currentNode.callee;
+            if (isCaptureTargetAssertion(callee)) {
+              // capture parent ExpressionStatement
+              nodeToCapture.add(currentNode);
 
-            // entering target assertion
-            const canonicalCode = generateCanonicalCode(currentNode);
-            console.log(`##### ${canonicalCode} #####`);
-            const { expression, tokens } = parseCanonicalCode({
-              content: canonicalCode,
-              async: true,
-              generator: false
-            });
-            console.log(expression);
-            console.log(tokens);
+              // entering target assertion
+              const canonicalCode = generateCanonicalCode(currentNode);
+              console.log(`##### ${canonicalCode} #####`);
+              const { expression, tokens } = parseCanonicalCode({
+                content: canonicalCode,
+                async: true,
+                generator: false
+              });
+              console.log(expression);
+              console.log(tokens);
 
-            // start capturing
+              // start capturing
+              capturing = true;
+              console.log(`##### start capturing ${this.path().join('/')} #####`);
+            }
+            break;
           }
-          break;
         }
       }
+      return undefined;
     },
     leave: function (currentNode, parentNode) {
-      if (nodeToEnhance.has(currentNode)) {
-        // node:assert -> power-assert
-        if (currentNode.type === 'ImportDeclaration') {
-          const lit = currentNode.source;
-          lit.value = 'power-assert';
-          return currentNode;
+      if (capturing) {
+        console.log(`##### leave ${this.path().join('/')} #####`);
+        if (nodeToCapture.has(currentNode)) {
+          // leaving assertion
+          // stop capturing
+          capturing = false;
+          console.log(`##### stop capturing ${this.path().join('/')} #####`);
         }
-      }
-      if (nodeToCapture.has(currentNode)) {
-        // leaving assertion
+      } else {
+        if (nodeToEnhance.has(currentNode)) {
+          // node:assert -> power-assert
+          if (currentNode.type === 'ImportDeclaration') {
+            const lit = currentNode.source;
+            lit.value = 'power-assert';
+            return currentNode;
+          }
+        }
       }
       return undefined;
     }
