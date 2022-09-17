@@ -1,5 +1,12 @@
 import { replace } from 'estraverse';
 // import { Transformation } from './transformation.mjs';
+// import { AssertionVisitor } from './assertion-visitor.mjs';
+// import { analyze } from 'escope';
+// import { getCurrentKey } from './controller-utils.mjs';
+// import { locationOf } from './location.mjs';
+// import { generate, Precedence } from 'escodegen';
+import { generateCanonicalCode } from './generate-canonical-code.mjs';
+import { parseCanonicalCode } from './parse-canonical-code.mjs';
 
 function isLiteral (node) {
   return node && node.type === 'Literal';
@@ -20,7 +27,7 @@ function isImportDeclaration (node) {
   return node && node.type === 'ImportDeclaration';
 }
 
-function createVisitor (options) {
+function createVisitor (ast, options) {
   const config = Object.assign(defaultOptions(), options);
   const targetModules = new Set(config.modules);
   const targetVariables = new Set(config.variables);
@@ -114,15 +121,15 @@ function createVisitor (options) {
     return isAssertionFunction(callee) || isAssertionMethod(callee);
   }
 
+  // function isCalleeOfParentCallExpression (parentNode, currentKey) {
+  //   return parentNode.type === 'CallExpression' && currentKey === 'callee';
+  // }
+
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
 
-  // const transformation = new Transformation();
-
   return {
     enter: function (currentNode, parentNode) {
-      // scope stack
-
       switch (currentNode.type) {
         case 'ImportDeclaration': {
           const source = currentNode.source;
@@ -166,6 +173,15 @@ function createVisitor (options) {
             nodeToCapture.add(currentNode);
 
             // entering target assertion
+            const canonicalCode = generateCanonicalCode(currentNode);
+            console.log(`##### ${canonicalCode} #####`);
+            const { expression, tokens } = parseCanonicalCode({
+              content: canonicalCode,
+              async: true,
+              generator: false
+            });
+            console.log(expression);
+            console.log(tokens);
 
             // start capturing
           }
@@ -191,7 +207,7 @@ function createVisitor (options) {
 }
 
 function espowerAst (ast, options) {
-  return replace(ast, createVisitor(options));
+  return replace(ast, createVisitor(ast, options));
 }
 
 function defaultOptions () {
@@ -207,6 +223,5 @@ function defaultOptions () {
 
 export {
   espowerAst,
-  defaultOptions,
-  createVisitor
+  defaultOptions
 };

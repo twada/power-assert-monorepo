@@ -8,6 +8,7 @@
   "license": "MIT",
   "dependencies": {
     "escodegen": "^2.0.0",
+    "espurify": "^3.0.0",
     "estraverse": "^5.3.0"
   },
   "devDependencies": {
