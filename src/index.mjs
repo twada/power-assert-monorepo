@@ -7,6 +7,7 @@ import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { generateCanonicalCode } from './generate-canonical-code.mjs';
 import { parseCanonicalCode } from './parse-canonical-code.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
+import { toBeCaptured } from './rules/to-be-captured.mjs';
 
 function isLiteral (node) {
   return node && node.type === 'Literal';
@@ -121,9 +122,9 @@ function createVisitor (ast, options) {
     return isAssertionFunction(callee) || isAssertionMethod(callee);
   }
 
-  // function isCalleeOfParentCallExpression (parentNode, currentKey) {
-  //   return parentNode.type === 'CallExpression' && currentKey === 'callee';
-  // }
+  function isCalleeOfParentCallExpression (parentNode, currentKey) {
+    return parentNode.type === 'CallExpression' && currentKey === 'callee';
+  }
 
   function isNodeToBeSkipped (controller) {
     const currentNode = controller.current();
@@ -134,20 +135,29 @@ function createVisitor (ast, options) {
 
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
-  let capturing = false;
+  let isCapturingAssertion = false;
+  let isCapturingArgument = false;
   let skipping = false;
+
+  let currentTokens;
+  let currentCanonicalAst;
 
   return {
     enter: function (currentNode, parentNode) {
       const controller = this;
-      if (capturing) {
+      if (isCapturingAssertion) {
         if (isNodeToBeSkipped(controller)) {
           skipping = true;
           console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
         }
-
-        console.log(`##### enter ${this.path().join('/')} #####`);
+        const currentKey = getCurrentKey(controller);
+        if (!isCapturingArgument && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
+          // const loc = locationOf(currentNode, currentTokens);
+          console.log(`##### entering argument ${this.path().join('/')} #####`);
+          // entering argument
+          isCapturingArgument = true;
+        }
       } else {
         switch (currentNode.type) {
           case 'ImportDeclaration': {
@@ -199,11 +209,13 @@ function createVisitor (ast, options) {
                 async: true,
                 generator: false
               });
-              console.log(expression);
-              console.log(tokens);
+              currentTokens = tokens;
+              currentCanonicalAst = expression;
+              console.log(currentCanonicalAst);
+              console.log(currentTokens);
 
               // start capturing
-              capturing = true;
+              isCapturingAssertion = true;
               console.log(`##### start capturing ${this.path().join('/')} #####`);
             }
             break;
@@ -213,7 +225,8 @@ function createVisitor (ast, options) {
       return undefined;
     },
     leave: function (currentNode, parentNode) {
-      if (capturing) {
+      const controller = this;
+      if (isCapturingAssertion) {
         if (skipping) {
           skipping = false;
           return undefined;
@@ -222,8 +235,12 @@ function createVisitor (ast, options) {
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
           // stop capturing
-          capturing = false;
+          isCapturingAssertion = false;
+          currentTokens = null;
           console.log(`##### stop capturing ${this.path().join('/')} #####`);
+        }
+        if (toBeCaptured(controller)) {
+          console.log(`##### capture value ${this.path().join('/')} #####`);
         }
       } else {
         if (nodeToEnhance.has(currentNode)) {
@@ -239,6 +256,29 @@ function createVisitor (ast, options) {
     }
   };
 }
+
+// class AssertionModification {
+// }
+// class ArgumentModification {
+// }
+
+// function insertRecorderNode (currentNode, path, methodName) {
+//   const receiver = this.argumentRecorderIdent;
+//   const types = new NodeCreator(currentNode);
+//   const args = [
+//     currentNode
+//   ];
+//   if (path) {
+//     const relativeEsPath = path.slice(this.assertionPath.length);
+//     args.push(types.valueToNode(relativeEsPath.join('/')));
+//   }
+//   const newNode = types.callExpression(
+//     types.memberExpression(receiver, types.identifier(methodName)),
+//     args
+//   );
+//   this.argumentModified = true;
+//   return newNode;
+// }
 
 function espowerAst (ast, options) {
   return replace(ast, createVisitor(ast, options));
