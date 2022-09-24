@@ -25,6 +25,6 @@ describe('espowerAst', () => {
 
     assert.equal(actual + '\n', expected);
     console.log(expected);
-    assert(false);
+    // assert(false);
   });
 });

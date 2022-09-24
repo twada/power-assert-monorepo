@@ -126,33 +126,25 @@ function createVisitor (ast, options) {
     return parentNode.type === 'CallExpression' && currentKey === 'callee';
   }
 
-  function isNodeToBeSkipped (controller) {
-    const currentNode = controller.current();
-    const parentNode = getParentNode(controller);
-    const currentKey = getCurrentKey(controller);
-    return toBeSkipped({ currentNode, parentNode, currentKey });
-  }
-
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
-  let isCapturingAssertion = false;
+
+  let assertionVisitor;
   let isCapturingArgument = false;
   let skipping = false;
-
-  let currentTokens;
-  let currentCanonicalAst;
 
   return {
     enter: function (currentNode, parentNode) {
       const controller = this;
-      if (isCapturingAssertion) {
-        if (isNodeToBeSkipped(controller)) {
+      if (assertionVisitor) {
+        if (assertionVisitor.isNodeToBeSkipped(controller)) {
           skipping = true;
           console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
         }
         const currentKey = getCurrentKey(controller);
         if (!isCapturingArgument && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
+        // if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
           // const loc = locationOf(currentNode, currentTokens);
           console.log(`##### entering argument ${this.path().join('/')} #####`);
           // entering argument
@@ -202,20 +194,9 @@ function createVisitor (ast, options) {
               nodeToCapture.add(currentNode);
 
               // entering target assertion
-              const canonicalCode = generateCanonicalCode(currentNode);
-              console.log(`##### ${canonicalCode} #####`);
-              const { expression, tokens } = parseCanonicalCode({
-                content: canonicalCode,
-                async: true,
-                generator: false
-              });
-              currentTokens = tokens;
-              currentCanonicalAst = expression;
-              console.log(currentCanonicalAst);
-              console.log(currentTokens);
-
               // start capturing
-              isCapturingAssertion = true;
+              assertionVisitor = new AssertionVisitor();
+              assertionVisitor.enter(controller);
               console.log(`##### start capturing ${this.path().join('/')} #####`);
             }
             break;
@@ -226,7 +207,7 @@ function createVisitor (ast, options) {
     },
     leave: function (currentNode, parentNode) {
       const controller = this;
-      if (isCapturingAssertion) {
+      if (assertionVisitor) {
         if (skipping) {
           skipping = false;
           return undefined;
@@ -235,9 +216,10 @@ function createVisitor (ast, options) {
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
           // stop capturing
-          isCapturingAssertion = false;
-          currentTokens = null;
           console.log(`##### stop capturing ${this.path().join('/')} #####`);
+          const resultTree = assertionVisitor.leave(controller);
+          assertionVisitor = null;
+          return resultTree;
         }
         if (toBeCaptured(controller)) {
           console.log(`##### capture value ${this.path().join('/')} #####`);
@@ -257,8 +239,50 @@ function createVisitor (ast, options) {
   };
 }
 
-// class AssertionModification {
+class AssertionVisitor {
+  enter (controller) {
+    this.assertionPath = [].concat(controller.path());
+    const currentNode = controller.current();
+    this.calleeNode = currentNode.callee;
+    this.canonicalCode = generateCanonicalCode(currentNode);
+    console.log(`##### ${this.canonicalCode} #####`);
+    const { expression, tokens } = parseCanonicalCode({
+      content: this.canonicalCode,
+      async: true,
+      generator: false
+    });
+    this.canonicalAst = expression;
+    this.canonicalTokens = tokens;
+  }
+
+  enterArgument (controller) {}
+  leaveArgument (controller) {}
+  leave (controller) {}
+  isLeavingAssertion (controller) {}
+  isLeavingArgument (controller) {}
+  isCapturingArgument () {}
+
+  isNodeToBeSkipped (controller) {
+    const currentNode = controller.current();
+    const parentNode = getParentNode(controller);
+    const currentKey = getCurrentKey(controller);
+    return toBeSkipped({ currentNode, parentNode, currentKey });
+  }
+
+  toBeCaptured (controller) {}
+  captureNode (controller) {}
+}
+// class ArgumentModification {
+//   enter (controller) {}
+//   isCapturing () {}
+//   leave (controller) {}
+//   isMessageUpdated () {}
+//   isArgumentModified () {}
+//   isLeaving (controller) {}
+//   captureNode (controller) {}
+//   captureArgument (currentNode, path) {}
 // }
+
 // class ArgumentModification {
 // }
 
