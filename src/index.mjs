@@ -143,7 +143,6 @@ function createVisitor (ast, options) {
         }
         const currentKey = getCurrentKey(controller);
         if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
-          console.log(`##### entering argument ${this.path().join('/')} #####`);
           // entering argument
           assertionVisitor.enterArgument(controller);
         }
@@ -194,7 +193,7 @@ function createVisitor (ast, options) {
               // start capturing
               assertionVisitor = new AssertionVisitor();
               assertionVisitor.enter(controller);
-              console.log(`##### start capturing ${this.path().join('/')} #####`);
+              console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;
           }
@@ -209,19 +208,28 @@ function createVisitor (ast, options) {
           skipping = false;
           return undefined;
         }
-        console.log(`##### leave ${this.path().join('/')} #####`);
+        // console.log(`##### leave ${this.path().join('/')} #####`);
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
           // stop capturing
-          console.log(`##### stop capturing ${this.path().join('/')} #####`);
-          const resultTree = assertionVisitor.leave(controller);
+          console.log(`##### leave assertion ${this.path().join('/')} #####`);
+          // const resultTree = assertionVisitor.leave(controller);
           assertionVisitor = null;
-          return resultTree;
+          // return resultTree;
+          return undefined;
         }
-        if (toBeCaptured(controller)) {
-          console.log(`##### capture value ${this.path().join('/')} #####`);
+        if (!assertionVisitor.isCapturingArgument()) {
+          return undefined;
+        }
+        if (assertionVisitor.isLeavingArgument(controller)) {
+          // capturing whole argument on leaving argument
+          return assertionVisitor.leaveArgument(controller);
+        } else if (assertionVisitor.toBeCaptured(controller)) {
+          // capturing intermediate Node
+          // console.log(`##### capture value ${this.path().join('/')} #####`);
           return assertionVisitor.captureNode(controller);
         }
+        return undefined;
       } else {
         if (nodeToEnhance.has(currentNode)) {
           // node:assert -> power-assert
@@ -243,7 +251,7 @@ class AssertionVisitor {
     const currentNode = controller.current();
     this.calleeNode = currentNode.callee;
     const canonicalCode = generateCanonicalCode(currentNode);
-    console.log(`##### ${canonicalCode} #####`);
+    // console.log(`##### ${canonicalCode} #####`);
     const { expression, tokens } = parseCanonicalCode({
       content: canonicalCode,
       async: true,
@@ -257,7 +265,6 @@ class AssertionVisitor {
       // tokens with canonical ranges
       tokens: tokens
     };
-    console.log(`############# ar._rec(${canonicalCode}) ############`);
   }
 
   enterArgument (controller) {
@@ -273,10 +280,15 @@ class AssertionVisitor {
     return undefined;
   }
 
-  leaveArgument (controller) {}
-  leave (controller) {}
-  isLeavingAssertion (controller) {}
-  isLeavingArgument (controller) {}
+  isLeavingArgument (controller) {
+    return this.currentModification.isLeaving(controller);
+  }
+
+  leaveArgument (controller) {
+    const retNode = this.currentModification.leave(controller);
+    this.currentModification = null;
+    return retNode;
+  }
 
   isCapturingArgument () {
     return this.currentModification;
@@ -289,7 +301,9 @@ class AssertionVisitor {
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  toBeCaptured (controller) {}
+  toBeCaptured (controller) {
+    return toBeCaptured(controller);
+  }
 
   captureNode (controller) {
     return this.currentModification.captureNode(controller);
@@ -311,9 +325,9 @@ class ArgumentModification {
   leave (controller) {
     const currentNode = controller.current();
     const shouldCaptureValue = toBeCaptured(controller);
-    const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
+    // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
     const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
-    const resultNode = shouldCaptureArgument ? this.captureArgument(currentNode, pathToBeCaptured) : currentNode;
+    const resultNode = shouldCaptureArgument ? this._captureArgument(controller) : currentNode;
     return resultNode;
   }
 
@@ -325,14 +339,8 @@ class ArgumentModification {
     return this.argNode === controller.current();
   }
 
-  captureArgument (currentNode, path) {
-    // return this.insertRecorder(currentNode, path, '_rec');
-  }
-
   captureNode (controller) {
-    const astPath = controller.path();
-    const relativeAstPath = astPath.slice(this.assertionPath.length);
-
+    const relativeAstPath = this._relativeAstPath(controller);
     const { ast, tokens } = this.canonicalAssertion;
     const targetNodeInCanonicalAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
     const targetRange = locationOf(targetNodeInCanonicalAst, tokens);
@@ -340,6 +348,17 @@ class ArgumentModification {
     const espath = relativeAstPath.join('/');
     console.log(`############# ag._tap(node, [${targetRange}], ${espath}) ############`);
     // return this.insertRecorder(controller.current(), controller.path(), '_tap');
+  }
+
+  _captureArgument (controller) {
+    const espath = this._relativeAstPath(controller).join('/');
+    // return this.insertRecorder(currentNode, path, '_rec');
+    console.log(`############# ag._rec(node, ${espath}) ############`);
+  }
+
+  _relativeAstPath (controller) {
+    const astPath = controller.path();
+    return astPath.slice(this.assertionPath.length);
   }
 }
 
