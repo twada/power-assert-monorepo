@@ -1,13 +1,16 @@
 import { replace } from 'estraverse';
-// import { Transformation } from './transformation.mjs';
+import { Transformation } from './transformation.mjs';
 // import { AssertionVisitor } from './assertion-visitor.mjs';
-// import { analyze } from 'escope';
+import { NodeCreator } from './create-node-with-loc.mjs';
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { locationOf } from './location.mjs';
 import { generateCanonicalCode } from './generate-canonical-code.mjs';
 import { parseCanonicalCode } from './parse-canonical-code.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const recorderClassAst = require('./templates/argument-recorder.json');
 
 function isLiteral (node) {
   return node && node.type === 'Literal';
@@ -128,6 +131,9 @@ function createVisitor (ast, options) {
 
   const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
+  const transformation = new Transformation();
+  const blockStack = [];
+  let argumentRecorderClassIdent;
 
   let assertionVisitor;
   let skipping = false;
@@ -135,6 +141,11 @@ function createVisitor (ast, options) {
   return {
     enter: function (currentNode, parentNode) {
       const controller = this;
+
+      if (/^Program$|Block$|Function/.test(currentNode.type)) {
+        blockStack.push(currentNode);
+      }
+
       if (assertionVisitor) {
         if (assertionVisitor.isNodeToBeSkipped(controller)) {
           skipping = true;
@@ -189,9 +200,13 @@ function createVisitor (ast, options) {
               // capture parent ExpressionStatement
               nodeToCapture.add(currentNode);
 
+              if (!argumentRecorderClassIdent) {
+                const globalScopeBlock = blockStack[0];
+                argumentRecorderClassIdent = createArgumentRecorder({ transformation, globalScopeBlock, controller });
+              }
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor();
+              assertionVisitor = new AssertionVisitor({ transformation, argumentRecorderClassIdent, blockStack });
               assertionVisitor.enter(controller);
               console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
@@ -202,50 +217,133 @@ function createVisitor (ast, options) {
       return undefined;
     },
     leave: function (currentNode, parentNode) {
-      const controller = this;
-      if (assertionVisitor) {
-        if (skipping) {
-          skipping = false;
+      try {
+        const controller = this;
+        const path = controller.path();
+        const espath = path ? path.join('/') : '';
+        if (transformation.isTarget(espath)) {
+          const targetNode = currentNode;
+          transformation.apply(espath, targetNode);
+          return targetNode;
+        }
+        if (assertionVisitor) {
+          if (skipping) {
+            skipping = false;
+            return undefined;
+          }
+          // console.log(`##### leave ${this.path().join('/')} #####`);
+          if (nodeToCapture.has(currentNode)) {
+            // leaving assertion
+            // stop capturing
+            console.log(`##### leave assertion ${this.path().join('/')} #####`);
+            // const resultTree = assertionVisitor.leave(controller);
+            assertionVisitor = null;
+            // return resultTree;
+            return undefined;
+          }
+          if (!assertionVisitor.isCapturingArgument()) {
+            return undefined;
+          }
+          if (assertionVisitor.isLeavingArgument(controller)) {
+            // capturing whole argument on leaving argument
+            return assertionVisitor.leaveArgument(controller);
+          } else if (assertionVisitor.toBeCaptured(controller)) {
+            // capturing intermediate Node
+            // console.log(`##### capture value ${this.path().join('/')} #####`);
+            return assertionVisitor.captureNode(controller);
+          }
           return undefined;
-        }
-        // console.log(`##### leave ${this.path().join('/')} #####`);
-        if (nodeToCapture.has(currentNode)) {
-          // leaving assertion
-          // stop capturing
-          console.log(`##### leave assertion ${this.path().join('/')} #####`);
-          // const resultTree = assertionVisitor.leave(controller);
-          assertionVisitor = null;
-          // return resultTree;
-          return undefined;
-        }
-        if (!assertionVisitor.isCapturingArgument()) {
-          return undefined;
-        }
-        if (assertionVisitor.isLeavingArgument(controller)) {
-          // capturing whole argument on leaving argument
-          return assertionVisitor.leaveArgument(controller);
-        } else if (assertionVisitor.toBeCaptured(controller)) {
-          // capturing intermediate Node
-          // console.log(`##### capture value ${this.path().join('/')} #####`);
-          return assertionVisitor.captureNode(controller);
-        }
-        return undefined;
-      } else {
-        if (nodeToEnhance.has(currentNode)) {
-          // node:assert -> power-assert
-          if (currentNode.type === 'ImportDeclaration') {
-            const lit = currentNode.source;
-            lit.value = 'power-assert';
-            return currentNode;
+        } else {
+          if (nodeToEnhance.has(currentNode)) {
+            // node:assert -> power-assert
+            if (currentNode.type === 'ImportDeclaration') {
+              const lit = currentNode.source;
+              lit.value = 'power-assert';
+              return currentNode;
+            }
           }
         }
+        return undefined;
+      } finally {
+        if (/^Program$|Block$|Function/.test(currentNode.type)) {
+          blockStack.pop();
+        }
       }
-      return undefined;
     }
   };
 }
 
+function createArgumentRecorder ({ transformation, globalScopeBlock, controller }) {
+  const globalScopeBlockEspath = findEspathOfAncestorNode(globalScopeBlock, controller);
+  const idName = 'ArgumentRecorder1';
+  const init = recorderClassAst;
+  const types = new NodeCreator();
+  const ident = types.identifier(idName);
+  const decl = types.variableDeclaration('const', [
+    types.variableDeclarator(ident, init)
+  ]);
+  transformation.register(globalScopeBlockEspath, (matchNode) => {
+    insertAfterUseStrictDirective(decl, matchNode.body);
+  });
+  return ident;
+}
+
+const findEspathOfAncestorNode = (targetNode, controller) => {
+  // iterate child to root
+  let child, parent;
+  const path = controller.path();
+  const parents = controller.parents();
+  const popUntilParent = (key) => {
+    if (parent[key] !== undefined) {
+      return;
+    }
+    popUntilParent(path.pop());
+  };
+  for (let i = parents.length - 1; i >= 0; i--) {
+    parent = parents[i];
+    if (child) {
+      popUntilParent(path.pop());
+    }
+    if (parent === targetNode) {
+      return path.join('/');
+    }
+    child = parent;
+  }
+  return null;
+};
+
+const insertAfterUseStrictDirective = (decl, body) => {
+  const firstBody = body[0];
+  if (firstBody.type === 'ExpressionStatement') {
+    const expression = firstBody.expression;
+    if (expression.type === 'Literal' && expression.value === 'use strict') {
+      body.splice(1, 0, decl);
+      return;
+    }
+  }
+  body.unshift(decl);
+};
+
+const findBlockNode = (blockStack) => {
+  const lastIndex = blockStack.length - 1;
+  const blockNode = blockStack[lastIndex];
+  if (!blockNode || isArrowFunctionWithConciseBody(blockNode)) {
+    return findBlockNode(blockStack.slice(0, lastIndex));
+  }
+  return blockNode;
+};
+
+const isArrowFunctionWithConciseBody = (node) => {
+  return node.type === 'ArrowFunctionExpression' && node.body.type !== 'BlockStatement';
+};
+
 class AssertionVisitor {
+  constructor ({ transformation, argumentRecorderClassIdent, blockStack }) {
+    this.transformation = transformation;
+    this.argumentRecorderClassIdent = argumentRecorderClassIdent;
+    this.blockStack = blockStack;
+  }
+
   enter (controller) {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
@@ -274,7 +372,10 @@ class AssertionVisitor {
       argNode: currentNode,
       calleeNode: this.calleeNode,
       assertionPath: this.assertionPath,
-      canonicalAssertion: this.canonicalAssertion
+      canonicalAssertion: this.canonicalAssertion,
+      transformation: this.transformation,
+      argumentRecorderClassIdent: this.argumentRecorderClassIdent,
+      blockStack: this.blockStack
     });
     this.currentModification.enter(controller);
     return undefined;
@@ -311,16 +412,44 @@ class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNode, calleeNode, assertionPath, canonicalAssertion }) {
+  constructor ({ argNode, calleeNode, assertionPath, canonicalAssertion, transformation, argumentRecorderClassIdent, blockStack }) {
     this.argNode = argNode;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
     this.canonicalAssertion = canonicalAssertion;
+    this.transformation = transformation;
+    this.argumentRecorderClassIdent = argumentRecorderClassIdent;
+    this.blockStack = blockStack;
     this.argumentModified = false;
   }
 
   // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
-  enter (controller) {}
+  enter (controller) {
+    const currentBlock = findBlockNode(this.blockStack);
+    const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
+
+    const recorderVariableName = this.transformation.generateUniqueName('ag');
+    const currentNode = controller.current();
+    const types = new NodeCreator(currentNode);
+    const ident = types.identifier(recorderVariableName);
+    const init = types.newExpression(this.argumentRecorderClassIdent, [
+      this.calleeNode
+    ]);
+    const decl = types.variableDeclaration('let', [
+      types.variableDeclarator(ident, init)
+    ]);
+    this.transformation.register(scopeBlockEspath, (matchNode) => {
+      let body;
+      if (/Function/.test(matchNode.type)) {
+        const blockStatement = matchNode.body;
+        body = blockStatement.body;
+      } else {
+        body = matchNode.body;
+      }
+      insertAfterUseStrictDirective(decl, body);
+    });
+    this.argumentRecorderIdent = ident;
+  }
 
   leave (controller) {
     const currentNode = controller.current();
@@ -340,45 +469,48 @@ class ArgumentModification {
   }
 
   captureNode (controller) {
+    return this._insertRecorderNode(controller, '_tap');
+  }
+
+  _captureArgument (controller) {
+    return this._insertRecorderNode(controller, '_rec');
+  }
+
+  _targetRange (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
     const { ast, tokens } = this.canonicalAssertion;
     const targetNodeInCanonicalAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
     const targetRange = locationOf(targetNodeInCanonicalAst, tokens);
-
-    const espath = relativeAstPath.join('/');
-    console.log(`############# ag._tap(node, [${targetRange}], ${espath}) ############`);
-    // return this.insertRecorder(controller.current(), controller.path(), '_tap');
-  }
-
-  _captureArgument (controller) {
-    const espath = this._relativeAstPath(controller).join('/');
-    // return this.insertRecorder(currentNode, path, '_rec');
-    console.log(`############# ag._rec(node, ${espath}) ############`);
+    return targetRange;
   }
 
   _relativeAstPath (controller) {
     const astPath = controller.path();
     return astPath.slice(this.assertionPath.length);
   }
-}
 
-// function insertRecorderNode (currentNode, path, methodName) {
-//   const receiver = this.argumentRecorderIdent;
-//   const types = new NodeCreator(currentNode);
-//   const args = [
-//     currentNode
-//   ];
-//   if (path) {
-//     const relativeEsPath = path.slice(this.assertionPath.length);
-//     args.push(types.valueToNode(relativeEsPath.join('/')));
-//   }
-//   const newNode = types.callExpression(
-//     types.memberExpression(receiver, types.identifier(methodName)),
-//     args
-//   );
-//   this.argumentModified = true;
-//   return newNode;
-// }
+  _insertRecorderNode (controller, methodName) {
+    const currentNode = controller.current();
+    const relativeAstPath = this._relativeAstPath(controller);
+    const targetRange = this._targetRange(controller);
+
+    const types = new NodeCreator(currentNode);
+    const args = [
+      currentNode,
+      types.valueToNode(relativeAstPath.join('/')),
+      types.valueToNode(targetRange[0])
+      // types.valueToNode(targetRange[1])
+    ];
+
+    const receiver = this.argumentRecorderIdent;
+    const newNode = types.callExpression(
+      types.memberExpression(receiver, types.identifier(methodName)),
+      args
+    );
+    this.argumentModified = true;
+    return newNode;
+  }
+}
 
 function espowerAst (ast, options) {
   return replace(ast, createVisitor(ast, options));
