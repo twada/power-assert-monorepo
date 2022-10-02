@@ -18,15 +18,14 @@
  *   https://github.com/lodash/lodash/blob/aa1d7d870d9cf84842ee23ff485fd24abf0ed3d1/isPlainObject.js
  */
 
-import { replace } from 'estraverse';
 import { keyword } from 'esutils';
 
 const pToString = (obj) => Object.prototype.toString.call(obj);
 const isObject = (arg) => typeof arg === 'object' && arg !== null;
 
 class NodeCreator {
-  constructor ({ loc, range }) {
-    this.createNode = newNodeWithLocation({ loc, range });
+  createNode (node) {
+    return node;
   }
 
   identifier (name) {
@@ -223,46 +222,6 @@ const isPlainObject = (value) => {
   return Object.getPrototypeOf(value) === proto;
 };
 
-const updateLocRecursively = (node, { loc, range, visitorKeys }) => {
-  const n = newNodeWithLocation({ loc, range });
-  const visitor = {
-    leave: function (currentNode, parentNode) {
-      return n(currentNode);
-    }
-  };
-  if (visitorKeys) {
-    visitor.keys = visitorKeys;
-  }
-  replace(node, visitor);
-  return node;
-};
-
-const newNodeWithLocation = ({ loc, range }) => {
-  return (newNode) => {
-    if (typeof loc !== 'undefined') {
-      const newLoc = {
-        start: {
-          line: loc.start.line,
-          column: loc.start.column
-        },
-        end: {
-          line: loc.end.line,
-          column: loc.end.column
-        }
-      };
-      if (typeof loc.source !== 'undefined') {
-        newLoc.source = loc.source;
-      }
-      newNode.loc = newLoc;
-    }
-    if (Array.isArray(range)) {
-      newNode.range = [range[0], range[1]];
-    }
-    return newNode;
-  };
-};
-
 export {
-  updateLocRecursively,
   NodeCreator
 };
