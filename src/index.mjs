@@ -300,7 +300,7 @@ function createMetadataFunction ({ transformation, globalScopeBlock, controller 
       extraIdent
     ]))
   ]));
-  const ident = types.identifier('pwmeta');
+  const ident = types.identifier('_pwmeta');
   const decl = types.variableDeclaration('const', [
     types.variableDeclarator(ident, funcNode)
   ]);
