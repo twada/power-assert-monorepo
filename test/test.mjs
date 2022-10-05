@@ -14,7 +14,7 @@ function parseFixture (filepath) {
 
 describe('espowerAst', () => {
   it('assert => power-assert', () => {
-    const fixtureName = 'first';
+    const fixtureName = 'pw';
     const fixtureFilepath = resolve(__dirname, 'fixtures', fixtureName, 'fixture.mjs');
     const expectedFilepath = resolve(__dirname, 'fixtures', fixtureName, 'expected.mjs');
     const expected = readFileSync(expectedFilepath).toString();
@@ -23,8 +23,10 @@ describe('espowerAst', () => {
     const modifiedAst = espowerAst(ast);
     const actual = generate(modifiedAst);
 
+    console.log(actual);
+
     assert.equal(actual + '\n', expected);
-    console.log(expected);
+    // console.log(expected);
     // assert(false);
   });
 });
