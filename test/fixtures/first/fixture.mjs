@@ -4,6 +4,7 @@ function add(a, b) {
   const expected = {b, a};
   deepStrictEqual({a, b: b}, expected);
   assert(typeof a === 'number');
-  assert(typeof b === 'number');
+  assert.is.ok(typeof a === 'number');
+  assert.equal(typeof b, 'number');
   return a + b;
 }

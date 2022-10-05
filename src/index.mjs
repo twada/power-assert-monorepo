@@ -478,6 +478,9 @@ class AssertionVisitor {
 
   isNodeToBeSkipped (controller) {
     const currentNode = controller.current();
+    if (currentNode === this.calleeNode) {
+      return true;
+    }
     const parentNode = getParentNode(controller);
     const currentKey = getCurrentKey(controller);
     return toBeSkipped({ currentNode, parentNode, currentKey });

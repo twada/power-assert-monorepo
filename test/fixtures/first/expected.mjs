@@ -88,21 +88,34 @@ const ArgumentRecorder1 = function () {
     }
     return ArgumentRecorder;
 }();
+const _pwmeta = (content, extra) => {
+    return Object.assign({
+        transpiler: 'espower3',
+        version: '0.0.0',
+        content
+    }, extra);
+};
 import assert, { deepStrictEqual } from 'power-assert';
 function add(a, b) {
-    let _ag1 = new ArgumentRecorder1(deepStrictEqual);
-    let _ag2 = new ArgumentRecorder1(deepStrictEqual);
-    let _ag3 = new ArgumentRecorder1(assert);
-    let _ag4 = new ArgumentRecorder1(assert);
+    const _am1 = _pwmeta('deepStrictEqual({a,b: b}, expected)');
+    const _arg1 = new ArgumentRecorder1(deepStrictEqual, _am1);
+    const _arg2 = new ArgumentRecorder1(deepStrictEqual, _am1);
+    const _am2 = _pwmeta('assert(typeof a === \'number\')');
+    const _arg3 = new ArgumentRecorder1(assert, _am2);
+    const _am3 = _pwmeta('assert.is.ok(typeof a === \'number\')');
+    const _arg4 = new ArgumentRecorder1(assert.is.ok, _am3);
+    const _am4 = _pwmeta('assert.equal(typeof b, \'number\')');
+    const _arg5 = new ArgumentRecorder1(assert.equal, _am4);
     const expected = {
         b,
         a
     };
-    deepStrictEqual(_ag1._rec({
+    deepStrictEqual(_arg1._rec({
         a,
-        b: _ag1._tap(b, 'arguments/0/properties/1/value', 22)
-    }, 'arguments/0', 16), _ag2._rec(expected, 'arguments/1', 26));
-    assert(_ag3._rec(_ag3._tap(typeof a, 'arguments/0/left', 7) === 'number', 'arguments/0', 16));
-    assert(_ag4._rec(_ag4._tap(typeof b, 'arguments/0/left', 7) === 'number', 'arguments/0', 16));
+        b: _arg1._tap(b, 'arguments/0/properties/1/value', 22)
+    }, 'arguments/0', 16), _arg2._rec(expected, 'arguments/1', 26));
+    assert(_arg3._rec(_arg3._tap(typeof a, 'arguments/0/left', 7) === 'number', 'arguments/0', 16));
+    assert.is.ok(_arg4._rec(_arg4._tap(typeof a, 'arguments/0/left', 13) === 'number', 'arguments/0', 22));
+    assert.equal(_arg5._rec(typeof b, 'arguments/0', 13), 'number');
     return a + b;
 }
