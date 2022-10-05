@@ -10,6 +10,7 @@ import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
 const recorderClassAst = require('./templates/argument-recorder.json');
 
 function isLiteral (node) {
@@ -134,6 +135,7 @@ function createVisitor (ast, options) {
   const transformation = new Transformation();
   const blockStack = [];
   let argumentRecorderClassIdent;
+  let metadataFunctionIdent;
 
   let assertionVisitor;
   let skipping = false;
@@ -204,9 +206,13 @@ function createVisitor (ast, options) {
                 const globalScopeBlock = blockStack[0];
                 argumentRecorderClassIdent = createArgumentRecorder({ transformation, globalScopeBlock, controller });
               }
+              if (!metadataFunctionIdent) {
+                const globalScopeBlock = blockStack[0];
+                metadataFunctionIdent = createMetadataFunction({ transformation, globalScopeBlock, controller });
+              }
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor({ transformation, argumentRecorderClassIdent, blockStack });
+              assertionVisitor = new AssertionVisitor({ transformation, argumentRecorderClassIdent, metadataFunctionIdent, blockStack });
               assertionVisitor.enter(controller);
               console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
@@ -273,11 +279,42 @@ function createVisitor (ast, options) {
   };
 }
 
+function createMetadataFunction ({ transformation, globalScopeBlock, controller }) {
+  const globalScopeBlockEspath = findEspathOfAncestorNode(globalScopeBlock, controller);
+  const types = new NodeCreator(globalScopeBlock);
+  const contentIdent = types.identifier('content');
+  const extraIdent = types.identifier('extra');
+  const transpilerIdent = types.identifier('transpiler');
+  const versionIdent = types.identifier('version');
+  const objectAssignMethod = types.memberExpression(types.identifier('Object'), types.identifier('assign'));
+  const funcNode = types.arrowFunctionExpression([
+    contentIdent,
+    extraIdent
+  ], types.blockStatement([
+    types.returnStatement(types.callExpression(objectAssignMethod, [
+      types.objectExpression([
+        types.objectProperty(transpilerIdent, types.valueToNode(pkg.name), false, false),
+        types.objectProperty(versionIdent, types.valueToNode(pkg.version), false, false),
+        types.objectProperty(contentIdent, contentIdent, false, true)
+      ]),
+      extraIdent
+    ]))
+  ]));
+  const ident = types.identifier('pwmeta');
+  const decl = types.variableDeclaration('const', [
+    types.variableDeclarator(ident, funcNode)
+  ]);
+  transformation.register(globalScopeBlockEspath, (matchNode) => {
+    insertAfterUseStrictDirective(decl, matchNode.body);
+  });
+  return ident;
+}
+
 function createArgumentRecorder ({ transformation, globalScopeBlock, controller }) {
   const globalScopeBlockEspath = findEspathOfAncestorNode(globalScopeBlock, controller);
   const idName = 'ArgumentRecorder1';
   const init = recorderClassAst;
-  const types = new NodeCreator();
+  const types = new NodeCreator(globalScopeBlock);
   const ident = types.identifier(idName);
   const decl = types.variableDeclaration('const', [
     types.variableDeclarator(ident, init)
@@ -338,9 +375,10 @@ const isArrowFunctionWithConciseBody = (node) => {
 };
 
 class AssertionVisitor {
-  constructor ({ transformation, argumentRecorderClassIdent, blockStack }) {
+  constructor ({ transformation, argumentRecorderClassIdent, metadataFunctionIdent, blockStack }) {
     this.transformation = transformation;
     this.argumentRecorderClassIdent = argumentRecorderClassIdent;
+    this.metadataFunctionIdent = metadataFunctionIdent;
     this.blockStack = blockStack;
   }
 
@@ -363,6 +401,48 @@ class AssertionVisitor {
       // tokens with canonical ranges
       tokens: tokens
     };
+    // generate assertion level metadata
+    this.assertionMetadataIdent = this.generateMetadata(controller);
+  }
+
+  generateMetadata (controller) {
+    const currentNode = controller.current();
+    const transformation = this.transformation;
+    const types = new NodeCreator(currentNode);
+    const props = {};
+    if (this.withinAsync) {
+      props.async = true;
+    }
+    if (this.withinGenerator) {
+      props.generator = true;
+    }
+    const propsNode = types.valueToNode(props);
+    const args = [
+      types.valueToNode(this.canonicalAssertion.code)
+    ];
+    if (propsNode.properties.length > 0) {
+      args.push(propsNode);
+    }
+    const init = types.callExpression(this.metadataFunctionIdent, args);
+    const varName = transformation.generateUniqueName('am');
+    const ident = types.identifier(varName);
+    const decl = types.variableDeclaration('const', [
+      types.variableDeclarator(ident, init)
+    ]);
+
+    const currentBlock = findBlockNode(this.blockStack);
+    const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
+    transformation.register(scopeBlockEspath, (matchNode) => {
+      let body;
+      if (/Function/.test(matchNode.type)) {
+        const blockStatement = matchNode.body;
+        body = blockStatement.body;
+      } else {
+        body = matchNode.body;
+      }
+      insertAfterUseStrictDirective(decl, body);
+    });
+    return ident;
   }
 
   enterArgument (controller) {
@@ -375,6 +455,7 @@ class AssertionVisitor {
       canonicalAssertion: this.canonicalAssertion,
       transformation: this.transformation,
       argumentRecorderClassIdent: this.argumentRecorderClassIdent,
+      assertionMetadataIdent: this.assertionMetadataIdent,
       blockStack: this.blockStack
     });
     this.currentModification.enter(controller);
@@ -412,13 +493,14 @@ class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNode, calleeNode, assertionPath, canonicalAssertion, transformation, argumentRecorderClassIdent, blockStack }) {
+  constructor ({ argNode, calleeNode, assertionPath, canonicalAssertion, transformation, argumentRecorderClassIdent, assertionMetadataIdent, blockStack }) {
     this.argNode = argNode;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
     this.canonicalAssertion = canonicalAssertion;
     this.transformation = transformation;
     this.argumentRecorderClassIdent = argumentRecorderClassIdent;
+    this.assertionMetadataIdent = assertionMetadataIdent;
     this.blockStack = blockStack;
     this.argumentModified = false;
   }
@@ -428,14 +510,15 @@ class ArgumentModification {
     const currentBlock = findBlockNode(this.blockStack);
     const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
 
-    const recorderVariableName = this.transformation.generateUniqueName('ag');
+    const recorderVariableName = this.transformation.generateUniqueName('arg');
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.newExpression(this.argumentRecorderClassIdent, [
-      this.calleeNode
+      this.calleeNode,
+      this.assertionMetadataIdent
     ]);
-    const decl = types.variableDeclaration('let', [
+    const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
     this.transformation.register(scopeBlockEspath, (matchNode) => {

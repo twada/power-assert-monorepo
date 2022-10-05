@@ -24,6 +24,11 @@ const pToString = (obj) => Object.prototype.toString.call(obj);
 const isObject = (arg) => typeof arg === 'object' && arg !== null;
 
 class NodeCreator {
+  constructor (baseNode) {
+    // base node of node location
+    this.baseNode = baseNode;
+  }
+
   createNode (node) {
     return node;
   }
