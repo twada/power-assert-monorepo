@@ -143,6 +143,22 @@ class NodeCreator {
     });
   }
 
+  importDeclaration (specifiers, source) {
+    return this.createNode({
+      type: 'ImportDeclaration',
+      specifiers,
+      source
+    });
+  }
+
+  importSpecifier (imported, local = null) {
+    return this.createNode({
+      type: 'ImportSpecifier',
+      imported,
+      local: local || imported
+    });
+  }
+
   variableDeclaration (kind, declarations) {
     return this.createNode({
       type: 'VariableDeclaration',
