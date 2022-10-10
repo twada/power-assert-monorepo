@@ -112,20 +112,25 @@ const eject = (v) => {
   }
 };
 
-const power = (callee, receiver, assertionMetadata) => {
-  callee._empowered = true;
-  return (...args) => {
+class PowerAssert {
+  constructor(callee, receiver, assertionMetadata) {
+    this.callee = callee;
+    this.receiver = receiver;
+    this.assertionMetadata = assertionMetadata;
+  }
+  newArgumentRecorder() {
+    return new ArgumentRecorder(this);
+  }
+  run(...args) {
     const poweredArgs = Array.from(args);
     const actualArgs = poweredArgs.map((a) => val(a));
     try {
-      return callee.apply(receiver, actualArgs);
+      return this.callee.apply(this.receiver, actualArgs);
     } catch (e) {
-
       if (!/^AssertionError/.test(e.name)) {
         throw e;
       }
-
-      const dr = new DiagramRenderer(assertionMetadata.content);
+      const dr = new DiagramRenderer(this.assertionMetadata.content);
       console.log(poweredArgs);
       const recorded = poweredArgs.map((p) => eject(p));
       for(const rec of recorded) {
@@ -146,11 +151,13 @@ const power = (callee, receiver, assertionMetadata) => {
       e.generatedMessage = false;
       throw e;
     }
-  };
+  }
+}
+
+const _power_ = (callee, receiver, content, extra) => {
+  return new PowerAssert(callee, receiver, _pwmeta(content, extra));
 };
 
 export {
-  ArgumentRecorder,
-  _pwmeta,
-  power
+  _power_
 }
