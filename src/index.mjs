@@ -256,15 +256,6 @@ function createVisitor (ast, options) {
             return assertionVisitor.captureNode(controller);
           }
           return undefined;
-        } else {
-          if (nodeToEnhance.has(currentNode)) {
-            // node:assert -> power-assert
-            if (currentNode.type === 'ImportDeclaration') {
-              const lit = currentNode.source;
-              lit.value = 'power-assert';
-              return currentNode;
-            }
-          }
         }
         return undefined;
       } finally {
