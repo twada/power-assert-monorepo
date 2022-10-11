@@ -230,32 +230,32 @@ function createVisitor (ast, options) {
           transformation.apply(espath, targetNode);
           return targetNode;
         }
-        if (assertionVisitor) {
-          if (skipping) {
-            skipping = false;
-            return undefined;
-          }
-          // console.log(`##### leave ${this.path().join('/')} #####`);
-          if (nodeToCapture.has(currentNode)) {
-            // leaving assertion
-            // stop capturing
-            console.log(`##### leave assertion ${this.path().join('/')} #####`);
-            const resultTree = assertionVisitor.leave(controller);
-            assertionVisitor = null;
-            return resultTree;
-          }
-          if (!assertionVisitor.isCapturingArgument()) {
-            return undefined;
-          }
-          if (assertionVisitor.isLeavingArgument(controller)) {
-            // capturing whole argument on leaving argument
-            return assertionVisitor.leaveArgument(controller);
-          } else if (assertionVisitor.toBeCaptured(controller)) {
-            // capturing intermediate Node
-            // console.log(`##### capture value ${this.path().join('/')} #####`);
-            return assertionVisitor.captureNode(controller);
-          }
+        if (!assertionVisitor) {
           return undefined;
+        }
+        if (skipping) {
+          skipping = false;
+          return undefined;
+        }
+        // console.log(`##### leave ${this.path().join('/')} #####`);
+        if (nodeToCapture.has(currentNode)) {
+          // leaving assertion
+          // stop capturing
+          console.log(`##### leave assertion ${this.path().join('/')} #####`);
+          const resultTree = assertionVisitor.leave(controller);
+          assertionVisitor = null;
+          return resultTree;
+        }
+        if (!assertionVisitor.isCapturingArgument()) {
+          return undefined;
+        }
+        if (assertionVisitor.isLeavingArgument(controller)) {
+          // capturing whole argument on leaving argument
+          return assertionVisitor.leaveArgument(controller);
+        } else if (assertionVisitor.toBeCaptured(controller)) {
+          // capturing intermediate Node
+          // console.log(`##### capture value ${this.path().join('/')} #####`);
+          return assertionVisitor.captureNode(controller);
         }
         return undefined;
       } finally {
