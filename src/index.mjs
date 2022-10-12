@@ -130,7 +130,6 @@ function createVisitor (ast, options) {
     return parentNode.type === 'CallExpression' && currentKey === 'callee';
   }
 
-  const nodeToEnhance = new WeakSet();
   const nodeToCapture = new WeakSet();
   const transformation = new Transformation();
   const blockStack = [];
@@ -166,8 +165,6 @@ function createVisitor (ast, options) {
             if (!(isAssertionModuleName(source))) {
               return undefined;
             }
-            // enhance current ImportDeclaration
-            nodeToEnhance.add(currentNode);
             this.skip();
             // register local identifier(s) as assertion variable
             registerAssertionVariables(currentNode);
@@ -175,8 +172,6 @@ function createVisitor (ast, options) {
           }
           case 'VariableDeclarator': {
             if (isEnhanceTargetRequire(currentNode.id, currentNode.init)) {
-              // enhance current VariableDeclarator
-              nodeToEnhance.add(currentNode);
               this.skip();
               // register local identifier(s) as assertion variable
               registerAssertionVariables(currentNode.id);
@@ -188,8 +183,6 @@ function createVisitor (ast, options) {
               return undefined;
             }
             if (isEnhanceTargetRequire(currentNode.left, currentNode.right)) {
-              // enhance current AssignmentExpression
-              nodeToEnhance.add(currentNode);
               this.skip();
               // register local identifier(s) as assertion variable
               registerAssertionVariables(currentNode.left);
