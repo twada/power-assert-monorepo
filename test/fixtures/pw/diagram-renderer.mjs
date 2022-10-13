@@ -5,13 +5,9 @@ export class DiagramRenderer {
   constructor (assertionLine) {
     this.assertionLine = assertionLine;
     this.events = [];
-    this.wrote = [this.assertionLine];
-    this.initialVertivalBarLength = 1;
     this.rows = [];
-    this.initializeRows();
-  }
-  initializeRows () {
-    for (let i = 0; i <= this.initialVertivalBarLength; i += 1) {
+    const initialVertivalBarLength = 1;
+    for (let i = 0; i <= initialVertivalBarLength; i += 1) {
       this.addOneMoreRow();
     }
   }
@@ -21,15 +17,15 @@ export class DiagramRenderer {
       leftIndex: log.left
     });
   }
-  onEnd () {
+  toString() {
     this.events.sort(rightToLeft);
     this.constructRows(this.events);
+    this.addOneMoreRow();
+    const wrote = ['', this.assertionLine];
     this.rows.forEach((columns) => {
-      this.write(columns.join(''));
+      wrote.push(columns.join(''));
     });
-  }
-  toString() {
-    return this.wrote.join('\n');
+    return wrote.join('\n');
   }
   newRowFor (assertionLine) {
     return createRow(this.widthOf(assertionLine), ' ');
@@ -77,8 +73,5 @@ export class DiagramRenderer {
   stringify(obj) {
     // TODO stringify
     return String(obj);
-  }
-  write (str) {
-    this.wrote.push(str);
   }
 }

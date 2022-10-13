@@ -5,6 +5,7 @@ describe('description', () => {
   it('example', () => {
     const truthy = '1';
     const falsy = 0;
-    assert.is.not.ok(truthy === falsy);
+    assert.ok(truthy === falsy);
+    assert.equal(truthy, falsy);
   });
 });

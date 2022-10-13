@@ -20,18 +20,21 @@ class $Promise$ {
 const wrap = v => isPromiseLike(v) ? new $Promise$(v) : v;
 
 class ArgumentRecorder {
-  constructor(callee, am) {
-    this._callee = callee;
-    this._am = am;
+  constructor(powerAssert, argumentNumber) {
+    this._powerAssert = powerAssert;
+    this._argumentNumber = argumentNumber;
     this._logs = [];
     this._recorded = null;
     this._val = null;
   }
-  metadata() {
-    return this._am;
-  }
   val() {
     return this._val;
+  }
+  eject() {
+    const ret = this._recorded;
+    this._recorded = null;
+    this._val = null;
+    return ret;
   }
   _tap(value, espath, left) {
     this._logs.push({
@@ -42,19 +45,14 @@ class ArgumentRecorder {
     return value;
   }
   _rec(value, espath, left) {
-    const empowered = this._callee && this._callee._empowered;
     try {
-      if (!empowered)
-        return value;
-      if (!espath)
-        return this;
       const log = {
         value: wrap(value),
         espath,
         left
       };
       this._logs.push(log);
-      if (this._isBlock && empowered && typeof value === 'function') {
+      if (typeof value === 'function') {
         value = new Proxy(value, {
           apply(target, thisArg, args) {
             try {
@@ -70,21 +68,13 @@ class ArgumentRecorder {
       }
       return this;
     } finally {
-      if (empowered) {
-        this._recorded = {
-          value,
-          logs: [].concat(this._logs)
-        };
-      }
+      this._recorded = {
+        value,
+        logs: [].concat(this._logs)
+      };
       this._val = value;
       this._logs = [];
     }
-  }
-  eject() {
-    const ret = this._recorded;
-    this._recorded = null;
-    this._val = null;
-    return ret;
   }
 }
 
@@ -118,9 +108,11 @@ class PowerAssert {
     this.receiver = receiver;
     this.assertionMetadata = assertionMetadata;
   }
-  newArgumentRecorder() {
-    return new ArgumentRecorder(this);
+
+  newArgumentRecorder(argumentNumber) {
+    return new ArgumentRecorder(this, argumentNumber);
   }
+
   run(...args) {
     const poweredArgs = Array.from(args);
     const actualArgs = poweredArgs.map((a) => val(a));
@@ -131,22 +123,14 @@ class PowerAssert {
         throw e;
       }
       const dr = new DiagramRenderer(this.assertionMetadata.content);
-      console.log(poweredArgs);
       const recorded = poweredArgs.map((p) => eject(p));
       for(const rec of recorded) {
         for (const log of rec.logs) {
-          console.log(log);
           dr.addLog(log);
         }
       }
-      dr.onEnd();
-
-      console.log('######################### construct diagram');
-
-      const diagram = dr.toString();
-      console.log(diagram);
-
       // rethrow AssertionError with diagram message
+      const diagram = dr.toString();
       e.message = diagram;
       e.generatedMessage = false;
       throw e;

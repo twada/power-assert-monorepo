@@ -150,7 +150,7 @@ function createVisitor (ast, options) {
       if (assertionVisitor) {
         if (assertionVisitor.isNodeToBeSkipped(controller)) {
           skipping = true;
-          console.log(`##### skipping ${this.path().join('/')} #####`);
+          // console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
         }
         const currentKey = getCurrentKey(controller);
@@ -205,7 +205,7 @@ function createVisitor (ast, options) {
               // start capturing
               assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent, blockStack });
               assertionVisitor.enter(controller);
-              console.log(`##### enter assertion ${this.path().join('/')} #####`);
+              // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;
           }
@@ -234,7 +234,7 @@ function createVisitor (ast, options) {
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
           // stop capturing
-          console.log(`##### leave assertion ${this.path().join('/')} #####`);
+          // console.log(`##### leave assertion ${this.path().join('/')} #####`);
           const resultTree = assertionVisitor.leave(controller);
           assertionVisitor = null;
           return resultTree;
@@ -327,6 +327,8 @@ class AssertionVisitor {
     this.transformation = transformation;
     this.decoratorFunctionIdent = decoratorFunctionIdent;
     this.blockStack = blockStack;
+    this.currentModification = null;
+    this.argumentModifications = [];
   }
 
   enter (controller) {
@@ -348,20 +350,19 @@ class AssertionVisitor {
       // tokens with canonical ranges
       tokens: tokens
     };
-    this.poweredAssertIdent = this.decorateAssert(controller);
+    this.poweredAssertIdent = this._decorateAssert(controller);
   }
 
   leave (controller) {
-    const modifiedSome = true;
-    // const modifiedSome = this.argumentModifiedHistory.some((b) => b);
+    const modifiedSome = this.argumentModifications.some((am) => am.isArgumentModified());
     try {
-      return modifiedSome ? this.replaceWithDecoratedAssert(controller) : controller.current();
+      return modifiedSome ? this._replaceWithDecoratedAssert(controller) : controller.current();
     } finally {
-      // this.argumentModifiedHistory = [];
+      this.argumentModifications = [];
     }
   }
 
-  replaceWithDecoratedAssert (controller) {
+  _replaceWithDecoratedAssert (controller) {
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
     const replacedNode = types.callExpression(
@@ -370,7 +371,7 @@ class AssertionVisitor {
     return replacedNode;
   }
 
-  decorateAssert (controller) {
+  _decorateAssert (controller) {
     const currentNode = controller.current();
     const transformation = this.transformation;
     const types = new NodeCreator(currentNode);
@@ -418,7 +419,9 @@ class AssertionVisitor {
   enterArgument (controller) {
     const currentNode = controller.current();
     // going to capture every argument
-    this.currentModification = new ArgumentModification({
+    const argNum = this.argumentModifications.length;
+    const modification = new ArgumentModification({
+      argNum: argNum,
       argNode: currentNode,
       calleeNode: this.calleeNode,
       assertionPath: this.assertionPath,
@@ -427,7 +430,9 @@ class AssertionVisitor {
       poweredAssertIdent: this.poweredAssertIdent,
       blockStack: this.blockStack
     });
-    this.currentModification.enter(controller);
+    modification.enter(controller);
+    this.argumentModifications.push(modification);
+    this.currentModification = modification;
     return undefined;
   }
 
@@ -465,7 +470,8 @@ class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent, blockStack }) {
+  constructor ({ argNum, argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent, blockStack }) {
+    this.argNum = argNum;
     this.argNode = argNode;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
@@ -486,7 +492,9 @@ class ArgumentModification {
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.callExpression(
-      types.memberExpression(this.poweredAssertIdent, types.identifier('newArgumentRecorder')), []
+      types.memberExpression(this.poweredAssertIdent, types.identifier('newArgumentRecorder')), [
+        types.numericLiteral(this.argNum)
+      ]
     );
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
