@@ -4,27 +4,21 @@ const rightToLeft = (a, b) => b.leftIndex - a.leftIndex;
 export class DiagramRenderer {
   constructor (assertionLine) {
     this.assertionLine = assertionLine;
-    this.events = [];
+  }
+  render(logs) {
+    const events = [].concat(logs);
+    events.sort(rightToLeft);
     this.rows = [];
     const initialVertivalBarLength = 1;
     for (let i = 0; i <= initialVertivalBarLength; i += 1) {
       this.addOneMoreRow();
     }
-  }
-  addLog(log) {
-    this.events.push({
-      value: log.value,
-      leftIndex: log.left
-    });
-  }
-  toString() {
-    this.events.sort(rightToLeft);
-    this.constructRows(this.events);
-    this.addOneMoreRow();
+    this.constructRows(events);
     const wrote = ['', this.assertionLine];
     this.rows.forEach((columns) => {
       wrote.push(columns.join(''));
     });
+    wrote.push('');
     return wrote.join('\n');
   }
   newRowFor (assertionLine) {
