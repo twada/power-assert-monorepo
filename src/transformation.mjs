@@ -5,10 +5,19 @@ export class Transformation {
     this.blockStack = blockStack;
   }
 
-  onCurrentBlock (controller, callback) {
+  insertDecl (controller, decl) {
     const currentBlock = findBlockNode(this.blockStack);
     const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
-    this.register(scopeBlockEspath, callback);
+    this.register(scopeBlockEspath, (matchNode) => {
+      let body;
+      if (/Function/.test(matchNode.type)) {
+        const blockStatement = matchNode.body;
+        body = blockStatement.body;
+      } else {
+        body = matchNode.body;
+      }
+      insertAfterUseStrictDirective(decl, body);
+    });
   }
 
   register (espath, callback) {
@@ -72,4 +81,16 @@ const findEspathOfAncestorNode = (targetNode, controller) => {
     child = parent;
   }
   return null;
+};
+
+const insertAfterUseStrictDirective = (decl, body) => {
+  const firstBody = body[0];
+  if (firstBody.type === 'ExpressionStatement') {
+    const expression = firstBody.expression;
+    if (expression.type === 'Literal' && expression.value === 'use strict') {
+      body.splice(1, 0, decl);
+      return;
+    }
+  }
+  body.unshift(decl);
 };

@@ -332,10 +332,6 @@ class AssertionVisitor {
     this.argumentModifications = [];
   }
 
-  assertionCode () {
-    return this._assertionCode;
-  }
-
   enter (controller) {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
@@ -355,9 +351,10 @@ class AssertionVisitor {
       // tokens with canonical ranges
       tokens: tokens
     };
+
     this.poweredAssertIdent = this._decorateAssert(controller);
     const [start, end] = currentNode.range;
-    this._assertionCode = this.wholeCode.slice(start, end);
+    this.assertionCode = this.wholeCode.slice(start, end);
   }
 
   leave (controller) {
@@ -407,17 +404,7 @@ class AssertionVisitor {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-
-    transformation.onCurrentBlock(controller, (matchNode) => {
-      let body;
-      if (/Function/.test(matchNode.type)) {
-        const blockStatement = matchNode.body;
-        body = blockStatement.body;
-      } else {
-        body = matchNode.body;
-      }
-      insertAfterUseStrictDirective(decl, body);
-    });
+    transformation.insertDecl(controller, decl);
     return ident;
   }
 
@@ -501,16 +488,7 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    this.transformation.onCurrentBlock(controller, (matchNode) => {
-      let body;
-      if (/Function/.test(matchNode.type)) {
-        const blockStatement = matchNode.body;
-        body = blockStatement.body;
-      } else {
-        body = matchNode.body;
-      }
-      insertAfterUseStrictDirective(decl, body);
-    });
+    this.transformation.insertDecl(controller, decl);
     this.argumentRecorderIdent = ident;
   }
 
