@@ -9,18 +9,24 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function parseFixture (filepath) {
-  return parse(readFileSync(filepath), { sourceType: 'module', ecmaVersion: '2022' });
+  return parse(readFileSync(filepath), {
+    sourceType: 'module',
+    ecmaVersion: '2022',
+    locations: true,
+    ranges: true,
+    sourceFile: filepath
+ });
 }
 
 describe('espowerAst', () => {
-  it('assert => power-assert', () => {
+  it('instrumentation', () => {
     const fixtureName = 'pw';
     const fixtureFilepath = resolve(__dirname, 'fixtures', fixtureName, 'fixture.mjs');
     const expectedFilepath = resolve(__dirname, 'fixtures', fixtureName, 'expected.mjs');
     const expected = readFileSync(expectedFilepath).toString();
 
     const ast = parseFixture(fixtureFilepath);
-    const modifiedAst = espowerAst(ast);
+    const modifiedAst = espowerAst(ast, {code: readFileSync(fixtureFilepath)});
     const actual = generate(modifiedAst);
 
     console.log(actual);

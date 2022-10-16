@@ -131,8 +131,8 @@ function createVisitor (ast, options) {
   }
 
   const nodeToCapture = new WeakSet();
-  const transformation = new Transformation();
   const blockStack = [];
+  const transformation = new Transformation(blockStack);
   let isPowerAssertImported = false;
   let decoratorFunctionIdent;
 
@@ -203,7 +203,8 @@ function createVisitor (ast, options) {
 
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent, blockStack });
+              const wholeCode = config.code;
+              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent, wholeCode });
               assertionVisitor.enter(controller);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
@@ -323,12 +324,16 @@ const isArrowFunctionWithConciseBody = (node) => {
 };
 
 class AssertionVisitor {
-  constructor ({ transformation, decoratorFunctionIdent, blockStack }) {
+  constructor ({ transformation, decoratorFunctionIdent, wholeCode }) {
     this.transformation = transformation;
     this.decoratorFunctionIdent = decoratorFunctionIdent;
-    this.blockStack = blockStack;
+    this.wholeCode = wholeCode;
     this.currentModification = null;
     this.argumentModifications = [];
+  }
+
+  assertionCode () {
+    return this._assertionCode;
   }
 
   enter (controller) {
@@ -351,6 +356,8 @@ class AssertionVisitor {
       tokens: tokens
     };
     this.poweredAssertIdent = this._decorateAssert(controller);
+    const [start, end] = currentNode.range;
+    this._assertionCode = this.wholeCode.slice(start, end);
   }
 
   leave (controller) {
@@ -401,9 +408,7 @@ class AssertionVisitor {
       types.variableDeclarator(ident, init)
     ]);
 
-    const currentBlock = findBlockNode(this.blockStack);
-    const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
-    transformation.register(scopeBlockEspath, (matchNode) => {
+    transformation.onCurrentBlock(controller, (matchNode) => {
       let body;
       if (/Function/.test(matchNode.type)) {
         const blockStatement = matchNode.body;
@@ -484,9 +489,6 @@ class ArgumentModification {
 
   // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
   enter (controller) {
-    const currentBlock = findBlockNode(this.blockStack);
-    const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
-
     const recorderVariableName = this.transformation.generateUniqueName('arg');
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
@@ -499,7 +501,7 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    this.transformation.register(scopeBlockEspath, (matchNode) => {
+    this.transformation.onCurrentBlock(controller, (matchNode) => {
       let body;
       if (/Function/.test(matchNode.type)) {
         const blockStatement = matchNode.body;
@@ -589,6 +591,7 @@ function defaultOptions () {
 }
 
 export {
+  AssertionVisitor,
   espowerAst,
   defaultOptions
 };
