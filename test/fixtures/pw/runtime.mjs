@@ -122,15 +122,23 @@ class PowerAssert {
       if (!/^AssertionError/.test(e.name)) {
         throw e;
       }
-      const dr = new DiagramRenderer(this.assertionMetadata.content);
       const recorded = poweredArgs.map((p) => eject(p));
+      const logs = [];
       for(const rec of recorded) {
         for (const log of rec.logs) {
-          dr.addLog(log);
+          logs.push({
+            value: log.value,
+            leftIndex: log.left
+          });
         }
       }
+
+      console.log(logs);
+
       // rethrow AssertionError with diagram message
-      const diagram = dr.toString();
+      const assertionLine = this.assertionMetadata.content;
+      const renderer = new DiagramRenderer(assertionLine);
+      const diagram = renderer.render(logs);
       e.message = diagram;
       e.generatedMessage = false;
       throw e;
