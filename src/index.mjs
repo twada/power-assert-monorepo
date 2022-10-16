@@ -439,7 +439,7 @@ class AssertionVisitor {
   }
 
   isCapturingArgument () {
-    return this.currentModification;
+    return !!this.currentModification;
   }
 
   isNodeToBeSkipped (controller) {
