@@ -1,8 +1,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { AssertionVisitor } from '../src/index.mjs';
-import { parse, parseExpressionAt } from 'acorn';
-import { generate } from 'escodegen';
+import { AssertionVisitor } from '../src/assertion-visitor.mjs';
+import { parseExpressionAt } from 'acorn';
 
 describe('AssertionVisitor', () => {
   let assertionVisitor;
@@ -225,5 +224,4 @@ assert.ok(truthy);
       });
     });
   });
-
 });
