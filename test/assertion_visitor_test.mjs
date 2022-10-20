@@ -105,6 +105,9 @@ assert.ok(truthy);
     it('#isLeavingArgument returns true', () => {
       assert.equal(assertionVisitor.isLeavingArgument(controller), true);
     });
+    it('#isModified returns false', () => {
+      assert.equal(assertionVisitor.isModified(), false);
+    });
   });
 
   describe('after #leaveArgument', () => {
@@ -157,6 +160,9 @@ assert.ok(truthy);
     it('#isLeavingArgument returns undefined', () => {
       assert.equal(assertionVisitor.isLeavingArgument(controller), undefined);
     });
+    it('#isModified returns true', () => {
+      assert.equal(assertionVisitor.isModified(), true);
+    });
 
     describe('resultNode of leaveArgument', () => {
       // _arg1._rec(truthy, 'arguments/0', 10)
@@ -181,6 +187,81 @@ assert.ok(truthy);
         assert.equal(args[1].value, 'arguments/0');
         assert.equal(args[2].type, 'Literal');
         assert.equal(args[2].value, 10);
+      });
+    });
+  });
+
+  describe('after #leave', () => {
+    let assertionVisitor;
+    let controller;
+    let resultNode;
+
+    beforeEach(() => {
+      const code = `
+import assert from 'node:assert/strict';
+const truthy = 1;
+assert.ok(truthy);
+`;
+      // const ast = parse(code, options);
+      assertionVisitor = new AssertionVisitor({
+        transformation: fakeTransformation,
+        decoratorFunctionIdent,
+        wholeCode: code
+      });
+
+      // act
+      const callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
+      controller = {
+        path: () => ['body', 2, 'expression'],
+        current: () => callexp
+      };
+      assertionVisitor.enter(controller);
+
+      controller = {
+        path: () => ['body', 2, 'expression', 'arguments', 0],
+        current: () => callexp.arguments[0]
+      };
+      assertionVisitor.enterArgument(controller);
+
+      controller = {
+        // parents: () => [callexp, expstmt, program],
+        parents: () => [callexp],
+        path: () => ['body', 2, 'expression', 'arguments', 0],
+        current: () => callexp.arguments[0]
+      };
+      assertionVisitor.leaveArgument(controller);
+      assert.equal(assertionVisitor.isModified(), true);
+
+      controller = {
+        path: () => ['body', 2, 'expression'],
+        current: () => callexp
+      };
+
+      resultNode = assertionVisitor.leave(controller);
+    });
+
+    it('reset argumentModifications', () => {
+      assert.deepEqual(assertionVisitor.argumentModifications, []);
+    });
+    it('#isModified returns false after #leave', () => {
+      assert.equal(assertionVisitor.isModified(), false);
+    });
+
+    describe('resultNode of leave', () => {
+      it('its type', () => {
+        assert.equal(resultNode.type, 'CallExpression');
+      });
+      it('its callee', () => {
+        const callee = resultNode.callee;
+        assert.equal(callee.type, 'MemberExpression');
+        assert.equal(callee.object.type, 'Identifier');
+        assert.equal(callee.object.name, '_asrt1');
+        assert.equal(callee.property.type, 'Identifier');
+        assert.equal(callee.property.name, 'run');
+      });
+      it('its arguments', () => {
+        const args = resultNode.arguments;
+        assert.equal(args.length, 1);
       });
     });
   });

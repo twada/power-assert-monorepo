@@ -358,12 +358,15 @@ class AssertionVisitor {
   }
 
   leave (controller) {
-    const modifiedSome = this.argumentModifications.some((am) => am.isArgumentModified());
     try {
-      return modifiedSome ? this._replaceWithDecoratedAssert(controller) : controller.current();
+      return this.isModified() ? this._replaceWithDecoratedAssert(controller) : controller.current();
     } finally {
       this.argumentModifications = [];
     }
+  }
+
+  isModified () {
+    return this.argumentModifications.some((am) => am.isArgumentModified());
   }
 
   _replaceWithDecoratedAssert (controller) {
