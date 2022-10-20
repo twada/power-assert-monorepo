@@ -399,7 +399,7 @@ class AssertionVisitor {
       args.push(propsNode);
     }
     const init = types.callExpression(this.decoratorFunctionIdent, args);
-    const varName = transformation.generateUniqueName('asrt');
+    const varName = transformation.generateUniqueName('_asrt');
     const ident = types.identifier(varName);
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
@@ -429,7 +429,7 @@ class AssertionVisitor {
   }
 
   isLeavingArgument (controller) {
-    return this.currentModification.isLeaving(controller);
+    return this.currentModification?.isLeaving(controller);
   }
 
   leaveArgument (controller) {
@@ -476,7 +476,7 @@ class ArgumentModification {
 
   // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
   enter (controller) {
-    const recorderVariableName = this.transformation.generateUniqueName('arg');
+    const recorderVariableName = this.transformation.generateUniqueName('_arg');
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
