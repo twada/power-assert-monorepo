@@ -94,7 +94,7 @@ export class AssertionVisitor {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    transformation.insertDecl(controller, decl);
+    transformation.insertDeclIntoCurrentBlock(controller, decl);
     return ident;
   }
 
@@ -178,7 +178,7 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    this.transformation.insertDecl(controller, decl);
+    this.transformation.insertDeclIntoCurrentBlock(controller, decl);
     this.argumentRecorderIdent = ident;
   }
 

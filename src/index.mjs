@@ -253,53 +253,14 @@ function createVisitor (ast, options) {
 }
 
 function createPowerAssertImports ({ transformation, globalScopeBlock, controller }) {
-  const globalScopeBlockEspath = findEspathOfAncestorNode(globalScopeBlock, controller);
   const types = new NodeCreator(globalScopeBlock);
   const decoratorFunctionIdent = types.identifier('_power_');
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
   ], types.stringLiteral('./runtime.mjs'));
-  transformation.register(globalScopeBlockEspath, (matchNode) => {
-    insertAfterUseStrictDirective(decl, matchNode.body);
-  });
+  transformation.insertDeclIntoTopLevel(controller, decl);
   return decoratorFunctionIdent;
 }
-
-const findEspathOfAncestorNode = (targetNode, controller) => {
-  // iterate child to root
-  let child, parent;
-  const path = controller.path();
-  const parents = controller.parents();
-  const popUntilParent = (key) => {
-    if (parent[key] !== undefined) {
-      return;
-    }
-    popUntilParent(path.pop());
-  };
-  for (let i = parents.length - 1; i >= 0; i--) {
-    parent = parents[i];
-    if (child) {
-      popUntilParent(path.pop());
-    }
-    if (parent === targetNode) {
-      return path.join('/');
-    }
-    child = parent;
-  }
-  return null;
-};
-
-const insertAfterUseStrictDirective = (decl, body) => {
-  const firstBody = body[0];
-  if (firstBody.type === 'ExpressionStatement') {
-    const expression = firstBody.expression;
-    if (expression.type === 'Literal' && expression.value === 'use strict') {
-      body.splice(1, 0, decl);
-      return;
-    }
-  }
-  body.unshift(decl);
-};
 
 function espowerAst (ast, options) {
   return replace(ast, createVisitor(ast, options));

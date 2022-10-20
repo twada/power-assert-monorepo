@@ -5,10 +5,17 @@ export class Transformation {
     this.blockStack = blockStack;
   }
 
-  insertDecl (controller, decl) {
-    const currentBlock = findBlockNode(this.blockStack);
-    const scopeBlockEspath = findEspathOfAncestorNode(currentBlock, controller);
-    this.register(scopeBlockEspath, (matchNode) => {
+  insertDeclIntoCurrentBlock (controller, decl) {
+    this._insertDecl(controller, decl, findBlockNode(this.blockStack));
+  }
+
+  insertDeclIntoTopLevel (controller, decl) {
+    this._insertDecl(controller, decl, this.blockStack[0]);
+  }
+
+  _insertDecl (controller, decl, block) {
+    const scopeBlockEspath = findEspathOfAncestorNode(block, controller);
+    this._register(scopeBlockEspath, (matchNode) => {
       let body;
       if (/Function/.test(matchNode.type)) {
         const blockStatement = matchNode.body;
@@ -20,7 +27,7 @@ export class Transformation {
     });
   }
 
-  register (espath, callback) {
+  _register (espath, callback) {
     if (!this.mutations[espath]) {
       this.mutations[espath] = [];
     }

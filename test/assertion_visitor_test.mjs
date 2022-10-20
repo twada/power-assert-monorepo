@@ -23,7 +23,7 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
 
     const fakeTransformation = {
-      insertDecl: (controller, decl) => {},
+      insertDeclIntoCurrentBlock: (controller, decl) => {},
       generateUniqueName: (str) => `_${str}1`
     };
     const decoratorFunctionIdent = {
