@@ -15,7 +15,7 @@ function parseFixture (filepath) {
     locations: true,
     ranges: true,
     sourceFile: filepath
- });
+  });
 }
 
 describe('espowerAst', () => {
@@ -26,7 +26,7 @@ describe('espowerAst', () => {
     const expected = readFileSync(expectedFilepath).toString();
 
     const ast = parseFixture(fixtureFilepath);
-    const modifiedAst = espowerAst(ast, {code: readFileSync(fixtureFilepath)});
+    const modifiedAst = espowerAst(ast, { code: readFileSync(fixtureFilepath) });
     const actual = generate(modifiedAst);
 
     console.log(actual);

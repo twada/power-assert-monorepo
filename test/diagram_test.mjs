@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { DiagramRenderer } from './fixtures/pw/diagram-renderer.mjs';
 
 describe('DiagramRenderer', () => {
-
   it('BinaryExpression', () => {
     const diagram = new DiagramRenderer('assert.ok(truthy === falsy)');
     const logs = [
@@ -19,5 +18,4 @@ assert.ok(truthy === falsy)
 `;
     assert.equal(diagram.render(logs), expected);
   });
-
 });
