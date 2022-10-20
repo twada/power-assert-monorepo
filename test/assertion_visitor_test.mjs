@@ -14,7 +14,7 @@ describe('AssertionVisitor', () => {
   };
   const fakeTransformation = {
     insertDecl: (controller, decl) => {},
-    generateUniqueName: (str) => `${str}1`
+    generateUniqueName: (str) => `_${str}1`
   };
   const decoratorFunctionIdent = {
     type: 'Identifier',
