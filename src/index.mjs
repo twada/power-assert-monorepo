@@ -124,9 +124,7 @@ function createVisitor (ast, options) {
   const nodeToCapture = new WeakSet();
   const blockStack = [];
   const transformation = new Transformation(blockStack);
-  let isPowerAssertImported = false;
   let decoratorFunctionIdent;
-
   let assertionVisitor;
   let skipping = false;
 
@@ -183,13 +181,10 @@ function createVisitor (ast, options) {
           case 'CallExpression': {
             const callee = currentNode.callee;
             if (isCaptureTargetAssertion(callee)) {
-              // capture parent ExpressionStatement
               nodeToCapture.add(currentNode);
 
-              if (!isPowerAssertImported) {
-                isPowerAssertImported = true;
-                const globalScopeBlock = blockStack[0];
-                decoratorFunctionIdent = createPowerAssertImports({ transformation, globalScopeBlock, controller });
+              if (!decoratorFunctionIdent) {
+                decoratorFunctionIdent = createPowerAssertImports({ transformation, controller });
               }
 
               // entering target assertion
@@ -252,8 +247,8 @@ function createVisitor (ast, options) {
   };
 }
 
-function createPowerAssertImports ({ transformation, globalScopeBlock, controller }) {
-  const types = new NodeCreator(globalScopeBlock);
+function createPowerAssertImports ({ transformation, controller }) {
+  const types = new NodeCreator();
   const decoratorFunctionIdent = types.identifier('_power_');
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
