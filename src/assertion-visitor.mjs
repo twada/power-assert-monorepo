@@ -109,8 +109,7 @@ export class AssertionVisitor {
       assertionPath: this.assertionPath,
       canonicalAssertion: this.canonicalAssertion,
       transformation: this.transformation,
-      poweredAssertIdent: this.poweredAssertIdent,
-      blockStack: this.blockStack
+      poweredAssertIdent: this.poweredAssertIdent
     });
     modification.enter(controller);
     this.argumentModifications.push(modification);
@@ -152,7 +151,7 @@ export class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNum, argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent, blockStack }) {
+  constructor ({ argNum, argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent }) {
     this.argNum = argNum;
     this.argNode = argNode;
     this.calleeNode = calleeNode;
@@ -160,7 +159,6 @@ class ArgumentModification {
     this.canonicalAssertion = canonicalAssertion;
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
-    this.blockStack = blockStack;
     this.argumentModified = false;
   }
 
