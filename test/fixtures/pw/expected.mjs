@@ -1,4 +1,4 @@
-import { _power_ } from './runtime.mjs';
+import { _power_ } from '../../../runtime/runtime.mjs';
 import {
     describe,
     it

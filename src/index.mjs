@@ -183,8 +183,9 @@ function createVisitor (ast, options) {
             if (isCaptureTargetAssertion(callee)) {
               nodeToCapture.add(currentNode);
 
+              const runtime = config.runtime;
               if (!decoratorFunctionIdent) {
-                decoratorFunctionIdent = createPowerAssertImports({ transformation, controller });
+                decoratorFunctionIdent = createPowerAssertImports({ transformation, controller, runtime });
               }
 
               // entering target assertion
@@ -247,12 +248,12 @@ function createVisitor (ast, options) {
   };
 }
 
-function createPowerAssertImports ({ transformation, controller }) {
+function createPowerAssertImports ({ transformation, controller, runtime }) {
   const types = new NodeCreator();
   const decoratorFunctionIdent = types.identifier('_power_');
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
-  ], types.stringLiteral('./runtime.mjs'));
+  ], types.stringLiteral(runtime));
   transformation.insertDeclIntoTopLevel(controller, decl);
   return decoratorFunctionIdent;
 }
@@ -263,6 +264,7 @@ function espowerAst (ast, options) {
 
 function defaultOptions () {
   return {
+    runtime: '@power-assert/runtime',
     modules: [
       'assert',
       'assert/strict',
