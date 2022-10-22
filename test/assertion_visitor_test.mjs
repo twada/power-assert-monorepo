@@ -22,7 +22,7 @@ assert.ok(truthy);
     };
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
 
-    const fakeTransformation = {
+    const stubTransformation = {
       insertDeclIntoCurrentBlock: (controller, decl) => {},
       generateUniqueName: (str) => `_${str}1`
     };
@@ -30,9 +30,8 @@ assert.ok(truthy);
       type: 'Identifier',
       name: '_power_'
     };
-    // const ast = parse(code, options);
     assertionVisitor = new AssertionVisitor({
-      transformation: fakeTransformation,
+      transformation: stubTransformation,
       decoratorFunctionIdent,
       wholeCode: code
     });
