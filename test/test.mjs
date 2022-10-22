@@ -28,7 +28,7 @@ describe('espowerAst', () => {
     const ast = parseFixture(fixtureFilepath);
     const modifiedAst = espowerAst(ast, {
       runtime: '../../../runtime/runtime.mjs',
-      code: readFileSync(fixtureFilepath)
+      code: readFileSync(fixtureFilepath).toString()
     });
     const actual = generate(modifiedAst);
 
