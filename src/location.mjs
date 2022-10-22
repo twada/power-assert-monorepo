@@ -1,4 +1,15 @@
 export function locationOf (currentNode, tokens, offset) {
+  return applyOffset(locOf(currentNode, tokens), offset);
+}
+
+function applyOffset (start, offset) {
+  return {
+    column: start.column - offset.column,
+    line: start.line - offset.line
+  };
+}
+
+export function locOf (currentNode, tokens) {
   switch (currentNode.type) {
     case 'MemberExpression':
       return propertyLocationOf(currentNode, tokens);
@@ -14,20 +25,13 @@ export function locationOf (currentNode, tokens, offset) {
     default:
       break;
   }
-  return applyOffset(currentNode.loc.start, offset);
-}
-
-function applyOffset (start, offset) {
-  return {
-    column: start.column - offset.column,
-    line: start.line - offset.line
-  };
+  return currentNode.loc.start;
 }
 
 function propertyLocationOf (memberExpression, tokens) {
   const prop = memberExpression.property;
   if (!memberExpression.computed) {
-    return prop.range;
+    return prop.loc.start;
   }
   const token = findLeftBracketTokenOf(memberExpression, tokens);
   return token ? token.range : prop.range;
