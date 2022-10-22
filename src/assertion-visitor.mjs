@@ -210,16 +210,14 @@ class ArgumentModification {
     return this._insertRecorderNode(controller, '_rec');
   }
 
-  _targetRange (controller) {
+  _targetLoc (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
     // const { ast, tokens } = this.canonicalAssertion;
     const { tokens } = this.canonicalAssertion;
     const ast = this.callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
-    const rangeOffset = this.callexp.range[0];
-    // const targetRange = locationOf(targetNodeInAst, tokens);
-    const targetRange = locationOf(targetNodeInAst, tokens, rangeOffset);
-    return targetRange;
+    const offset = this.callexp.loc.start;
+    return locationOf(targetNodeInAst, tokens, offset);
   }
 
   _relativeAstPath (controller) {
@@ -230,14 +228,14 @@ class ArgumentModification {
   _insertRecorderNode (controller, methodName) {
     const currentNode = controller.current();
     const relativeAstPath = this._relativeAstPath(controller);
-    const targetRange = this._targetRange(controller);
+    const targetLoc = this._targetLoc(controller);
 
     const types = new NodeCreator(currentNode);
     const args = [
       currentNode,
       types.valueToNode(relativeAstPath.join('/')),
-      types.valueToNode(targetRange[0])
-      // types.valueToNode(targetRange[1])
+      types.valueToNode(targetLoc.column)
+      // types.valueToNode(targetLoc.line)
     ];
 
     const receiver = this.argumentRecorderIdent;

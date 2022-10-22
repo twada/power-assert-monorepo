@@ -20,7 +20,10 @@ function parseFixture (filepath) {
 
 describe('espowerAst', () => {
   it('instrumentation', () => {
-    const fixtureName = 'pw';
+    const fixtureName = 'Identifier';
+    // const fixtureName = 'BinaryExpression';
+    // const fixtureName = 'MemberExpression';
+    // const fixtureName = 'CallExpression';
     const fixtureFilepath = resolve(__dirname, 'fixtures', fixtureName, 'fixture.mjs');
     const expectedFilepath = resolve(__dirname, 'fixtures', fixtureName, 'expected.mjs');
     const expected = readFileSync(expectedFilepath).toString();
