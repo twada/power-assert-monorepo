@@ -23,6 +23,11 @@ export class AssertionVisitor {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
     this.calleeNode = currentNode.callee;
+
+    this.callexp = currentNode;
+    const [start, end] = currentNode.range;
+    this.assertionCode = this.wholeCode.slice(start, end);
+
     const canonicalCode = generateCanonicalCode(currentNode);
     // console.log(`##### ${canonicalCode} #####`);
     const { expression, tokens } = parseCanonicalCode({
@@ -40,8 +45,6 @@ export class AssertionVisitor {
     };
 
     this.poweredAssertIdent = this._decorateAssert(controller);
-    const [start, end] = currentNode.range;
-    this.assertionCode = this.wholeCode.slice(start, end);
   }
 
   leave (controller) {
@@ -83,7 +86,7 @@ export class AssertionVisitor {
     const args = [
       callee,
       receiver,
-      types.valueToNode(this.canonicalAssertion.code)
+      types.valueToNode(this.assertionCode)
     ];
     if (propsNode.properties.length > 0) {
       args.push(propsNode);
@@ -106,6 +109,7 @@ export class AssertionVisitor {
       argNum: argNum,
       argNode: currentNode,
       calleeNode: this.calleeNode,
+      callexp: this.callexp,
       assertionPath: this.assertionPath,
       canonicalAssertion: this.canonicalAssertion,
       transformation: this.transformation,
@@ -151,9 +155,10 @@ export class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNum, argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent }) {
+  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent }) {
     this.argNum = argNum;
     this.argNode = argNode;
+    this.callexp = callexp;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
     this.canonicalAssertion = canonicalAssertion;
@@ -207,9 +212,13 @@ class ArgumentModification {
 
   _targetRange (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
-    const { ast, tokens } = this.canonicalAssertion;
-    const targetNodeInCanonicalAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
-    const targetRange = locationOf(targetNodeInCanonicalAst, tokens);
+    // const { ast, tokens } = this.canonicalAssertion;
+    const { tokens } = this.canonicalAssertion;
+    const ast = this.callexp;
+    const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
+    const rangeOffset = this.callexp.range[0];
+    // const targetRange = locationOf(targetNodeInAst, tokens);
+    const targetRange = locationOf(targetNodeInAst, tokens, rangeOffset);
     return targetRange;
   }
 

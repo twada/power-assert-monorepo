@@ -1,4 +1,4 @@
-export function locationOf (currentNode, tokens) {
+export function locationOf (currentNode, tokens, rangeOffset) {
   switch (currentNode.type) {
     case 'MemberExpression':
       return propertyLocationOf(currentNode, tokens);
@@ -14,7 +14,14 @@ export function locationOf (currentNode, tokens) {
     default:
       break;
   }
-  return currentNode.range;
+  return applyOffset(currentNode.range, rangeOffset);
+}
+
+function applyOffset (range, rangeOffset) {
+  return [
+    range[0] - rangeOffset,
+    range[1] - rangeOffset
+  ];
 }
 
 function propertyLocationOf (memberExpression, tokens) {
