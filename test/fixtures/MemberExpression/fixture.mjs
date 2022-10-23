@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 describe('description', () => {
   it('non-computed', () => {
     const obj = {
-      prop: true
+      prop: false
     };
     assert(obj.prop);
   });
   it('computed', () => {
     const obj = {
-      prop: true
+      prop: false
     };
     const key = 'prop';
     assert(obj[key]);

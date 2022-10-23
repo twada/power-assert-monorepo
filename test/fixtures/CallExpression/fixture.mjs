@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 
 describe('description', () => {
   it('function', () => {
-    const func = () => true;
+    const func = () => false;
     assert(func());
   });
   it('method', () => {
     const obj = {
-      method: () => true
+      method: () => false
     };
     assert(obj.method());
   });
