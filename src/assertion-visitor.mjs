@@ -229,11 +229,11 @@ class ArgumentModification {
   _calculateLoc (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
     // const { ast, tokens } = this.canonicalAssertion;
-    const { tokens, code } = this.canonicalAssertion;
+    const { code } = this.canonicalAssertion;
     const ast = this.callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
     const offset = this.callexp.loc.start;
-    return locationOf(targetNodeInAst, tokens, offset, code);
+    return locationOf(targetNodeInAst, offset, code);
   }
 
   _relativeAstPath (controller) {
