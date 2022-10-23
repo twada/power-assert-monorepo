@@ -147,6 +147,13 @@ function createVisitor (ast, options) {
           // entering argument
           assertionVisitor.enterArgument(controller);
         }
+
+        if (assertionVisitor.isCapturingArgument()) {
+          if (assertionVisitor.toBeCaptured(controller)) {
+            // calculate location then save it
+            assertionVisitor.saveLoc(controller);
+          }
+        }
       } else {
         switch (currentNode.type) {
           case 'ImportDeclaration': {

@@ -152,6 +152,10 @@ export class AssertionVisitor {
   captureNode (controller) {
     return this.currentModification.captureNode(controller);
   }
+
+  saveLoc (controller) {
+    return this.currentModification.saveLoc(controller);
+  }
 }
 
 class ArgumentModification {
@@ -165,6 +169,7 @@ class ArgumentModification {
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
     this.argumentModified = false;
+    this.locations = new Map();
   }
 
   // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
@@ -210,14 +215,25 @@ class ArgumentModification {
     return this._insertRecorderNode(controller, '_rec');
   }
 
+  saveLoc (controller) {
+    const currentNode = controller.current();
+    const targetLoc = this._calculateLoc(controller);
+    this.locations.set(currentNode, targetLoc);
+  }
+
   _targetLoc (controller) {
+    const currentNode = controller.current();
+    return this.locations.get(currentNode);
+  }
+
+  _calculateLoc (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
     // const { ast, tokens } = this.canonicalAssertion;
-    const { tokens } = this.canonicalAssertion;
+    const { tokens, code } = this.canonicalAssertion;
     const ast = this.callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
     const offset = this.callexp.loc.start;
-    return locationOf(targetNodeInAst, tokens, offset);
+    return locationOf(targetNodeInAst, tokens, offset, code);
   }
 
   _relativeAstPath (controller) {
