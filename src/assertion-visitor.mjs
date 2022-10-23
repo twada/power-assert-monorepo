@@ -112,6 +112,7 @@ export class AssertionVisitor {
       callexp: this.callexp,
       assertionPath: this.assertionPath,
       canonicalAssertion: this.canonicalAssertion,
+      assertionCode: this.assertionCode,
       transformation: this.transformation,
       poweredAssertIdent: this.poweredAssertIdent
     });
@@ -159,12 +160,13 @@ export class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent }) {
+  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, canonicalAssertion, transformation, poweredAssertIdent }) {
     this.argNum = argNum;
     this.argNode = argNode;
     this.callexp = callexp;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
+    this.assertionCode =  assertionCode;
     this.canonicalAssertion = canonicalAssertion;
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
@@ -228,8 +230,7 @@ class ArgumentModification {
 
   _calculateLoc (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
-    // const { ast, tokens } = this.canonicalAssertion;
-    const { code } = this.canonicalAssertion;
+    const code = this.assertionCode;
     const ast = this.callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
     const offset = this.callexp.loc.start;
