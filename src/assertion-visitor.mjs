@@ -1,8 +1,6 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
 import { locationOf } from './location.mjs';
-import { generateCanonicalCode } from './generate-canonical-code.mjs';
-import { parseCanonicalCode } from './parse-canonical-code.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 
@@ -27,22 +25,6 @@ export class AssertionVisitor {
     this.callexp = currentNode;
     const [start, end] = currentNode.range;
     this.assertionCode = this.wholeCode.slice(start, end);
-
-    const canonicalCode = generateCanonicalCode(currentNode);
-    // console.log(`##### ${canonicalCode} #####`);
-    const { expression, tokens } = parseCanonicalCode({
-      content: canonicalCode,
-      async: true,
-      generator: false
-    });
-    this.canonicalAssertion = {
-      // canonical code
-      code: canonicalCode,
-      // ast with canonical ranges
-      ast: expression,
-      // tokens with canonical ranges
-      tokens: tokens
-    };
 
     this.poweredAssertIdent = this._decorateAssert(controller);
   }
@@ -111,7 +93,6 @@ export class AssertionVisitor {
       calleeNode: this.calleeNode,
       callexp: this.callexp,
       assertionPath: this.assertionPath,
-      canonicalAssertion: this.canonicalAssertion,
       assertionCode: this.assertionCode,
       transformation: this.transformation,
       poweredAssertIdent: this.poweredAssertIdent
@@ -160,14 +141,13 @@ export class AssertionVisitor {
 }
 
 class ArgumentModification {
-  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, canonicalAssertion, transformation, poweredAssertIdent }) {
+  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }) {
     this.argNum = argNum;
     this.argNode = argNode;
     this.callexp = callexp;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
-    this.assertionCode =  assertionCode;
-    this.canonicalAssertion = canonicalAssertion;
+    this.assertionCode = assertionCode;
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
     this.argumentModified = false;
