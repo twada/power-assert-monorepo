@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { AssertionVisitor } from '../src/assertion-visitor.mjs';
+import { AssertionVisitor } from '../src/transpiler/assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
 
 describe('AssertionVisitor', () => {
