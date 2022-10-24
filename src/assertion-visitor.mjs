@@ -16,14 +16,14 @@ export class AssertionVisitor {
     this.argumentModifications = [];
   }
 
-  enter (controller, code) {
+  enter (controller, wholeCode) {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
     this.callexp = currentNode;
     this.calleeNode = currentNode.callee;
 
     const [start, end] = currentNode.range;
-    this.assertionCode = code.slice(start, end);
+    this.assertionCode = wholeCode.slice(start, end);
 
     this.poweredAssertIdent = this._decorateAssert(controller);
   }
