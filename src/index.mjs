@@ -197,9 +197,8 @@ function createVisitor (ast, options) {
 
               // entering target assertion
               // start capturing
-              const wholeCode = config.code;
-              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent, wholeCode });
-              assertionVisitor.enter(controller);
+              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent });
+              assertionVisitor.enter(controller, config.code);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;

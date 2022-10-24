@@ -9,22 +9,21 @@ function isMemberExpression (node) {
 }
 
 export class AssertionVisitor {
-  constructor ({ transformation, decoratorFunctionIdent, wholeCode }) {
+  constructor ({ transformation, decoratorFunctionIdent }) {
     this.transformation = transformation;
     this.decoratorFunctionIdent = decoratorFunctionIdent;
-    this.wholeCode = wholeCode;
     this.currentModification = null;
     this.argumentModifications = [];
   }
 
-  enter (controller) {
+  enter (controller, code) {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
+    this.callexp = currentNode;
     this.calleeNode = currentNode.callee;
 
-    this.callexp = currentNode;
     const [start, end] = currentNode.range;
-    this.assertionCode = this.wholeCode.slice(start, end);
+    this.assertionCode = code.slice(start, end);
 
     this.poweredAssertIdent = this._decorateAssert(controller);
   }
