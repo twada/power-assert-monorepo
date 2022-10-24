@@ -19,23 +19,30 @@ function parseFixture (filepath) {
 }
 
 describe('espowerAst', () => {
-  it('instrumentation', () => {
-    const fixtureName = 'pw';
-    const fixtureFilepath = resolve(__dirname, 'fixtures', fixtureName, 'fixture.mjs');
-    const expectedFilepath = resolve(__dirname, 'fixtures', fixtureName, 'expected.mjs');
-    const expected = readFileSync(expectedFilepath).toString();
+  const fixtures = [
+    'Identifier',
+    'BinaryExpression',
+    'MemberExpression',
+    'CallExpression'
+  ];
+  for (const fixtureName of fixtures) {
+    it(fixtureName, () => {
+      const fixtureFilepath = resolve(__dirname, 'fixtures', fixtureName, 'fixture.mjs');
+      const expectedFilepath = resolve(__dirname, 'fixtures', fixtureName, 'expected.mjs');
+      const expected = readFileSync(expectedFilepath).toString();
 
-    const ast = parseFixture(fixtureFilepath);
-    const modifiedAst = espowerAst(ast, {
-      runtime: '../../../runtime/runtime.mjs',
-      code: readFileSync(fixtureFilepath).toString()
+      const ast = parseFixture(fixtureFilepath);
+      const modifiedAst = espowerAst(ast, {
+        runtime: '../../../runtime/runtime.mjs',
+        code: readFileSync(fixtureFilepath).toString()
+      });
+      const actual = generate(modifiedAst);
+
+      console.log(actual);
+
+      assert.equal(actual + '\n', expected);
+      // console.log(expected);
+      // assert(false);
     });
-    const actual = generate(modifiedAst);
-
-    console.log(actual);
-
-    assert.equal(actual + '\n', expected);
-    // console.log(expected);
-    // assert(false);
-  });
+  }
 });

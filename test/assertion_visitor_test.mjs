@@ -6,13 +6,13 @@ import { parseExpressionAt } from 'acorn';
 describe('AssertionVisitor', () => {
   let assertionVisitor;
   let callexp;
-
-  beforeEach(() => {
-    const code = `
+  const code = `
 import assert from 'node:assert/strict';
 const truthy = 1;
 assert.ok(truthy);
 `;
+
+  beforeEach(() => {
     const options = {
       sourceType: 'module',
       ecmaVersion: '2022',
@@ -32,8 +32,7 @@ assert.ok(truthy);
     };
     assertionVisitor = new AssertionVisitor({
       transformation: stubTransformation,
-      decoratorFunctionIdent,
-      wholeCode: code
+      decoratorFunctionIdent
     });
   });
 
@@ -50,7 +49,7 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression'],
         current: () => callexp
       };
-      assertionVisitor.enter(controller);
+      assertionVisitor.enter(controller, code);
     });
 
     it('assertionCode is generated', () => {
@@ -77,7 +76,7 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression'],
         current: () => callexp
       };
-      assertionVisitor.enter(controller);
+      assertionVisitor.enter(controller, code);
 
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
@@ -109,13 +108,19 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression'],
         current: () => callexp
       };
-      assertionVisitor.enter(controller);
+      assertionVisitor.enter(controller, code);
 
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       };
       assertionVisitor.enterArgument(controller);
+
+      controller = {
+        path: () => ['body', 2, 'expression', 'arguments', 0],
+        current: () => callexp.arguments[0]
+      };
+      assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
         // parents: () => [callexp, expstmt, program],
@@ -175,13 +180,19 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression'],
         current: () => callexp
       };
-      assertionVisitor.enter(controller);
+      assertionVisitor.enter(controller, code);
 
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       };
       assertionVisitor.enterArgument(controller);
+
+      controller = {
+        path: () => ['body', 2, 'expression', 'arguments', 0],
+        current: () => callexp.arguments[0]
+      };
+      assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
         // parents: () => [callexp, expstmt, program],

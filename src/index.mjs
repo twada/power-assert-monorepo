@@ -147,6 +147,13 @@ function createVisitor (ast, options) {
           // entering argument
           assertionVisitor.enterArgument(controller);
         }
+
+        if (assertionVisitor.isCapturingArgument()) {
+          if (assertionVisitor.isNodeToBeCaptured(controller)) {
+            // calculate location then save it
+            assertionVisitor.enterNodeToBeCaptured(controller);
+          }
+        }
       } else {
         switch (currentNode.type) {
           case 'ImportDeclaration': {
@@ -190,9 +197,8 @@ function createVisitor (ast, options) {
 
               // entering target assertion
               // start capturing
-              const wholeCode = config.code;
-              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent, wholeCode });
-              assertionVisitor.enter(controller);
+              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent });
+              assertionVisitor.enter(controller, config.code);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;
@@ -233,10 +239,10 @@ function createVisitor (ast, options) {
         if (assertionVisitor.isLeavingArgument(controller)) {
           // capturing whole argument on leaving argument
           return assertionVisitor.leaveArgument(controller);
-        } else if (assertionVisitor.toBeCaptured(controller)) {
+        } else if (assertionVisitor.isNodeToBeCaptured(controller)) {
           // capturing intermediate Node
           // console.log(`##### capture value ${this.path().join('/')} #####`);
-          return assertionVisitor.captureNode(controller);
+          return assertionVisitor.leaveNodeToBeCaptured(controller);
         }
         return undefined;
       } finally {

@@ -1,70 +1,61 @@
-export function locationOf (currentNode, tokens) {
+export function locationOf (currentNode, offset, code) {
+  return applyOffset(locOf(currentNode, offset, code), offset);
+}
+
+function applyOffset (start, offset) {
+  return {
+    column: start.column - offset.column,
+    line: start.line - offset.line
+  };
+}
+
+export function locOf (currentNode, offset, code) {
   switch (currentNode.type) {
     case 'MemberExpression':
-      return propertyLocationOf(currentNode, tokens);
+      return propertyLocationOf(currentNode, offset, code);
     case 'CallExpression':
       if (currentNode.callee.type === 'MemberExpression') {
-        return propertyLocationOf(currentNode.callee, tokens);
+        return propertyLocationOf(currentNode.callee, offset, code);
       }
       break;
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
-      return infixOperatorLocationOf(currentNode, tokens);
+      return infixOperatorLocationOf(currentNode, offset, code);
     default:
       break;
   }
-  return currentNode.range;
+  return currentNode.loc.start;
 }
 
-function propertyLocationOf (memberExpression, tokens) {
-  const prop = memberExpression.property;
+function propertyLocationOf (memberExpression, offset, code) {
+  const baseLoc = memberExpression.property.loc.start;
   if (!memberExpression.computed) {
-    return prop.range;
+    return baseLoc;
   }
-  const token = findLeftBracketTokenOf(memberExpression, tokens);
-  return token ? token.range : prop.range;
+  const start = baseLoc.column - offset.column - 1;
+  const found = code.indexOf('[', start);
+  if (found !== -1) {
+    return {
+      column: found + offset.column,
+      line: baseLoc.line
+    };
+  } else {
+    return baseLoc;
+  }
 }
 
 // calculate location of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
-function infixOperatorLocationOf (expression, tokens) {
-  const token = findOperatorTokenOf(expression, tokens);
-  return token ? token.range : expression.left.range;
-}
-
-function findLeftBracketTokenOf (expression, tokens) {
-  const fromColumn = expression.property.range[0];
-  return searchToken(tokens, (token, index) => {
-    if (token.range[0] === fromColumn) {
-      const prevToken = tokens[index - 1];
-      // if (prevToken.type === 'Punctuator' && prevToken.value === '[') {  // esprima
-      if (prevToken.type.label === '[') { // acorn
-        return prevToken;
-      }
-    }
-    return undefined;
-  });
-}
-
-function findOperatorTokenOf (expression, tokens) {
-  const fromColumn = expression.left.range[1];
-  const toColumn = expression.right.range[0];
-  return searchToken(tokens, (token, index) => {
-    if (fromColumn < token.range[0] &&
-            token.range[1] < toColumn &&
-            token.value === expression.operator) {
-      return token;
-    }
-    return undefined;
-  });
-}
-
-function searchToken (tokens, searcher) {
-  for (let i = 0; i < tokens.length; i += 1) {
-    const found = searcher(tokens[i], i);
-    if (found) {
-      return found;
-    }
+function infixOperatorLocationOf (expression, offset, code) {
+  const baseLoc = expression.left.loc.start;
+  const start = baseLoc.column - offset.column - 1;
+  const found = code.indexOf(expression.operator, start);
+  if (found !== -1) {
+    return {
+      column: found + offset.column,
+      line: baseLoc.line
+    };
+  } else {
+    return baseLoc;
   }
-  return undefined;
 }

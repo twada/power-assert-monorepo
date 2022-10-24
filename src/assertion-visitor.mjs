@@ -1,8 +1,6 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
 import { locationOf } from './location.mjs';
-import { generateCanonicalCode } from './generate-canonical-code.mjs';
-import { parseCanonicalCode } from './parse-canonical-code.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 
@@ -11,37 +9,23 @@ function isMemberExpression (node) {
 }
 
 export class AssertionVisitor {
-  constructor ({ transformation, decoratorFunctionIdent, wholeCode }) {
+  constructor ({ transformation, decoratorFunctionIdent }) {
     this.transformation = transformation;
     this.decoratorFunctionIdent = decoratorFunctionIdent;
-    this.wholeCode = wholeCode;
     this.currentModification = null;
     this.argumentModifications = [];
   }
 
-  enter (controller) {
+  enter (controller, wholeCode) {
     this.assertionPath = [].concat(controller.path());
     const currentNode = controller.current();
+    this.callexp = currentNode;
     this.calleeNode = currentNode.callee;
-    const canonicalCode = generateCanonicalCode(currentNode);
-    // console.log(`##### ${canonicalCode} #####`);
-    const { expression, tokens } = parseCanonicalCode({
-      content: canonicalCode,
-      async: true,
-      generator: false
-    });
-    this.canonicalAssertion = {
-      // canonical code
-      code: canonicalCode,
-      // ast with canonical ranges
-      ast: expression,
-      // tokens with canonical ranges
-      tokens: tokens
-    };
+
+    const [start, end] = currentNode.range;
+    this.assertionCode = wholeCode.slice(start, end);
 
     this.poweredAssertIdent = this._decorateAssert(controller);
-    const [start, end] = currentNode.range;
-    this.assertionCode = this.wholeCode.slice(start, end);
   }
 
   leave (controller) {
@@ -83,7 +67,7 @@ export class AssertionVisitor {
     const args = [
       callee,
       receiver,
-      types.valueToNode(this.canonicalAssertion.code)
+      types.valueToNode(this.assertionCode)
     ];
     if (propsNode.properties.length > 0) {
       args.push(propsNode);
@@ -106,8 +90,9 @@ export class AssertionVisitor {
       argNum: argNum,
       argNode: currentNode,
       calleeNode: this.calleeNode,
+      callexp: this.callexp,
       assertionPath: this.assertionPath,
-      canonicalAssertion: this.canonicalAssertion,
+      assertionCode: this.assertionCode,
       transformation: this.transformation,
       poweredAssertIdent: this.poweredAssertIdent
     });
@@ -141,25 +126,31 @@ export class AssertionVisitor {
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  toBeCaptured (controller) {
+  isNodeToBeCaptured (controller) {
     return toBeCaptured(controller);
   }
 
-  captureNode (controller) {
+  leaveNodeToBeCaptured (controller) {
     return this.currentModification.captureNode(controller);
+  }
+
+  enterNodeToBeCaptured (controller) {
+    return this.currentModification.saveLoc(controller);
   }
 }
 
 class ArgumentModification {
-  constructor ({ argNum, argNode, calleeNode, assertionPath, canonicalAssertion, transformation, poweredAssertIdent }) {
+  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }) {
     this.argNum = argNum;
     this.argNode = argNode;
+    this.callexp = callexp;
     this.calleeNode = calleeNode;
     this.assertionPath = assertionPath;
-    this.canonicalAssertion = canonicalAssertion;
+    this.assertionCode = assertionCode;
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
     this.argumentModified = false;
+    this.locations = new Map();
   }
 
   // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
@@ -205,12 +196,24 @@ class ArgumentModification {
     return this._insertRecorderNode(controller, '_rec');
   }
 
-  _targetRange (controller) {
+  saveLoc (controller) {
+    const currentNode = controller.current();
+    const targetLoc = this._calculateLoc(controller);
+    this.locations.set(currentNode, targetLoc);
+  }
+
+  _targetLoc (controller) {
+    const currentNode = controller.current();
+    return this.locations.get(currentNode);
+  }
+
+  _calculateLoc (controller) {
     const relativeAstPath = this._relativeAstPath(controller);
-    const { ast, tokens } = this.canonicalAssertion;
-    const targetNodeInCanonicalAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
-    const targetRange = locationOf(targetNodeInCanonicalAst, tokens);
-    return targetRange;
+    const code = this.assertionCode;
+    const ast = this.callexp;
+    const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
+    const offset = this.callexp.loc.start;
+    return locationOf(targetNodeInAst, offset, code);
   }
 
   _relativeAstPath (controller) {
@@ -221,14 +224,14 @@ class ArgumentModification {
   _insertRecorderNode (controller, methodName) {
     const currentNode = controller.current();
     const relativeAstPath = this._relativeAstPath(controller);
-    const targetRange = this._targetRange(controller);
+    const targetLoc = this._targetLoc(controller);
 
     const types = new NodeCreator(currentNode);
     const args = [
       currentNode,
       types.valueToNode(relativeAstPath.join('/')),
-      types.valueToNode(targetRange[0])
-      // types.valueToNode(targetRange[1])
+      types.valueToNode(targetLoc.column)
+      // types.valueToNode(targetLoc.line)
     ];
 
     const receiver = this.argumentRecorderIdent;
