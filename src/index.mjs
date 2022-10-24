@@ -149,9 +149,9 @@ function createVisitor (ast, options) {
         }
 
         if (assertionVisitor.isCapturingArgument()) {
-          if (assertionVisitor.toBeCaptured(controller)) {
+          if (assertionVisitor.isNodeToBeCaptured(controller)) {
             // calculate location then save it
-            assertionVisitor.saveLoc(controller);
+            assertionVisitor.enterNodeToBeCaptured(controller);
           }
         }
       } else {
@@ -239,10 +239,10 @@ function createVisitor (ast, options) {
         if (assertionVisitor.isLeavingArgument(controller)) {
           // capturing whole argument on leaving argument
           return assertionVisitor.leaveArgument(controller);
-        } else if (assertionVisitor.toBeCaptured(controller)) {
+        } else if (assertionVisitor.isNodeToBeCaptured(controller)) {
           // capturing intermediate Node
           // console.log(`##### capture value ${this.path().join('/')} #####`);
-          return assertionVisitor.captureNode(controller);
+          return assertionVisitor.leaveNodeToBeCaptured(controller);
         }
         return undefined;
       } finally {

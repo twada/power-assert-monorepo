@@ -120,7 +120,7 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       };
-      assertionVisitor.saveLoc(controller);
+      assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
         // parents: () => [callexp, expstmt, program],
@@ -192,7 +192,7 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       };
-      assertionVisitor.saveLoc(controller);
+      assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
         // parents: () => [callexp, expstmt, program],

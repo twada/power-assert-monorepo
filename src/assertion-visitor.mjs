@@ -126,15 +126,15 @@ export class AssertionVisitor {
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  toBeCaptured (controller) {
+  isNodeToBeCaptured (controller) {
     return toBeCaptured(controller);
   }
 
-  captureNode (controller) {
+  leaveNodeToBeCaptured (controller) {
     return this.currentModification.captureNode(controller);
   }
 
-  saveLoc (controller) {
+  enterNodeToBeCaptured (controller) {
     return this.currentModification.saveLoc(controller);
   }
 }
