@@ -1,3 +1,5 @@
+import { stringifier } from './stringifier/index.mjs';
+const stringify = stringifier();
 const createRow = (numCols, initial) => new Array(numCols).fill(initial);
 const rightToLeft = (a, b) => b.leftIndex - a.leftIndex;
 
@@ -64,8 +66,7 @@ export class DiagramRenderer {
     // TODO AmbiguousEastAsianCharWidth
     return str.length;
   }
-  stringify(obj) {
-    // TODO stringify
-    return String(obj);
+  stringify(input) {
+    return stringify(input);
   }
 }
