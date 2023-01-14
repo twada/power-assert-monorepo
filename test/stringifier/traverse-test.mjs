@@ -24,7 +24,7 @@ test('traverse Map', () => {
 test('state.bailOut', () => {
   const acc = [];
   traverseAny(['a', 'b', 'c'], (item, state) => {
-    console.log(item);
+    // console.log(item);
     if (2 === acc.length) {
       state.bailOut();
     }

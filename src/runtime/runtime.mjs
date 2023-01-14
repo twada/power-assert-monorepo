@@ -137,7 +137,7 @@ class PowerAssert {
         }
       }
 
-      console.log(logs);
+      // console.log(logs);
 
       // rethrow AssertionError with diagram message
       const assertionLine = this.assertionMetadata.content;
