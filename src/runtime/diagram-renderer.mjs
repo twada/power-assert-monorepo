@@ -7,7 +7,8 @@ export class DiagramRenderer {
   constructor (assertionLine) {
     this.assertionLine = assertionLine;
   }
-  render(logs) {
+
+  render (logs) {
     const events = [].concat(logs);
     events.sort(rightToLeft);
     this.rows = [];
@@ -23,30 +24,37 @@ export class DiagramRenderer {
     wrote.push('');
     return wrote.join('\n');
   }
+
   newRowFor (assertionLine) {
     return createRow(this.widthOf(assertionLine), ' ');
   }
+
   addOneMoreRow () {
     this.rows.push(this.newRowFor(this.assertionLine));
   }
+
   lastRow () {
     return this.rows[this.rows.length - 1];
   }
+
   renderVerticalBarAt (columnIndex) {
     const lastRowIndex = this.rows.length - 1;
     for (let i = 0; i < lastRowIndex; i += 1) {
       this.rows[i].splice(columnIndex, 1, '|');
     }
   }
+
   renderValueAt (columnIndex, dumpedValue) {
     const width = this.widthOf(dumpedValue);
     for (let i = 0; i < width; i += 1) {
       this.lastRow().splice(columnIndex + i, 1, dumpedValue.charAt(i));
     }
   }
+
   isOverlapped (prevCapturing, nextCaputuring, dumpedValue) {
     return (typeof prevCapturing !== 'undefined') && this.startColumnFor(prevCapturing) <= (this.startColumnFor(nextCaputuring) + this.widthOf(dumpedValue));
   }
+
   constructRows (capturedEvents) {
     let prevCaptured;
     capturedEvents.forEach((captured) => {
@@ -59,14 +67,17 @@ export class DiagramRenderer {
       prevCaptured = captured;
     });
   }
+
   startColumnFor (captured) {
     return this.widthOf(this.assertionLine.slice(0, captured.leftIndex));
   }
-  widthOf(str) {
+
+  widthOf (str) {
     // TODO AmbiguousEastAsianCharWidth
     return str.length;
   }
-  stringify(input) {
+
+  stringify (input) {
     return stringify(input);
   }
 }

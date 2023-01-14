@@ -11,7 +11,7 @@ const mark = (_this, s) => {
 };
 
 class $Promise$ {
-  constructor(prms) {
+  constructor (prms) {
     this.status = 'pending';
     prms.then(mark(this, 'resolved'), mark(this, 'rejected'));
   }
@@ -20,23 +20,26 @@ class $Promise$ {
 const wrap = v => isPromiseLike(v) ? new $Promise$(v) : v;
 
 class ArgumentRecorder {
-  constructor(powerAssert, argumentNumber) {
+  constructor (powerAssert, argumentNumber) {
     this._powerAssert = powerAssert;
     this._argumentNumber = argumentNumber;
     this._logs = [];
     this._recorded = null;
     this._val = null;
   }
-  val() {
+
+  val () {
     return this._val;
   }
-  eject() {
+
+  eject () {
     const ret = this._recorded;
     this._recorded = null;
     this._val = null;
     return ret;
   }
-  _tap(value, espath, left) {
+
+  _tap (value, espath, left) {
     this._logs.push({
       value: wrap(value),
       espath,
@@ -44,7 +47,8 @@ class ArgumentRecorder {
     });
     return value;
   }
-  _rec(value, espath, left) {
+
+  _rec (value, espath, left) {
     try {
       const log = {
         value: wrap(value),
@@ -54,7 +58,7 @@ class ArgumentRecorder {
       this._logs.push(log);
       if (typeof value === 'function') {
         value = new Proxy(value, {
-          apply(target, thisArg, args) {
+          apply (target, thisArg, args) {
             try {
               const ret = target.apply(thisArg, args);
               log.value = wrap(ret);
@@ -79,11 +83,11 @@ class ArgumentRecorder {
 }
 
 const _pwmeta = (content, extra) => {
-    return Object.assign({
-        transpiler: 'espower3',
-        version: '0.0.0',
-        content
-    }, extra);
+  return Object.assign({
+    transpiler: 'espower3',
+    version: '0.0.0',
+    content
+  }, extra);
 };
 
 const val = (v) => {
@@ -103,17 +107,17 @@ const eject = (v) => {
 };
 
 class PowerAssert {
-  constructor(callee, receiver, assertionMetadata) {
+  constructor (callee, receiver, assertionMetadata) {
     this.callee = callee;
     this.receiver = receiver;
     this.assertionMetadata = assertionMetadata;
   }
 
-  newArgumentRecorder(argumentNumber) {
+  newArgumentRecorder (argumentNumber) {
     return new ArgumentRecorder(this, argumentNumber);
   }
 
-  run(...args) {
+  run (...args) {
     const poweredArgs = Array.from(args);
     const actualArgs = poweredArgs.map((a) => val(a));
     try {
@@ -124,7 +128,7 @@ class PowerAssert {
       }
       const recorded = poweredArgs.map((p) => eject(p));
       const logs = [];
-      for(const rec of recorded) {
+      for (const rec of recorded) {
         for (const log of rec.logs) {
           logs.push({
             value: log.value,
@@ -152,4 +156,4 @@ const _power_ = (callee, receiver, content, extra) => {
 
 export {
   _power_
-}
+};
