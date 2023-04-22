@@ -26,7 +26,9 @@
   },
   "scripts": {
     "preversion": "npm run build && npm test",
-    "build": "rimraf dist && rollup -c",
+    "build": "npm run build:clean && npm run build:mjs",
+    "build:clean": "rimraf dist",
+    "build:mjs": "tsc",
     "lint": "semistandard --verbose src/**/*.mjs test/*.mjs | snazzy",
     "fmt": "semistandard --fix src/**/*.mjs test/*.mjs",
     "test:unit": "node --no-warnings --test --test-reporter=dot test/*test.mjs test/**/*test.mjs",

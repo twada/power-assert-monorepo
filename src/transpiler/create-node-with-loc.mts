@@ -19,84 +19,144 @@
  */
 
 import { keyword } from 'esutils';
+import type {
+  Node,
+  Literal,
+  SimpleLiteral,
+  Identifier,
+  Expression,
+  CallExpression,
+  MemberExpression,
+  UnaryExpression,
+  NewExpression,
+  ObjectExpression,
+  ArrowFunctionExpression,
+  FunctionExpression,
+  FunctionDeclaration,
+  ImportDeclaration,
+  ImportSpecifier,
+  ImportDefaultSpecifier,
+  ImportNamespaceSpecifier,
+  SpreadElement,
+  Pattern,
+  Property,
+  Statement,
+  BlockStatement,
+  ReturnStatement,
+  UnaryOperator,
+  StaticBlock,
+  VariableDeclaration,
+  VariableDeclarator,
+  Program,
+} from 'estree';
 
-const pToString = (obj) => Object.prototype.toString.call(obj);
-const isObject = (arg) => typeof arg === 'object' && arg !== null;
+export interface ArrowFunctionExpressionWithBlock extends ArrowFunctionExpression {
+  type: 'ArrowFunctionExpression';
+  body: BlockStatement;
+}
+export interface ArrowFunctionExpressionWithConciseBody extends ArrowFunctionExpression {
+  type: 'ArrowFunctionExpression';
+  body: Expression;
+}
+export type Scoped = Program | ScopedFunction | ScopedBlock;
+export type ScopedFunction = ArrowFunctionExpressionWithBlock | FunctionDeclaration | FunctionExpression
+export type ScopedBlock = BlockStatement | StaticBlock
+
+export function isScopedFunction (node: Node): node is ScopedFunction {
+  return /Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
+}
+export function isBlockStatement (node: Node): node is BlockStatement {
+  return node.type === 'BlockStatement';
+}
+export function isArrowFunctionExpressionWithConciseBody(node: Node): node is ArrowFunctionExpressionWithConciseBody {
+  return node.type === 'ArrowFunctionExpression' && node.expression === true;
+}
+export function isArrowFunctionExpressionWithBlock(node: Node): node is ArrowFunctionExpressionWithBlock {
+  return node.type === 'ArrowFunctionExpression' && node.expression === false;
+}
+export function isScoped(node: Node): node is Scoped {
+  return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
+}
 
 class NodeCreator {
-  constructor (baseNode) {
+  readonly baseNode: Node | undefined;
+
+  constructor (baseNode?: Node) {
     // base node of node location
     this.baseNode = baseNode;
   }
 
-  createNode (node) {
-    return node;
-  }
-
-  identifier (name) {
-    return this.createNode({
+  identifier (name: string): Identifier {
+    return {
       type: 'Identifier',
       name
-    });
+    };
   }
 
-  literal (value) {
-    return this.createNode({
+  stringLiteral (value: string): SimpleLiteral {
+    return {
       type: 'Literal',
       value
-    });
+    };
   }
 
-  stringLiteral (value) {
-    return this.literal(value);
+  numericLiteral (value: number): SimpleLiteral {
+    return {
+      type: 'Literal',
+      value
+    };
   }
 
-  numericLiteral (value) {
-    return this.literal(value);
+  booleanLiteral (value: boolean): SimpleLiteral {
+    return {
+      type: 'Literal',
+      value
+    };
   }
 
-  booleanLiteral (value) {
-    return this.literal(value);
+  nullLiteral (): SimpleLiteral {
+    return {
+      type: 'Literal',
+      value: null
+    };
   }
 
-  nullLiteral () {
-    return this.literal(null);
-  }
-
-  callExpression (callee, args) {
-    return this.createNode({
+  callExpression (callee: Expression, args: Array<Expression | SpreadElement>): CallExpression {
+    return {
       type: 'CallExpression',
       callee,
-      arguments: args
-    });
+      arguments: args,
+      optional: false
+    };
   }
 
-  newExpression (callee, args) {
-    return this.createNode({
+  newExpression (callee: Expression, args: Array<Expression | SpreadElement>): NewExpression {
+    return {
       type: 'NewExpression',
       callee,
       arguments: args
-    });
+    };
   }
 
-  memberExpression (object, property, computed = false) {
-    return this.createNode({
+  memberExpression (object: Expression, property: Expression, computed = false, optional = false): MemberExpression {
+    return {
       type: 'MemberExpression',
       object,
       property,
-      computed
-    });
+      computed,
+      optional
+    };
   }
 
-  objectExpression (properties) {
-    return this.createNode({
+  objectExpression (properties: Array<Property | SpreadElement>): ObjectExpression {
+    return {
       type: 'ObjectExpression',
       properties
-    });
+    };
   }
 
-  property (key, value, computed = false, shorthand = false) {
-    return this.createNode({
+  objectProperty (key: Expression, value: Expression | Pattern, computed = false, shorthand = false): Property {
+    return {
       type: 'Property',
       key,
       value,
@@ -104,78 +164,74 @@ class NodeCreator {
       shorthand,
       computed,
       kind: 'init'
-    });
+    };
   }
 
-  objectProperty (key, value, computed = false, shorthand = false) {
-    return this.property(key, value, computed, shorthand);
-  }
-
-  arrowFunctionExpression (params, body, expression = false) {
-    return this.createNode({
+  arrowFunctionExpression (params: Pattern[], body: BlockStatement | Expression, expression = false): ArrowFunctionExpression {
+    return {
       type: 'ArrowFunctionExpression',
       params,
       body,
       expression
-    });
+    };
   }
 
-  unaryExpression (operator, argument, prefix = true) {
-    return this.createNode({
+  unaryExpression (operator: UnaryOperator, argument: Expression): UnaryExpression {
+    return {
       type: 'UnaryExpression',
       operator,
       argument,
-      prefix
-    });
+      prefix: true
+    };
   }
 
-  blockStatement (body) {
-    return this.createNode({
+  blockStatement (body: Statement[]): BlockStatement {
+    return {
       type: 'BlockStatement',
       body
-    });
+    };
   }
 
-  returnStatement (argument) {
-    return this.createNode({
+  returnStatement (argument: Expression | null | undefined): ReturnStatement {
+    return {
       type: 'ReturnStatement',
       argument
-    });
+    };
   }
 
-  importDeclaration (specifiers, source) {
-    return this.createNode({
+  importDeclaration (specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal): ImportDeclaration {
+    return {
       type: 'ImportDeclaration',
       specifiers,
       source
-    });
+    };
   }
 
-  importSpecifier (imported, local = null) {
-    return this.createNode({
+  importSpecifier (imported: Identifier, local = null): ImportSpecifier {
+    return {
       type: 'ImportSpecifier',
       imported,
       local: local || imported
-    });
+    };
   }
 
-  variableDeclaration (kind, declarations) {
-    return this.createNode({
+  variableDeclaration (kind: 'var' | 'let' | 'const', declarations: VariableDeclarator[]): VariableDeclaration {
+    return {
       type: 'VariableDeclaration',
       declarations,
       kind
-    });
+    };
   }
 
-  variableDeclarator (id, init) {
-    return this.createNode({
+  variableDeclarator (id: Pattern, init?: Expression | null): VariableDeclarator {
+    return {
       type: 'VariableDeclarator',
       id,
       init
-    });
+    };
   }
 
-  valueToNode (value) {
+  valueToNode (value: any): Expression | Pattern {
     // undefined
     if (value === undefined) {
       return this.identifier('undefined');
@@ -196,7 +252,7 @@ class NodeCreator {
     if (typeof value === 'number') {
       let result = this.numericLiteral(Math.abs(value));
       if (value < 0 || Object.is(value, -0)) {
-        result = this.unaryExpression('-', result);
+        return this.unaryExpression('-', result);
       }
       return result;
     }
@@ -218,7 +274,7 @@ class NodeCreator {
   }
 }
 
-const isValidIdentifier = (name) => {
+function isValidIdentifier(name: any): boolean {
   if (typeof name !== 'string' || keyword.isReservedWordES6(name, true)) {
     return false;
   } else if (name === 'await') {
@@ -227,9 +283,9 @@ const isValidIdentifier = (name) => {
   } else {
     return keyword.isIdentifierNameES6(name);
   }
-};
+}
 
-const isPlainObject = (value) => {
+function isPlainObject(value: any): boolean {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
     return false;
   }
@@ -241,7 +297,14 @@ const isPlainObject = (value) => {
     proto = Object.getPrototypeOf(proto);
   }
   return Object.getPrototypeOf(value) === proto;
-};
+}
+
+function pToString(obj: any): string {
+  return Object.prototype.toString.call(obj);
+}
+function isObject(arg: any): boolean {
+  return typeof arg === 'object' && arg !== null;
+}
 
 export {
   NodeCreator

@@ -1,42 +1,62 @@
 import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
-import { NodeCreator } from './create-node-with-loc.mjs';
+import { NodeCreator, isScoped } from './create-node-with-loc.mjs';
 import { getCurrentKey } from './controller-utils.mjs';
+import type { Visitor, VisitorOption, Controller } from 'estraverse';
+import type {
+  Node,
+  Literal,
+  SimpleLiteral,
+  Identifier,
+  MemberExpression,
+  CallExpression,
+  ImportDeclaration,
+  ObjectPattern
+} from 'estree';
+import type { Scoped } from './create-node-with-loc.mjs';
 
-function isLiteral (node) {
-  return node && node.type === 'Literal';
-}
-function isIdentifier (node) {
-  return node && node.type === 'Identifier';
-}
-function isObjectPattern (node) {
-  return node && node.type === 'ObjectPattern';
-}
-function isMemberExpression (node) {
-  return node && node.type === 'MemberExpression';
-}
-function isCallExpression (node) {
-  return node && node.type === 'CallExpression';
-}
-function isImportDeclaration (node) {
-  return node && node.type === 'ImportDeclaration';
+interface StringLiteral extends SimpleLiteral {
+  type: 'Literal';
+  value: string;
 }
 
-function createVisitor (ast, options) {
+function isLiteral (node: Node | null | undefined): node is Literal {
+  return !!node && node.type === 'Literal';
+}
+function isStringLiteral (node: Node | null | undefined): node is StringLiteral {
+  return !!node && node.type === 'Literal' && typeof node.value === 'string';
+}
+function isIdentifier (node: Node | null | undefined): node is Identifier {
+  return !!node && node.type === 'Identifier';
+}
+function isObjectPattern (node: Node | null | undefined): node is ObjectPattern {
+  return !!node && node.type === 'ObjectPattern';
+}
+function isMemberExpression (node: Node | null | undefined): node is MemberExpression {
+  return !!node && node.type === 'MemberExpression';
+}
+function isCallExpression (node: Node | null| undefined): node is CallExpression {
+  return !!node && node.type === 'CallExpression';
+}
+function isImportDeclaration (node: Node | null | undefined): node is ImportDeclaration {
+  return !!node && node.type === 'ImportDeclaration';
+}
+
+function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   const config = Object.assign(defaultOptions(), options);
-  const targetModules = new Set(config.modules);
-  const targetVariables = new Set(config.variables);
+  const targetModules = new Set<string>(config.modules);
+  const targetVariables = new Set<string>(config.variables);
 
-  function isAssertionModuleName (lit) {
-    return isLiteral(lit) && targetModules.has(lit.value);
+  function isAssertionModuleName (lit: Node) {
+    return isStringLiteral(lit) && targetModules.has(lit.value);
   }
 
-  function isAssertionVariableName (id) {
+  function isAssertionVariableName (id: Node) {
     return isIdentifier(id) && targetVariables.has(id.name);
   }
 
-  function isAssertionMethod (callee) {
+  function isAssertionMethod (callee: Node): boolean {
     if (!isMemberExpression(callee)) {
       return false;
     }
@@ -48,29 +68,38 @@ function createVisitor (ast, options) {
     }
   }
 
-  function isAssertionFunction (callee) {
+  function isAssertionFunction (callee: Node): boolean {
     return isAssertionVariableName(callee);
   }
 
-  function registerIdentifierAsAssertionVariable (id) {
+  function registerIdentifierAsAssertionVariable (id: Node) {
     if (isIdentifier(id)) {
       targetVariables.add(id.name);
     }
   }
 
-  function handleDestructuredAssertionAssignment (objectPattern) {
-    for (const { value } of objectPattern.properties) {
-      registerIdentifierAsAssertionVariable(value);
+  function handleDestructuredAssertionAssignment (objectPattern: ObjectPattern) {
+    for (const prop of objectPattern.properties) {
+      switch (prop.type) {
+        case 'Property': {
+          registerIdentifierAsAssertionVariable(prop.value);
+          break;
+        }
+        case 'RestElement': {
+          registerIdentifierAsAssertionVariable(prop.argument);
+          break;
+        }
+      }
     }
   }
 
-  function handleImportSpecifiers (importDeclaration) {
+  function handleImportSpecifiers (importDeclaration: ImportDeclaration) {
     for (const { local } of importDeclaration.specifiers) {
       registerIdentifierAsAssertionVariable(local);
     }
   }
 
-  function registerAssertionVariables (node) {
+  function registerAssertionVariables (node: Node) {
     if (isIdentifier(node)) {
       registerIdentifierAsAssertionVariable(node);
     } else if (isObjectPattern(node)) {
@@ -80,7 +109,7 @@ function createVisitor (ast, options) {
     }
   }
 
-  function isRequireAssert (id, init) {
+  function isRequireAssert (id: Node, init: Node | null | undefined): boolean {
     if (!isCallExpression(init)) {
       return false;
     }
@@ -95,7 +124,7 @@ function createVisitor (ast, options) {
     return isIdentifier(id) || isObjectPattern(id);
   }
 
-  function isRequireAssertDotStrict (id, init) {
+  function isRequireAssertDotStrict (id: Node, init: Node | null | undefined): boolean {
     if (!isMemberExpression(init)) {
       return false;
     }
@@ -109,30 +138,30 @@ function createVisitor (ast, options) {
     return prop.name === 'strict';
   }
 
-  function isEnhanceTargetRequire (id, init) {
+  function isEnhanceTargetRequire (id: Node, init: Node | null | undefined): boolean {
     return isRequireAssert(id, init) || isRequireAssertDotStrict(id, init);
   }
 
-  function isCaptureTargetAssertion (callee) {
+  function isCaptureTargetAssertion (callee: Node): boolean {
     return isAssertionFunction(callee) || isAssertionMethod(callee);
   }
 
-  function isCalleeOfParentCallExpression (parentNode, currentKey) {
-    return parentNode.type === 'CallExpression' && currentKey === 'callee';
+  function isCalleeOfParentCallExpression (parentNode: Node | null, currentKey: string | number | null): boolean {
+    return !!parentNode && parentNode.type === 'CallExpression' && currentKey === 'callee';
   }
 
   const nodeToCapture = new WeakSet();
-  const blockStack = [];
+  const blockStack: Scoped[] = [];
   const transformation = new Transformation(blockStack);
-  let decoratorFunctionIdent;
-  let assertionVisitor;
+  let decoratorFunctionIdent: Identifier | null = null;
+  let assertionVisitor: AssertionVisitor | null = null;
   let skipping = false;
 
   return {
-    enter: function (currentNode, parentNode) {
+    enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       const controller = this;
 
-      if (/^Program$|Block$|Function/.test(currentNode.type)) {
+      if (isScoped(currentNode)) {
         blockStack.push(currentNode);
       }
 
@@ -197,8 +226,8 @@ function createVisitor (ast, options) {
 
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor({ transformation, decoratorFunctionIdent });
-              assertionVisitor.enter(controller, config.code);
+              assertionVisitor = new AssertionVisitor(controller, transformation, decoratorFunctionIdent, config.code);
+              // assertionVisitor.enter(controller, config.code);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;
@@ -207,12 +236,12 @@ function createVisitor (ast, options) {
       }
       return undefined;
     },
-    leave: function (currentNode, parentNode) {
+    leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this;
         const path = controller.path();
         const espath = path ? path.join('/') : '';
-        if (transformation.isTarget(espath)) {
+        if (transformation.isTarget(espath, currentNode)) {
           const targetNode = currentNode;
           transformation.apply(espath, targetNode);
           return targetNode;
@@ -246,7 +275,7 @@ function createVisitor (ast, options) {
         }
         return undefined;
       } finally {
-        if (/^Program$|Block$|Function/.test(currentNode.type)) {
+        if (isScoped(currentNode)) {
           blockStack.pop();
         }
       }
@@ -254,7 +283,7 @@ function createVisitor (ast, options) {
   };
 }
 
-function createPowerAssertImports ({ transformation, controller, runtime }) {
+function createPowerAssertImports ({ transformation, controller, runtime }: { transformation: Transformation, controller: Controller, runtime: string }): Identifier {
   const types = new NodeCreator();
   const decoratorFunctionIdent = types.identifier('_power_');
   const decl = types.importDeclaration([
@@ -264,7 +293,13 @@ function createPowerAssertImports ({ transformation, controller, runtime }) {
   return decoratorFunctionIdent;
 }
 
-function espowerAst (ast, options) {
+type EspowerOptions = {
+  runtime: string,
+  modules: string[],
+  code: string,
+  variables?: string[]
+};
+function espowerAst (ast: Node, options: EspowerOptions): Node {
   return replace(ast, createVisitor(ast, options));
 }
 

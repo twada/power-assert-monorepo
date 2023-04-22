@@ -1,6 +1,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { AssertionVisitor } from '../src/transpiler/assertion-visitor.mjs';
+// import { AssertionVisitor } from '../src/transpiler/assertion-visitor.mjs';
+import { AssertionVisitor } from '../dist/assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
 
 describe('AssertionVisitor', () => {
@@ -30,28 +31,27 @@ assert.ok(truthy);
       type: 'Identifier',
       name: '_power_'
     };
-    assertionVisitor = new AssertionVisitor({
-      transformation: stubTransformation,
-      decoratorFunctionIdent
-    });
+
+    const firstController = {
+      path: () => ['body', 2, 'expression'],
+      current: () => callexp
+    };
+    assertionVisitor = new AssertionVisitor(
+      firstController,
+      stubTransformation,
+      decoratorFunctionIdent,
+      code
+    );
   });
 
-  it('assertionCode is not generated', () => {
-    assert(assertionVisitor.assertionCode === undefined);
+  it('assertionCode is generated', () => {
+    assert(assertionVisitor.assertionCode !== undefined);
   });
   it('#isCapturingArgument returns false', () => {
     assert.equal(assertionVisitor.isCapturingArgument(), false);
   });
 
-  describe('after #enter', () => {
-    beforeEach(() => {
-      const controller = {
-        path: () => ['body', 2, 'expression'],
-        current: () => callexp
-      };
-      assertionVisitor.enter(controller, code);
-    });
-
+  describe('after #constructor', () => {
     it('assertionCode is generated', () => {
       assert.equal(assertionVisitor.assertionCode, 'assert.ok(truthy)');
     });
@@ -72,12 +72,6 @@ assert.ok(truthy);
     let controller;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression'],
-        current: () => callexp
-      };
-      assertionVisitor.enter(controller, code);
-
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
@@ -104,12 +98,6 @@ assert.ok(truthy);
     let resultNode;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression'],
-        current: () => callexp
-      };
-      assertionVisitor.enter(controller, code);
-
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
@@ -138,7 +126,7 @@ assert.ok(truthy);
       assert(assertionVisitor.currentModification === null);
     });
     it('#isLeavingArgument returns undefined', () => {
-      assert.equal(assertionVisitor.isLeavingArgument(controller), undefined);
+      assert.equal(assertionVisitor.isLeavingArgument(controller), false);
     });
     it('#isModified returns true', () => {
       assert.equal(assertionVisitor.isModified(), true);
@@ -176,12 +164,6 @@ assert.ok(truthy);
     let resultNode;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression'],
-        current: () => callexp
-      };
-      assertionVisitor.enter(controller, code);
-
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]

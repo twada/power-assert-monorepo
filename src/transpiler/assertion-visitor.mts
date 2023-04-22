@@ -3,45 +3,74 @@ import { NodeCreator } from './create-node-with-loc.mjs';
 import { locationOf } from './location.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
+import { strict as assert } from 'node:assert';
 
-function isMemberExpression (node) {
+import type { Transformation } from './transformation.mjs';
+import type { Controller } from 'estraverse';
+import type {
+  Node,
+  Identifier,
+  Expression,
+  CallExpression,
+  MemberExpression,
+  SimpleLiteral,
+  SpreadElement,
+  Position
+} from 'estree';
+
+type KeyValue = { [key: string]: any };
+
+function isMemberExpression (node: Node): node is MemberExpression {
   return node && node.type === 'MemberExpression';
 }
 
 export class AssertionVisitor {
-  constructor ({ transformation, decoratorFunctionIdent }) {
+  readonly transformation: Transformation;
+  readonly decoratorFunctionIdent: Identifier;
+  currentModification: ArgumentModification | null;
+  readonly argumentModifications: ArgumentModification[];
+
+  readonly assertionPath: (string | number)[];
+  readonly callexp: CallExpression;
+  readonly calleeNode: Expression;
+  readonly assertionCode: string;
+  readonly poweredAssertIdent: Identifier;
+
+  constructor (controller: Controller, transformation: Transformation, decoratorFunctionIdent: Identifier, wholeCode: string) {
     this.transformation = transformation;
     this.decoratorFunctionIdent = decoratorFunctionIdent;
     this.currentModification = null;
     this.argumentModifications = [];
-  }
-
-  enter (controller, wholeCode) {
-    this.assertionPath = [].concat(controller.path());
+    const nodepath = controller.path();
+    assert(nodepath, 'Node path must exist');
+    const emptyArray: (string | number)[] = [];
+    this.assertionPath = emptyArray.concat(nodepath);
     const currentNode = controller.current();
+    assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     this.callexp = currentNode;
+    assert(currentNode.callee.type !== 'Super', 'Super is not supported');
     this.calleeNode = currentNode.callee;
-
+    assert(currentNode.range, 'Node must have a range');
     const [start, end] = currentNode.range;
     this.assertionCode = wholeCode.slice(start, end);
-
     this.poweredAssertIdent = this._decorateAssert(controller);
   }
 
-  leave (controller) {
+  leave (controller: Controller): Node {
     try {
       return this.isModified() ? this._replaceWithDecoratedAssert(controller) : controller.current();
     } finally {
-      this.argumentModifications = [];
+      this.argumentModifications.length = 0;
     }
   }
 
-  isModified () {
+  isModified (): boolean {
     return this.argumentModifications.some((am) => am.isArgumentModified());
   }
 
-  _replaceWithDecoratedAssert (controller) {
+  _replaceWithDecoratedAssert (controller: Controller): CallExpression {
     const currentNode = controller.current();
+    assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     const types = new NodeCreator(currentNode);
     const replacedNode = types.callExpression(
       types.memberExpression(this.poweredAssertIdent, types.identifier('run')), currentNode.arguments
@@ -49,25 +78,28 @@ export class AssertionVisitor {
     return replacedNode;
   }
 
-  _decorateAssert (controller) {
+  _decorateAssert (controller: Controller): Identifier {
     const currentNode = controller.current();
     const transformation = this.transformation;
     const types = new NodeCreator(currentNode);
     const props = {};
-    if (this.withinAsync) {
-      props.async = true;
-    }
-    if (this.withinGenerator) {
-      props.generator = true;
-    }
+    // if (this.withinAsync) {
+    //   props.async = true;
+    // }
+    // if (this.withinGenerator) {
+    //   props.generator = true;
+    // }
     const propsNode = types.valueToNode(props);
+    assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
 
     const callee = this.calleeNode;
-    const receiver = isMemberExpression(this.calleeNode) ? this.calleeNode.object : types.nullLiteral();
-    const args = [
+    const receiver = isMemberExpression(callee) ? callee.object : types.nullLiteral();
+    const codeLiteral: SimpleLiteral = types.valueToNode(this.assertionCode) as SimpleLiteral;
+    assert(receiver.type !== 'Super', 'Super is not supported');
+    const args: Array<Expression | SpreadElement> = [
       callee,
       receiver,
-      types.valueToNode(this.assertionCode)
+      codeLiteral,
     ];
     if (propsNode.properties.length > 0) {
       args.push(propsNode);
@@ -82,11 +114,12 @@ export class AssertionVisitor {
     return ident;
   }
 
-  enterArgument (controller) {
+  enterArgument (controller: Controller): undefined {
     const currentNode = controller.current();
     // going to capture every argument
     const argNum = this.argumentModifications.length;
     const modification = new ArgumentModification({
+      controller: controller,
       argNum: argNum,
       argNode: currentNode,
       calleeNode: this.calleeNode,
@@ -96,51 +129,80 @@ export class AssertionVisitor {
       transformation: this.transformation,
       poweredAssertIdent: this.poweredAssertIdent
     });
-    modification.enter(controller);
+    // modification.enter(controller);
     this.argumentModifications.push(modification);
     this.currentModification = modification;
     return undefined;
   }
 
-  isLeavingArgument (controller) {
-    return this.currentModification?.isLeaving(controller);
+  isLeavingArgument (controller: Controller): boolean {
+    return !!this.currentModification?.isLeaving(controller);
   }
 
-  leaveArgument (controller) {
+  leaveArgument (controller: Controller): Node {
+    assert(this.currentModification, 'currentModification must exist');
     const retNode = this.currentModification.leave(controller);
     this.currentModification = null;
     return retNode;
   }
 
-  isCapturingArgument () {
+  isCapturingArgument (): boolean {
     return !!this.currentModification;
   }
 
-  isNodeToBeSkipped (controller) {
+  isNodeToBeSkipped (controller: Controller): boolean {
     const currentNode = controller.current();
     if (currentNode === this.calleeNode) {
       return true;
     }
     const parentNode = getParentNode(controller);
+    assert(parentNode, 'parentNode must exist');
     const currentKey = getCurrentKey(controller);
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  isNodeToBeCaptured (controller) {
+  isNodeToBeCaptured (controller: Controller): boolean {
     return toBeCaptured(controller);
   }
 
-  leaveNodeToBeCaptured (controller) {
+  leaveNodeToBeCaptured (controller: Controller): CallExpression {
+    assert(this.currentModification, 'currentModification must exist');
     return this.currentModification.captureNode(controller);
   }
 
-  enterNodeToBeCaptured (controller) {
-    return this.currentModification.saveLoc(controller);
+  enterNodeToBeCaptured (controller: Controller) {
+    assert(this.currentModification, 'currentModification must exist');
+    this.currentModification.saveLoc(controller);
   }
 }
 
+type ArgumentModificationParams = {
+  controller: Controller,
+  argNum: number,
+  argNode: Node,
+  callexp: CallExpression,
+  calleeNode: Expression,
+  assertionPath: (string | number)[],
+  assertionCode: string,
+  transformation: Transformation,
+  poweredAssertIdent: Identifier
+};
+
 class ArgumentModification {
-  constructor ({ argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }) {
+  readonly argNum: number;
+  readonly argNode: Node;
+  readonly callexp: CallExpression;
+  readonly calleeNode: Expression;
+  readonly assertionPath: (string | number)[];
+  readonly assertionCode: string;
+  readonly transformation: Transformation;
+  readonly poweredAssertIdent: Identifier;
+  readonly locations: Map<Node, Position>;
+  readonly argumentRecorderIdent: Identifier;
+  argumentModified: boolean;
+
+  // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
+  constructor ({ controller, argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
     this.argNum = argNum;
     this.argNode = argNode;
     this.callexp = callexp;
@@ -150,11 +212,7 @@ class ArgumentModification {
     this.transformation = transformation;
     this.poweredAssertIdent = poweredAssertIdent;
     this.argumentModified = false;
-    this.locations = new Map();
-  }
-
-  // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
-  enter (controller) {
+    this.locations = new Map<Node, Position>();
     const recorderVariableName = this.transformation.generateUniqueName('arg');
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
@@ -171,7 +229,7 @@ class ArgumentModification {
     this.argumentRecorderIdent = ident;
   }
 
-  leave (controller) {
+  leave (controller: Controller): Node {
     const currentNode = controller.current();
     const shouldCaptureValue = toBeCaptured(controller);
     // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
@@ -180,51 +238,54 @@ class ArgumentModification {
     return resultNode;
   }
 
-  isArgumentModified () {
+  isArgumentModified (): boolean {
     return !!this.argumentModified;
   }
 
-  isLeaving (controller) {
+  isLeaving (controller: Controller): boolean {
     return this.argNode === controller.current();
   }
 
-  captureNode (controller) {
+  captureNode (controller: Controller): CallExpression {
     return this._insertRecorderNode(controller, '_tap');
   }
 
-  _captureArgument (controller) {
+  _captureArgument (controller: Controller): CallExpression {
     return this._insertRecorderNode(controller, '_rec');
   }
 
-  saveLoc (controller) {
+  saveLoc (controller: Controller): void {
     const currentNode = controller.current();
     const targetLoc = this._calculateLoc(controller);
     this.locations.set(currentNode, targetLoc);
   }
 
-  _targetLoc (controller) {
+  _targetLoc (controller: Controller): Position | undefined {
     const currentNode = controller.current();
     return this.locations.get(currentNode);
   }
 
-  _calculateLoc (controller) {
+  _calculateLoc (controller: Controller): Position {
     const relativeAstPath = this._relativeAstPath(controller);
     const code = this.assertionCode;
     const ast = this.callexp;
-    const targetNodeInAst = relativeAstPath.reduce((parent, key) => parent[key], ast);
+    const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue, key: string | number) => parent[key], ast);
+    assert(this.callexp.loc, 'callexp.loc must exist');
     const offset = this.callexp.loc.start;
     return locationOf(targetNodeInAst, offset, code);
   }
 
-  _relativeAstPath (controller) {
+  _relativeAstPath (controller: Controller): (string | number)[] {
     const astPath = controller.path();
+    assert(astPath, 'astPath must exist');
     return astPath.slice(this.assertionPath.length);
   }
 
-  _insertRecorderNode (controller, methodName) {
+  _insertRecorderNode (controller: Controller, methodName: string): CallExpression {
     const currentNode = controller.current();
     const relativeAstPath = this._relativeAstPath(controller);
     const targetLoc = this._targetLoc(controller);
+    assert(targetLoc, 'targetLoc must exist');
 
     const types = new NodeCreator(currentNode);
     const args = [
@@ -237,7 +298,7 @@ class ArgumentModification {
     const receiver = this.argumentRecorderIdent;
     const newNode = types.callExpression(
       types.memberExpression(receiver, types.identifier(methodName)),
-      args
+      args as Array<Expression | SpreadElement>
     );
     this.argumentModified = true;
     return newNode;
