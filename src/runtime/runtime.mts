@@ -1,7 +1,7 @@
 import { DiagramRenderer } from './diagram-renderer.mjs';
 import { strict as assert } from 'node:assert';
 
-function isPromiseLike(o: any): o is Promise<any> {
+function isPromiseLike (o: any): o is Promise<any> {
   return o !== null && typeof o === 'object' && typeof o.then === 'function' && typeof o.catch === 'function';
 }
 

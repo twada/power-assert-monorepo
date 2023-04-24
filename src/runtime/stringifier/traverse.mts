@@ -54,37 +54,36 @@ const emptyArray: (string | number)[] = [];
 export function traverseWith (root: any, cb: TraverseCallback, initialState: InitialState): void {
   const { path, parents } = initialState;
   try {
-
     (function walker (node: any): State {
       const modifiers: Modifiers = {};
       let keepGoing = true;
       const state: State = {
-        node : node,
-        path : ([] as (string|number)[]).concat(path),
-        parent : parents[parents.length - 1],
-        parents : ([] as State[]).concat(parents),
-        key : path.slice(-1)[0],
-        isRoot : path.length === 0,
-        level : path.length,
-        circular : null,
-        keys : null,
-        size : null,
-        before : function (f) { modifiers.before = f; },
-        after : function (f) { modifiers.after = f; },
-        pre : function (f) { modifiers.pre = f; },
-        post : function (f) { modifiers.post = f; },
-        bailOut : function () {
+        node,
+        path: ([] as (string|number)[]).concat(path),
+        parent: parents[parents.length - 1],
+        parents: ([] as State[]).concat(parents),
+        key: path.slice(-1)[0],
+        isRoot: path.length === 0,
+        level: path.length,
+        circular: null,
+        keys: null,
+        size: null,
+        before: function (f) { modifiers.before = f; },
+        after: function (f) { modifiers.after = f; },
+        pre: function (f) { modifiers.pre = f; },
+        post: function (f) { modifiers.post = f; },
+        bailOut: function () {
           throw new BailOut();
         },
-        skip : function () { keepGoing = false; }
+        skip: function () { keepGoing = false; }
       };
 
-      function hasChildren(): boolean {
+      function hasChildren (): boolean {
         return typeof state.node === 'object' && state.node !== null;
       }
 
-      function markCircularRef(): void {
-        for (let parent of parents) {
+      function markCircularRef (): void {
+        for (const parent of parents) {
           if (parent.node === node) {
             state.circular = parent;
             break;
@@ -92,7 +91,7 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
         }
       }
 
-      function calculateChildrenSize(): void {
+      function calculateChildrenSize (): void {
         if (Array.isArray(state.node)) {
           state.size = state.node.length;
         } else if (state.node instanceof Set) {
@@ -127,14 +126,14 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
           path.push(key);
           const childNode = value;
           const preChildState = Object.assign({}, state, {
-            node : childNode,
-            path : ([] as (string|number)[]).concat(path),
-            parent : parents[parents.length - 1],
-            parents : ([] as State[]).concat(parents),
-            key : path.slice(-1)[0],
-            isRoot : path.length === 0,
-            level : path.length,
-            index : index
+            node: childNode,
+            path: ([] as (string|number)[]).concat(path),
+            parent: parents[parents.length - 1],
+            parents: ([] as State[]).concat(parents),
+            key: path.slice(-1)[0],
+            isRoot: path.length === 0,
+            level: path.length,
+            index
           });
           if (modifiers.pre) {
             modifiers.pre.call(state, childNode, key, preChildState);
@@ -152,27 +151,27 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
           // when user set state.keys explicitly to filter and reorder iteration
           state.size = state.keys.length;
           let i = 0;
-          for (let key of state.keys) {
+          for (const key of state.keys) {
             handleChild(key, state.node[key], i);
             i += 1;
           }
         } else if (Array.isArray(state.node)) {
-          for (let [index, value] of state.node.entries()) {
+          for (const [index, value] of state.node.entries()) {
             handleChild(index, value, index);
           }
         } else if (state.node instanceof Set) {
-          for (let [index, value] of Array.from(state.node).entries()) {
+          for (const [index, value] of Array.from(state.node).entries()) {
             handleChild(index, value, index);
           }
         } else if (state.node instanceof Map) {
           let i = 0;
-          for (let [keyObj, value] of state.node) {
+          for (const [keyObj, value] of state.node) {
             handleChild(keyObj, value, i);
             i += 1;
           }
         } else {
           let i = 0;
-          for (let [keyStr, value] of Object.entries(state.node)) {
+          for (const [keyStr, value] of Object.entries(state.node)) {
             handleChild(keyStr, value, i);
             i += 1;
           }
@@ -187,7 +186,6 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
 
       return state;
     })(root);
-
   } catch (e) {
     if (!(e instanceof BailOut)) {
       throw e;

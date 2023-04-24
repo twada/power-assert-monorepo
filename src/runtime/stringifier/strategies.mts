@@ -52,7 +52,6 @@ function iterate (): ValueHandler {
   return (acc: Accumulator, x: any) => ITERATE;
 }
 
-
 function allowedKeys (orderedAllowList?: string[]): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
@@ -298,7 +297,7 @@ const prune = compose(
   constructorName(),
   always('#'),
   end()
-); 
+);
 const omitNaN = when(nan, compose(
   always('NaN'),
   end()

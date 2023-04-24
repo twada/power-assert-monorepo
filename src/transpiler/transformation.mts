@@ -54,7 +54,7 @@ export class Transformation {
 
   _register (espath: string, callback: MutationCallback): void {
     if (!this.mutations[espath]) {
-       this.mutations[espath] = [];
+      this.mutations[espath] = [];
     }
     this.mutations[espath].unshift(callback);
   }
@@ -78,7 +78,7 @@ export class Transformation {
   }
 }
 
-function findBlockNode(blockStack: Scoped[]): Scoped {
+function findBlockNode (blockStack: Scoped[]): Scoped {
   const lastIndex = blockStack.length - 1;
   const blockNode = blockStack[lastIndex];
   if (!blockNode || isArrowFunctionExpressionWithConciseBody(blockNode)) {
@@ -87,12 +87,12 @@ function findBlockNode(blockStack: Scoped[]): Scoped {
   return blockNode;
 }
 
-function findEspathOfTargetNode(targetNode: Node, controller: Controller): string {
+function findEspathOfTargetNode (targetNode: Node, controller: Controller): string {
   // iterate from child to root
   let child: Node | null = null;
   let parent: Node&KeyValue | null = null;
   const path = controller.path();
-  assert(path !== null, 'path should not be null')
+  assert(path !== null, 'path should not be null');
   const popUntilParent = (key: string | number | undefined) => {
     assert(parent !== null, 'parent should not be null');
     assert(key !== undefined, 'key should not be undefined');
@@ -115,7 +115,7 @@ function findEspathOfTargetNode(targetNode: Node, controller: Controller): strin
   assert.fail('cannot be here');
 }
 
-function insertAfterUseStrictDirective(decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
+function insertAfterUseStrictDirective (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
   const firstBody = body[0];
   if (firstBody.type === 'ExpressionStatement') {
     const expression = firstBody.expression;
@@ -125,4 +125,4 @@ function insertAfterUseStrictDirective(decl: ImportDeclaration | VariableDeclara
     }
   }
   body.unshift(decl);
-};
+}

@@ -64,7 +64,7 @@ export class DiagramRenderer {
   }
 
   constructRows (capturedEvents: Log[]): void {
-    let prevCaptured: Log | undefined = undefined;
+    let prevCaptured: Log | undefined;
     capturedEvents.forEach((captured) => {
       const dumpedValue = this.stringify(captured.value);
       if (this.isOverlapped(prevCaptured, captured, dumpedValue)) {

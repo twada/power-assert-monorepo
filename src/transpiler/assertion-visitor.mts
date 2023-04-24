@@ -99,7 +99,7 @@ export class AssertionVisitor {
     const args: Array<Expression | SpreadElement> = [
       callee,
       receiver,
-      codeLiteral,
+      codeLiteral
     ];
     if (propsNode.properties.length > 0) {
       args.push(propsNode);
@@ -119,8 +119,8 @@ export class AssertionVisitor {
     // going to capture every argument
     const argNum = this.argumentModifications.length;
     const modification = new ArgumentModification({
-      controller: controller,
-      argNum: argNum,
+      controller,
+      argNum,
       argNode: currentNode,
       calleeNode: this.calleeNode,
       callexp: this.callexp,

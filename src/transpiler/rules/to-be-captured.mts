@@ -53,4 +53,4 @@ const toBeCaptured = (controller: Controller) => {
 
 export {
   toBeCaptured
-}
+};

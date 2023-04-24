@@ -16,7 +16,7 @@ function isObjectLiteralKey (parentNode: Node, currentKey: string | number | nul
 
 function isObjectLiteralValue (parentNode: Node, currentKey: string | number | null): parentNode is Property {
   return isChildOfObjectLiteral(parentNode) && currentKey === 'value';
-};
+}
 
 const isNonComputedObjectLiteralKey = (parentNode: Node, currentKey: string | number | null) => {
   // Do not instrument non-computed Object literal key
@@ -62,4 +62,4 @@ const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node
 
 export {
   toBeSkipped
-}
+};

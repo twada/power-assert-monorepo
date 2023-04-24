@@ -22,4 +22,4 @@ const supportedNodeTypes = () => [
 
 export {
   supportedNodeTypes
-}
+};

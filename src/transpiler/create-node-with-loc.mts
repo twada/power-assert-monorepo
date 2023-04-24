@@ -47,7 +47,7 @@ import type {
   StaticBlock,
   VariableDeclaration,
   VariableDeclarator,
-  Program,
+  Program
 } from 'estree';
 
 export interface ArrowFunctionExpressionWithBlock extends ArrowFunctionExpression {
@@ -68,13 +68,13 @@ export function isScopedFunction (node: Node): node is ScopedFunction {
 export function isBlockStatement (node: Node): node is BlockStatement {
   return node.type === 'BlockStatement';
 }
-export function isArrowFunctionExpressionWithConciseBody(node: Node): node is ArrowFunctionExpressionWithConciseBody {
+export function isArrowFunctionExpressionWithConciseBody (node: Node): node is ArrowFunctionExpressionWithConciseBody {
   return node.type === 'ArrowFunctionExpression' && node.expression === true;
 }
-export function isArrowFunctionExpressionWithBlock(node: Node): node is ArrowFunctionExpressionWithBlock {
+export function isArrowFunctionExpressionWithBlock (node: Node): node is ArrowFunctionExpressionWithBlock {
   return node.type === 'ArrowFunctionExpression' && node.expression === false;
 }
-export function isScoped(node: Node): node is Scoped {
+export function isScoped (node: Node): node is Scoped {
   return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
 
@@ -250,7 +250,7 @@ class NodeCreator {
     }
     // numbers
     if (typeof value === 'number') {
-      let result = this.numericLiteral(Math.abs(value));
+      const result = this.numericLiteral(Math.abs(value));
       if (value < 0 || Object.is(value, -0)) {
         return this.unaryExpression('-', result);
       }
@@ -274,7 +274,7 @@ class NodeCreator {
   }
 }
 
-function isValidIdentifier(name: any): boolean {
+function isValidIdentifier (name: any): boolean {
   if (typeof name !== 'string' || keyword.isReservedWordES6(name, true)) {
     return false;
   } else if (name === 'await') {
@@ -285,7 +285,7 @@ function isValidIdentifier(name: any): boolean {
   }
 }
 
-function isPlainObject(value: any): boolean {
+function isPlainObject (value: any): boolean {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
     return false;
   }
@@ -299,10 +299,10 @@ function isPlainObject(value: any): boolean {
   return Object.getPrototypeOf(value) === proto;
 }
 
-function pToString(obj: any): string {
+function pToString (obj: any): string {
   return Object.prototype.toString.call(obj);
 }
-function isObject(arg: any): boolean {
+function isObject (arg: any): boolean {
   return typeof arg === 'object' && arg !== null;
 }
 

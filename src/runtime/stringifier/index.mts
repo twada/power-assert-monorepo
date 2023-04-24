@@ -8,24 +8,24 @@ type StringifyCallback = (push: CollectorFunc, item: any, state: State) => Colle
 
 function defaultHandlers () {
   return {
-    'null': s.always('null'),
-    'undefined': s.always('undefined'),
-    'function': s.prune(),
-    'string': s.json(),
-    'boolean': s.json(),
-    'number': s.number(),
-    'bigint': s.bigint(),
-    'symbol': s.toStr(),
-    'RegExp': s.toStr(),
-    'String': s.newLike(),
-    'Boolean': s.newLike(),
-    'Number': s.newLike(),
-    'Date': s.newLike(),
-    'Array': s.array(),
-    'Object': s.object(),
-    'Set': s.set(),
-    'Map': s.map(),
-    'Error': s.object(null, ['message', 'code']),
+    null: s.always('null'),
+    undefined: s.always('undefined'),
+    function: s.prune(),
+    string: s.json(),
+    boolean: s.json(),
+    number: s.number(),
+    bigint: s.bigint(),
+    symbol: s.toStr(),
+    RegExp: s.toStr(),
+    String: s.newLike(),
+    Boolean: s.newLike(),
+    Number: s.newLike(),
+    Date: s.newLike(),
+    Array: s.array(),
+    Object: s.object(),
+    Set: s.set(),
+    Map: s.map(),
+    Error: s.object(null, ['message', 'code']),
     '@default': s.object()
   };
 }
@@ -64,7 +64,7 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
       return handlers[tname];
     }
     if (tname.endsWith('Error')) {
-      return handlers['Error'];
+      return handlers.Error;
     }
     return handlers['@default'];
   };
@@ -72,7 +72,7 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
   const createMapKeyStringifier: MapKeyStringifierFactory = () => {
     const reducer = createStringifier(options);
     return function (val: any, childState: State) {
-      return walkWith (val, reducer, childState);
+      return walkWith(val, reducer, childState);
     };
   };
 
@@ -85,9 +85,9 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
     }
     const acc: Accumulator = {
       createMapKeyStringifier,
-      context: context,
-      options: options,
-      push: push
+      context,
+      options,
+      push
     };
     handler(acc, x);
     return push;
@@ -112,7 +112,7 @@ function walk (val: any, reducer: StringifyCallback): string {
     path: [],
     parents: []
   };
-  return walkWith (val, reducer, initialState);
+  return walkWith(val, reducer, initialState);
 }
 
 export function stringify (val: any, options?: StringifyOptions): string {
