@@ -7,7 +7,7 @@ test('Array', async (t) => {
     const input = [4, 5, 6];
     assert.equal(stringify(input), '[4,5,6]');
   });
-  await t.test('nested', (t) => {
+  await t.test('nested', () => {
     const input = [4, [5, [6, 7, 8], 9], 10];
     assert.equal(stringify(input), '[4,[5,[6,7,8],9],10]');
   });
@@ -31,7 +31,6 @@ test('Array', async (t) => {
     });
   });
 });
-
 
 test('Array indentation', async (t) => {
   await t.test('empty array', () => {
@@ -96,7 +95,6 @@ test('Array indentation', async (t) => {
   });
 });
 
-
 test('Object indentation', async (t) => {
   await t.test('empty object', () => {
     const input = {};
@@ -154,12 +152,11 @@ test('Object indentation', async (t) => {
   });
 });
 
-
 test('circular references', async (t) => {
   await t.test('circular object', () => {
     const circularObj = {};
     circularObj.circularRef = circularObj;
-    circularObj.list = [ circularObj, circularObj ];
+    circularObj.list = [circularObj, circularObj];
     const expected = [
       'Object{',
       '  circularRef: #@Circular#,',

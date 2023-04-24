@@ -23,7 +23,9 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
 
     const stubTransformation = {
-      insertDeclIntoCurrentBlock: (controller, decl) => {},
+      insertDeclIntoCurrentBlock: (controller, decl) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+        // do nothing
+      },
       generateUniqueName: (str) => `_${str}1`
     };
     const decoratorFunctionIdent = {

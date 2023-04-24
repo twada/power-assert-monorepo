@@ -4,7 +4,7 @@ import { traverseAny } from '../../dist/runtime/stringifier/traverse.mjs';
 
 test('traverse flat array', () => {
   const acc = [];
-  traverseAny(['a', 'b'], (item, state) => {
+  traverseAny(['a', 'b'], (item, state) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     acc.push(item);
   });
   assert.deepEqual(acc, [['a', 'b'], 'a', 'b']);
@@ -15,7 +15,7 @@ test('traverse Map', () => {
   map.set('key1', 'a');
   map.set('key2', 'b');
   const acc = [];
-  traverseAny(map, (item, state) => {
+  traverseAny(map, (item, state) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     acc.push(item);
   });
   assert.deepEqual(acc, [map, 'a', 'b']);
@@ -25,7 +25,7 @@ test('state.bailOut', () => {
   const acc = [];
   traverseAny(['a', 'b', 'c'], (item, state) => {
     // console.log(item);
-    if (2 === acc.length) {
+    if (acc.length === 2) {
       state.bailOut();
     }
     acc.push(item);

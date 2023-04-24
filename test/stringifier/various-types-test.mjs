@@ -65,7 +65,9 @@ const fixtures = {
     pruned: '#Object#'
   },
   'function expression': {
-    input: function () {},
+    input: function () {
+      // do nothing
+    },
     expected: '#function#',
     pruned: '#function#'
   },
@@ -90,12 +92,16 @@ const fixtures = {
     pruned: 'new Date("1970-01-01T00:00:00.000Z")'
   },
   'RegExp object': {
-    input: new RegExp('^not', 'g'),
+    input: new RegExp('^not', 'g'), // eslint-disable-line prefer-regex-literals
     expected: '/^not/g',
     pruned: '/^not/g'
   },
   'Array object': {
-    input: new Array(), // eslint-disable-line no-array-constructor
+    /* eslint-disable @typescript-eslint/no-array-constructor */
+    /* eslint-disable no-array-constructor */
+    input: new Array(),
+    /* eslint-enable no-array-constructor */
+    /* eslint-enable @typescript-eslint/no-array-constructor */
     expected: '[]',
     pruned: '#Array#'
   },
@@ -139,12 +145,12 @@ const fixtures = {
     expected: 'Person{name:"alice",age:5}',
     pruned: '#Person#'
   },
-  'NaN': {
+  'NaN': { // eslint-disable-line quote-props
     input: NaN,
     expected: 'NaN',
     pruned: 'NaN'
   },
-  'Infinity': {
+  'Infinity': { // eslint-disable-line quote-props
     input: Infinity,
     expected: 'Infinity',
     pruned: 'Infinity'
@@ -154,12 +160,12 @@ const fixtures = {
     expected: '-Infinity',
     pruned: '-Infinity'
   },
-  'Math': {
+  'Math': { // eslint-disable-line quote-props
     input: Math,
     expected: 'Math{}',
     pruned: '#Math#'
   },
-  'JSON': {
+  'JSON': { // eslint-disable-line quote-props
     input: JSON,
     expected: 'JSON{}',
     pruned: '#JSON#'
@@ -181,8 +187,7 @@ if (typeName(anonymous) === 'AnonPerson') {
   };
 }
 
-
-for (let [fixtureName, {input, expected, pruned}] of Object.entries(fixtures)) {
+for (const [fixtureName, { input, expected, pruned }] of Object.entries(fixtures)) {
   test('single ' + fixtureName, () => {
     assert.equal(stringify(input), expected);
   });

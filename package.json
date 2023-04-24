@@ -36,7 +36,7 @@
     "build:cjs": "rollup -c",
     "lint": "npm run lint:src && npm run lint:test",
     "lint:src": "eslint src --ext .mts",
-    "lint:test": "eslint test --ext .mjs",
+    "lint:test": "eslint test/*test.mjs test/**/*test.mjs --ext .mjs",
     "fix": "npm run fix:src && npm run fix:test",
     "fix:src": "npm run lint:src -- --fix",
     "fix:test": "npm run lint:test -- --fix",
