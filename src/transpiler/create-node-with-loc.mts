@@ -58,9 +58,9 @@ export interface ArrowFunctionExpressionWithConciseBody extends ArrowFunctionExp
   type: 'ArrowFunctionExpression';
   body: Expression;
 }
-export type Scoped = Program | ScopedFunction | ScopedBlock;
 export type ScopedFunction = ArrowFunctionExpressionWithBlock | FunctionDeclaration | FunctionExpression
 export type ScopedBlock = BlockStatement | StaticBlock
+export type Scoped = Program | ScopedFunction | ScopedBlock;
 
 export function isScopedFunction (node: Node): node is ScopedFunction {
   return /Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
@@ -231,6 +231,7 @@ class NodeCreator {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   valueToNode (value: any): Expression | Pattern {
     // undefined
     if (value === undefined) {
@@ -274,7 +275,7 @@ class NodeCreator {
   }
 }
 
-function isValidIdentifier (name: any): boolean {
+function isValidIdentifier (name: string): boolean {
   if (typeof name !== 'string' || keyword.isReservedWordES6(name, true)) {
     return false;
   } else if (name === 'await') {
@@ -285,6 +286,7 @@ function isValidIdentifier (name: any): boolean {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isPlainObject (value: any): boolean {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
     return false;
@@ -299,9 +301,11 @@ function isPlainObject (value: any): boolean {
   return Object.getPrototypeOf(value) === proto;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pToString (obj: any): string {
   return Object.prototype.toString.call(obj);
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isObject (arg: any): boolean {
   return typeof arg === 'object' && arg !== null;
 }

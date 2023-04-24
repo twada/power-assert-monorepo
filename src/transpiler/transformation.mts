@@ -17,7 +17,7 @@ import type { Scoped } from './create-node-with-loc.mjs';
 type MutationCallback = (matchNode: Scoped) => void;
 type NameCounts = { [key: string]: number };
 type Mutations = { [key: string]: MutationCallback[] };
-type KeyValue = { [key: string]: any };
+type KeyValue = { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export class Transformation {
   readonly mutations: Mutations;

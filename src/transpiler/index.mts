@@ -16,6 +16,13 @@ import type {
 } from 'estree';
 import type { Scoped } from './create-node-with-loc.mjs';
 
+type EspowerOptions = {
+  runtime: string,
+  modules: string[],
+  code: string,
+  variables?: string[]
+};
+
 interface StringLiteral extends SimpleLiteral {
   type: 'Literal';
   value: string;
@@ -159,7 +166,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
   return {
     enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
-      const controller = this;
+      const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
       if (isScoped(currentNode)) {
         blockStack.push(currentNode);
@@ -236,9 +243,10 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
       return undefined;
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       try {
-        const controller = this;
+        const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
         const path = controller.path();
         const espath = path ? path.join('/') : '';
         if (transformation.isTarget(espath, currentNode)) {
@@ -293,12 +301,6 @@ function createPowerAssertImports ({ transformation, controller, runtime }: { tr
   return decoratorFunctionIdent;
 }
 
-type EspowerOptions = {
-  runtime: string,
-  modules: string[],
-  code: string,
-  variables?: string[]
-};
 function espowerAst (ast: Node, options: EspowerOptions): Node {
   return replace(ast, createVisitor(ast, options));
 }

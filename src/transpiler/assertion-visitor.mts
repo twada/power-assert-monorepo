@@ -18,10 +18,140 @@ import type {
   Position
 } from 'estree';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValue = { [key: string]: any };
+
+type ArgumentModificationParams = {
+  controller: Controller,
+  argNum: number,
+  argNode: Node,
+  callexp: CallExpression,
+  calleeNode: Expression,
+  assertionPath: (string | number)[],
+  assertionCode: string,
+  transformation: Transformation,
+  poweredAssertIdent: Identifier
+};
 
 function isMemberExpression (node: Node): node is MemberExpression {
   return node && node.type === 'MemberExpression';
+}
+
+class ArgumentModification {
+  readonly argNum: number;
+  readonly argNode: Node;
+  readonly callexp: CallExpression;
+  readonly calleeNode: Expression;
+  readonly assertionPath: (string | number)[];
+  readonly assertionCode: string;
+  readonly transformation: Transformation;
+  readonly poweredAssertIdent: Identifier;
+  readonly locations: Map<Node, Position>;
+  readonly argumentRecorderIdent: Identifier;
+  argumentModified: boolean;
+
+  // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
+  constructor ({ controller, argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
+    this.argNum = argNum;
+    this.argNode = argNode;
+    this.callexp = callexp;
+    this.calleeNode = calleeNode;
+    this.assertionPath = assertionPath;
+    this.assertionCode = assertionCode;
+    this.transformation = transformation;
+    this.poweredAssertIdent = poweredAssertIdent;
+    this.argumentModified = false;
+    this.locations = new Map<Node, Position>();
+    const recorderVariableName = this.transformation.generateUniqueName('arg');
+    const currentNode = controller.current();
+    const types = new NodeCreator(currentNode);
+    const ident = types.identifier(recorderVariableName);
+    const init = types.callExpression(
+      types.memberExpression(this.poweredAssertIdent, types.identifier('newArgumentRecorder')), [
+        types.numericLiteral(this.argNum)
+      ]
+    );
+    const decl = types.variableDeclaration('const', [
+      types.variableDeclarator(ident, init)
+    ]);
+    this.transformation.insertDeclIntoCurrentBlock(controller, decl);
+    this.argumentRecorderIdent = ident;
+  }
+
+  leave (controller: Controller): Node {
+    const currentNode = controller.current();
+    const shouldCaptureValue = toBeCaptured(controller);
+    // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
+    const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
+    const resultNode = shouldCaptureArgument ? this._captureArgument(controller) : currentNode;
+    return resultNode;
+  }
+
+  isArgumentModified (): boolean {
+    return !!this.argumentModified;
+  }
+
+  isLeaving (controller: Controller): boolean {
+    return this.argNode === controller.current();
+  }
+
+  captureNode (controller: Controller): CallExpression {
+    return this._insertRecorderNode(controller, '_tap');
+  }
+
+  _captureArgument (controller: Controller): CallExpression {
+    return this._insertRecorderNode(controller, '_rec');
+  }
+
+  saveLoc (controller: Controller): void {
+    const currentNode = controller.current();
+    const targetLoc = this._calculateLoc(controller);
+    this.locations.set(currentNode, targetLoc);
+  }
+
+  _targetLoc (controller: Controller): Position | undefined {
+    const currentNode = controller.current();
+    return this.locations.get(currentNode);
+  }
+
+  _calculateLoc (controller: Controller): Position {
+    const relativeAstPath = this._relativeAstPath(controller);
+    const code = this.assertionCode;
+    const ast = this.callexp;
+    const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue, key: string | number) => parent[key], ast);
+    assert(this.callexp.loc, 'callexp.loc must exist');
+    const offset = this.callexp.loc.start;
+    return locationOf(targetNodeInAst, offset, code);
+  }
+
+  _relativeAstPath (controller: Controller): (string | number)[] {
+    const astPath = controller.path();
+    assert(astPath, 'astPath must exist');
+    return astPath.slice(this.assertionPath.length);
+  }
+
+  _insertRecorderNode (controller: Controller, methodName: string): CallExpression {
+    const currentNode = controller.current();
+    const relativeAstPath = this._relativeAstPath(controller);
+    const targetLoc = this._targetLoc(controller);
+    assert(targetLoc, 'targetLoc must exist');
+
+    const types = new NodeCreator(currentNode);
+    const args = [
+      currentNode,
+      types.valueToNode(relativeAstPath.join('/')),
+      types.valueToNode(targetLoc.column)
+      // types.valueToNode(targetLoc.line)
+    ];
+
+    const receiver = this.argumentRecorderIdent;
+    const newNode = types.callExpression(
+      types.memberExpression(receiver, types.identifier(methodName)),
+      args as Array<Expression | SpreadElement>
+    );
+    this.argumentModified = true;
+    return newNode;
+  }
 }
 
 export class AssertionVisitor {
@@ -173,134 +303,5 @@ export class AssertionVisitor {
   enterNodeToBeCaptured (controller: Controller) {
     assert(this.currentModification, 'currentModification must exist');
     this.currentModification.saveLoc(controller);
-  }
-}
-
-type ArgumentModificationParams = {
-  controller: Controller,
-  argNum: number,
-  argNode: Node,
-  callexp: CallExpression,
-  calleeNode: Expression,
-  assertionPath: (string | number)[],
-  assertionCode: string,
-  transformation: Transformation,
-  poweredAssertIdent: Identifier
-};
-
-class ArgumentModification {
-  readonly argNum: number;
-  readonly argNode: Node;
-  readonly callexp: CallExpression;
-  readonly calleeNode: Expression;
-  readonly assertionPath: (string | number)[];
-  readonly assertionCode: string;
-  readonly transformation: Transformation;
-  readonly poweredAssertIdent: Identifier;
-  readonly locations: Map<Node, Position>;
-  readonly argumentRecorderIdent: Identifier;
-  argumentModified: boolean;
-
-  // var _ag4 = new _ArgumentRecorder1(assert.equal, _am3, 0);
-  constructor ({ controller, argNum, argNode, callexp, calleeNode, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
-    this.argNum = argNum;
-    this.argNode = argNode;
-    this.callexp = callexp;
-    this.calleeNode = calleeNode;
-    this.assertionPath = assertionPath;
-    this.assertionCode = assertionCode;
-    this.transformation = transformation;
-    this.poweredAssertIdent = poweredAssertIdent;
-    this.argumentModified = false;
-    this.locations = new Map<Node, Position>();
-    const recorderVariableName = this.transformation.generateUniqueName('arg');
-    const currentNode = controller.current();
-    const types = new NodeCreator(currentNode);
-    const ident = types.identifier(recorderVariableName);
-    const init = types.callExpression(
-      types.memberExpression(this.poweredAssertIdent, types.identifier('newArgumentRecorder')), [
-        types.numericLiteral(this.argNum)
-      ]
-    );
-    const decl = types.variableDeclaration('const', [
-      types.variableDeclarator(ident, init)
-    ]);
-    this.transformation.insertDeclIntoCurrentBlock(controller, decl);
-    this.argumentRecorderIdent = ident;
-  }
-
-  leave (controller: Controller): Node {
-    const currentNode = controller.current();
-    const shouldCaptureValue = toBeCaptured(controller);
-    // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
-    const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
-    const resultNode = shouldCaptureArgument ? this._captureArgument(controller) : currentNode;
-    return resultNode;
-  }
-
-  isArgumentModified (): boolean {
-    return !!this.argumentModified;
-  }
-
-  isLeaving (controller: Controller): boolean {
-    return this.argNode === controller.current();
-  }
-
-  captureNode (controller: Controller): CallExpression {
-    return this._insertRecorderNode(controller, '_tap');
-  }
-
-  _captureArgument (controller: Controller): CallExpression {
-    return this._insertRecorderNode(controller, '_rec');
-  }
-
-  saveLoc (controller: Controller): void {
-    const currentNode = controller.current();
-    const targetLoc = this._calculateLoc(controller);
-    this.locations.set(currentNode, targetLoc);
-  }
-
-  _targetLoc (controller: Controller): Position | undefined {
-    const currentNode = controller.current();
-    return this.locations.get(currentNode);
-  }
-
-  _calculateLoc (controller: Controller): Position {
-    const relativeAstPath = this._relativeAstPath(controller);
-    const code = this.assertionCode;
-    const ast = this.callexp;
-    const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue, key: string | number) => parent[key], ast);
-    assert(this.callexp.loc, 'callexp.loc must exist');
-    const offset = this.callexp.loc.start;
-    return locationOf(targetNodeInAst, offset, code);
-  }
-
-  _relativeAstPath (controller: Controller): (string | number)[] {
-    const astPath = controller.path();
-    assert(astPath, 'astPath must exist');
-    return astPath.slice(this.assertionPath.length);
-  }
-
-  _insertRecorderNode (controller: Controller, methodName: string): CallExpression {
-    const currentNode = controller.current();
-    const relativeAstPath = this._relativeAstPath(controller);
-    const targetLoc = this._targetLoc(controller);
-    assert(targetLoc, 'targetLoc must exist');
-
-    const types = new NodeCreator(currentNode);
-    const args = [
-      currentNode,
-      types.valueToNode(relativeAstPath.join('/')),
-      types.valueToNode(targetLoc.column)
-      // types.valueToNode(targetLoc.line)
-    ];
-
-    const receiver = this.argumentRecorderIdent;
-    const newNode = types.callExpression(
-      types.memberExpression(receiver, types.identifier(methodName)),
-      args as Array<Expression | SpreadElement>
-    );
-    this.argumentModified = true;
-    return newNode;
   }
 }
