@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "semistandard"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "globals": {
+    "NodeJS": "readonly"
+  }
+}

@@ -15,15 +15,17 @@
     "@types/estree": "^1.0.1",
     "@types/esutils": "^2.0.0",
     "@types/node": "^18.15.12",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
     "acorn": "^8.8.0",
     "escodegen": "^2.0.0",
+    "eslint": "^8.39.0",
+    "eslint-config-semistandard": "^17.0.0",
     "espurify": "^3.0.0",
     "rimraf": "^5.0.0",
     "rollup": "^3.0.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-externals": "^5.1.2",
-    "semistandard": "^16.0.1",
-    "snazzy": "^9.0.0",
     "typescript": "^5.0.4"
   },
   "scripts": {
@@ -32,17 +34,14 @@
     "build:clean": "rimraf dist",
     "build:mjs": "tsc",
     "build:cjs": "rollup -c",
-    "lint": "semistandard --verbose src/**/*.mjs test/*.mjs | snazzy",
-    "fmt": "semistandard --fix src/**/*.mjs test/*.mjs",
+    "lint": "npm run lint:src && npm run lint:test",
+    "lint:src": "eslint src --ext .mts",
+    "lint:test": "eslint test --ext .mjs",
+    "fix": "npm run fix:src && npm run fix:test",
+    "fix:src": "npm run lint:src -- --fix",
+    "fix:test": "npm run lint:test -- --fix",
     "test:unit": "node --no-warnings --test --test-reporter=dot test/*test.mjs test/**/*test.mjs",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' test/*test.mjs test/**/*test.mjs",
     "test": "npm run lint && npm run test:unit"
-  },
-  "semistandard": {
-    "globals": [
-      "describe",
-      "beforeEach",
-      "it"
-    ]
   }
 }
