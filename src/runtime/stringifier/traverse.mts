@@ -1,27 +1,68 @@
 // minimal port of substack's traverse with Map / Set support
+import { strict as assert } from 'node:assert';
 
-export function traverseAny (root, cb) {
+type BeforeCallback = (this: State, node: any) => void;
+type PreCallback = (this: State, childNode: any, key: string | number, preChildState: State) => void;
+type PostCallback = (this: State, childState: State) => void;
+type AfterCallback = (this: State, node: any) => void;
+
+export type State = {
+  node: any,
+  path: Array<string | number>,
+  parent: State,
+  parents: Array<State>,
+  key: string | number,
+  isRoot: boolean,
+  level: number,
+  circular: State | null,
+  keys: Array<string | number> | null,
+  size: number | null,
+  isLast?: boolean,
+  before: (f: BeforeCallback) => void,
+  after: (f: AfterCallback) => void,
+  pre: (f: PreCallback) => void,
+  post: (f: PostCallback) => void,
+  bailOut: () => void,
+  skip: () => void
+};
+
+type Modifiers = {
+  before?: BeforeCallback,
+  after?: AfterCallback,
+  pre?: PreCallback,
+  post?: PostCallback
+};
+
+export type InitialState = {
+  path: Array<string | number>,
+  parents: Array<State>
+};
+
+export type TraverseCallback = (item: any, state: State) => void;
+
+export function traverseAny (root: any, cb: TraverseCallback): void {
   const initialState = {
     path: [],
     parents: []
   };
-  return traverseWith(root, cb, initialState);
+  traverseWith(root, cb, initialState);
 }
 
 class BailOut extends Error {}
+const emptyArray: (string | number)[] = [];
 
-export function traverseWith (root, cb, initialState) {
+export function traverseWith (root: any, cb: TraverseCallback, initialState: InitialState): void {
   const { path, parents } = initialState;
   try {
 
-    (function walker (node) {
-      const modifiers = {};
+    (function walker (node: any): State {
+      const modifiers: Modifiers = {};
       let keepGoing = true;
-      const state = {
+      const state: State = {
         node : node,
-        path : [].concat(path),
+        path : ([] as (string|number)[]).concat(path),
         parent : parents[parents.length - 1],
-        parents : [].concat(parents),
+        parents : ([] as State[]).concat(parents),
         key : path.slice(-1)[0],
         isRoot : path.length === 0,
         level : path.length,
@@ -38,11 +79,11 @@ export function traverseWith (root, cb, initialState) {
         skip : function () { keepGoing = false; }
       };
 
-      function hasChildren() {
+      function hasChildren(): boolean {
         return typeof state.node === 'object' && state.node !== null;
       }
 
-      function markCircularRef() {
+      function markCircularRef(): void {
         for (let parent of parents) {
           if (parent.node === node) {
             state.circular = parent;
@@ -51,7 +92,7 @@ export function traverseWith (root, cb, initialState) {
         }
       }
 
-      function calculateChildrenSize() {
+      function calculateChildrenSize(): void {
         if (Array.isArray(state.node)) {
           state.size = state.node.length;
         } else if (state.node instanceof Set) {
@@ -82,14 +123,14 @@ export function traverseWith (root, cb, initialState) {
       if (hasChildren() && !state.circular) {
         parents.push(state);
 
-        const handleChild = function (key, value, index) {
+        const handleChild = function (key: string | number, value: any, index: number) {
           path.push(key);
           const childNode = value;
           const preChildState = Object.assign({}, state, {
             node : childNode,
-            path : [].concat(path),
+            path : ([] as (string|number)[]).concat(path),
             parent : parents[parents.length - 1],
-            parents : [].concat(parents),
+            parents : ([] as State[]).concat(parents),
             key : path.slice(-1)[0],
             isRoot : path.length === 0,
             level : path.length,
@@ -99,6 +140,7 @@ export function traverseWith (root, cb, initialState) {
             modifiers.pre.call(state, childNode, key, preChildState);
           }
           const childState = walker(childNode);
+          assert(state.size !== null, 'state.size should be set');
           childState.isLast = (index == state.size - 1);
           if (modifiers.post) {
             modifiers.post.call(state, childState);

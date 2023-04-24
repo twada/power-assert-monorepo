@@ -1,6 +1,10 @@
 import { typeName } from './type-name.mjs';
 import { traverseWith } from './traverse.mjs';
 import { strategies as s } from './strategies.mjs';
+import type { State, InitialState, TraverseCallback } from './traverse.mjs';
+import type { Accumulator, ValueHandler, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mjs';
+
+type StringifyCallback = (push: CollectorFunc, item: any, state: State) => CollectorFunc;
 
 function defaultHandlers () {
   return {
@@ -37,10 +41,24 @@ function defaultOptions () {
   };
 }
 
-function createStringifier (customOptions) {
-  const options = Object.assign({}, defaultOptions(), customOptions);
+type StringifyOptions = {
+  maxDepth?: number | null,
+  indent?: string | null,
+  anonymous?: string,
+  circular?: string,
+  snip?: string,
+  lineSeparator?: string,
+  handlers?: {
+    [key: string]: ValueHandler
+  }
+};
+
+type StringifyConfigAndHandlers = StringifyConfig & { handlers?: { [key: string]: ValueHandler } };
+
+function createStringifier (customOptions?: StringifyOptions): StringifyCallback {
+  const options: StringifyConfigAndHandlers = Object.assign({}, defaultOptions(), customOptions);
   const handlers = Object.assign({}, defaultHandlers(), options.handlers);
-  const handlerFor = function handlerFor (val) {
+  const handlerFor = function handlerFor (val: any): ValueHandler {
     const tname = typeName(val);
     if (typeof handlers[tname] === 'function') {
       return handlers[tname];
@@ -51,21 +69,21 @@ function createStringifier (customOptions) {
     return handlers['@default'];
   };
 
-  const createMapKeyStringifier = () => {
+  const createMapKeyStringifier: MapKeyStringifierFactory = () => {
     const reducer = createStringifier(options);
-    return function (val, childState) {
+    return function (val: any, childState: State) {
       return walkWith (val, reducer, childState);
     };
   };
 
-  return function stringifyAny (push, x, state) {
+  return function stringifyAny (push: CollectorFunc, x: any, state: State) {
     const context = state;
-    let handler = handlerFor(context.node);
+    let handler: ValueHandler = handlerFor(context.node);
     if (context.parent && Array.isArray(context.parent.node) && !(context.key in context.parent.node)) {
       // sparse arrays
       handler = s.always('');
     }
-    const acc = {
+    const acc: Accumulator = {
       createMapKeyStringifier,
       context: context,
       options: options,
@@ -76,34 +94,33 @@ function createStringifier (customOptions) {
   };
 }
 
-function walkWith (val, reducer, initialState) {
+function walkWith (val: any, reducer: StringifyCallback, initialState: InitialState): string {
   const root = val;
-  const buffer = [];
-  const acc = function (str) {
+  const buffer: string[] = [];
+  const acc: CollectorFunc = function (str) {
     buffer.push(str);
   };
-  const cb = (x, state) => {
+  const cb: TraverseCallback = (x: any, state: State) => {
     reducer.call(null, acc, x, state);
   };
   traverseWith(root, cb, initialState);
   return buffer.join('');
 }
 
-function walk (val, reducer) {
+function walk (val: any, reducer: StringifyCallback): string {
   const initialState = {
     path: [],
-    parents: [],
-    alive: true
+    parents: []
   };
   return walkWith (val, reducer, initialState);
 }
 
-export function stringify (val, options) {
+export function stringify (val: any, options?: StringifyOptions): string {
   return walk(val, createStringifier(options));
 }
 
-export function stringifier (options) {
-  return function (val) {
+export function stringifier (options?: StringifyOptions): (val: any) => string {
+  return function (val: any) {
     return walk(val, createStringifier(options));
   };
 }

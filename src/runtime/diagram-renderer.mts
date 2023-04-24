@@ -1,17 +1,25 @@
 import { stringifier } from './stringifier/index.mjs';
 const stringify = stringifier();
-const createRow = (numCols, initial) => new Array(numCols).fill(initial);
-const rightToLeft = (a, b) => b.leftIndex - a.leftIndex;
+const createRow = (numCols: number, initial: string) => new Array<string>(numCols).fill(initial);
+const rightToLeft = (a: Log, b: Log) => b.leftIndex - a.leftIndex;
+
+type Log = {
+  value: any,
+  leftIndex: number
+};
 
 export class DiagramRenderer {
-  constructor (assertionLine) {
+  readonly assertionLine: string;
+  readonly rows: string[][];
+
+  constructor (assertionLine: string) {
     this.assertionLine = assertionLine;
+    this.rows = [];
   }
 
-  render (logs) {
-    const events = [].concat(logs);
+  render (logs: Log[]): string {
+    const events: Log[] = ([] as Log[]).concat(logs);
     events.sort(rightToLeft);
-    this.rows = [];
     const initialVertivalBarLength = 1;
     for (let i = 0; i <= initialVertivalBarLength; i += 1) {
       this.addOneMoreRow();
@@ -25,38 +33,38 @@ export class DiagramRenderer {
     return wrote.join('\n');
   }
 
-  newRowFor (assertionLine) {
-    return createRow(this.widthOf(assertionLine), ' ');
+  _newRowFor (str: string): string[] {
+    return createRow(this.widthOf(str), ' ');
   }
 
-  addOneMoreRow () {
-    this.rows.push(this.newRowFor(this.assertionLine));
+  addOneMoreRow (): void {
+    this.rows.push(this._newRowFor(this.assertionLine));
   }
 
-  lastRow () {
+  lastRow (): string[] {
     return this.rows[this.rows.length - 1];
   }
 
-  renderVerticalBarAt (columnIndex) {
+  renderVerticalBarAt (columnIndex: number): void {
     const lastRowIndex = this.rows.length - 1;
     for (let i = 0; i < lastRowIndex; i += 1) {
       this.rows[i].splice(columnIndex, 1, '|');
     }
   }
 
-  renderValueAt (columnIndex, dumpedValue) {
+  renderValueAt (columnIndex: number, dumpedValue: string): void {
     const width = this.widthOf(dumpedValue);
     for (let i = 0; i < width; i += 1) {
       this.lastRow().splice(columnIndex + i, 1, dumpedValue.charAt(i));
     }
   }
 
-  isOverlapped (prevCapturing, nextCaputuring, dumpedValue) {
+  isOverlapped (prevCapturing: Log | undefined, nextCaputuring: Log, dumpedValue: string): boolean {
     return (typeof prevCapturing !== 'undefined') && this.startColumnFor(prevCapturing) <= (this.startColumnFor(nextCaputuring) + this.widthOf(dumpedValue));
   }
 
-  constructRows (capturedEvents) {
-    let prevCaptured;
+  constructRows (capturedEvents: Log[]): void {
+    let prevCaptured: Log | undefined = undefined;
     capturedEvents.forEach((captured) => {
       const dumpedValue = this.stringify(captured.value);
       if (this.isOverlapped(prevCaptured, captured, dumpedValue)) {
@@ -68,16 +76,16 @@ export class DiagramRenderer {
     });
   }
 
-  startColumnFor (captured) {
+  startColumnFor (captured: Log) {
     return this.widthOf(this.assertionLine.slice(0, captured.leftIndex));
   }
 
-  widthOf (str) {
+  widthOf (str: string): number {
     // TODO AmbiguousEastAsianCharWidth
     return str.length;
   }
 
-  stringify (input) {
+  stringify (input: any): string {
     return stringify(input);
   }
 }

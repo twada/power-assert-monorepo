@@ -1,8 +1,11 @@
 import { DiagramRenderer } from './diagram-renderer.mjs';
+import { strict as assert } from 'node:assert';
 
-const isPromiseLike = o => o !== null && typeof o === 'object' && typeof o.then === 'function' && typeof o.catch === 'function';
+function isPromiseLike(o: any): o is Promise<any> {
+  return o !== null && typeof o === 'object' && typeof o.then === 'function' && typeof o.catch === 'function';
+}
 
-const mark = (_this, s) => {
+const mark = (_this: $Promise$, s: 'resolved' | 'rejected') => {
   return function () {
     const args = Array.from(arguments);
     _this.status = s;
@@ -11,16 +14,35 @@ const mark = (_this, s) => {
 };
 
 class $Promise$ {
-  constructor (prms) {
+  status: 'pending' | 'resolved' | 'rejected';
+  value: any;
+  constructor (prms: Promise<any>) {
     this.status = 'pending';
     prms.then(mark(this, 'resolved'), mark(this, 'rejected'));
   }
 }
 
-const wrap = v => isPromiseLike(v) ? new $Promise$(v) : v;
+const wrap = (v: any) => isPromiseLike(v) ? new $Promise$(v) : v;
+
+type WeavedLog = {
+  value: any;
+  espath: string;
+  left: number;
+};
+
+type Recorded = {
+  value: any;
+  logs: WeavedLog[];
+};
 
 class ArgumentRecorder {
-  constructor (powerAssert, argumentNumber) {
+  readonly _powerAssert: PowerAssert;
+  readonly _argumentNumber: number;
+  _logs: WeavedLog[];
+  _recorded: Recorded | null;
+  _val: any;
+
+  constructor (powerAssert: PowerAssert, argumentNumber: number) {
     this._powerAssert = powerAssert;
     this._argumentNumber = argumentNumber;
     this._logs = [];
@@ -28,18 +50,19 @@ class ArgumentRecorder {
     this._val = null;
   }
 
-  val () {
+  val (): any {
     return this._val;
   }
 
-  eject () {
+  eject (): Recorded {
     const ret = this._recorded;
+    assert(ret !== null, 'eject() should be called after recording');
     this._recorded = null;
     this._val = null;
     return ret;
   }
 
-  _tap (value, espath, left) {
+  _tap (value: any, espath: string, left: number): any {
     this._logs.push({
       value: wrap(value),
       espath,
@@ -48,7 +71,7 @@ class ArgumentRecorder {
     return value;
   }
 
-  _rec (value, espath, left) {
+  _rec (value: any, espath: string, left: number) {
     try {
       const log = {
         value: wrap(value),
@@ -74,7 +97,7 @@ class ArgumentRecorder {
     } finally {
       this._recorded = {
         value,
-        logs: [].concat(this._logs)
+        logs: ([] as WeavedLog[]).concat(this._logs)
       };
       this._val = value;
       this._logs = [];
@@ -82,7 +105,7 @@ class ArgumentRecorder {
   }
 }
 
-const _pwmeta = (content, extra) => {
+const _pwmeta = (content: string, extra: any) => {
   return Object.assign({
     transpiler: 'espower3',
     version: '0.0.0',
@@ -90,7 +113,13 @@ const _pwmeta = (content, extra) => {
   }, extra);
 };
 
-const val = (v) => {
+type PowerAssertMetadata = {
+  transpiler: string;
+  version: string;
+  content: string;
+};
+
+const val = (v: any) => {
   if (typeof v.val === 'function') {
     return v.val();
   } else {
@@ -98,7 +127,7 @@ const val = (v) => {
   }
 };
 
-const eject = (v) => {
+const eject = (v: any) => {
   if (typeof v.eject === 'function') {
     return v.eject();
   } else {
@@ -107,22 +136,26 @@ const eject = (v) => {
 };
 
 class PowerAssert {
-  constructor (callee, receiver, assertionMetadata) {
+  readonly callee: Function;
+  readonly receiver: any;
+  readonly assertionMetadata: PowerAssertMetadata;
+
+  constructor (callee: Function, receiver: any, assertionMetadata: PowerAssertMetadata) {
     this.callee = callee;
     this.receiver = receiver;
     this.assertionMetadata = assertionMetadata;
   }
 
-  newArgumentRecorder (argumentNumber) {
+  newArgumentRecorder (argumentNumber: number): ArgumentRecorder {
     return new ArgumentRecorder(this, argumentNumber);
   }
 
-  run (...args) {
+  run (...args: any[]): any {
     const poweredArgs = Array.from(args);
     const actualArgs = poweredArgs.map((a) => val(a));
     try {
       return this.callee.apply(this.receiver, actualArgs);
-    } catch (e) {
+    } catch (e: any) {
       if (!/^AssertionError/.test(e.name)) {
         throw e;
       }
@@ -150,7 +183,8 @@ class PowerAssert {
   }
 }
 
-const _power_ = (callee, receiver, content, extra) => {
+type PowerAssertRuntime = (callee: Function, receiver: any, content: string, extra: any) => PowerAssert;
+const _power_: PowerAssertRuntime = (callee: Function, receiver: any, content: string, extra: any) => {
   return new PowerAssert(callee, receiver, _pwmeta(content, extra));
 };
 
