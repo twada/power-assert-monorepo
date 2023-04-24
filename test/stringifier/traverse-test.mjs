@@ -1,6 +1,6 @@
 import test from 'node:test';
 import { strict as assert } from 'node:assert';
-import { traverseAny } from '../../src/runtime/stringifier/traverse.mjs';
+import { traverseAny } from '../../dist/runtime/stringifier/traverse.mjs';
 
 test('traverse flat array', () => {
   const acc = [];

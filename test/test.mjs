@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../src/transpiler/index.mjs';
+import { espowerAst } from '../dist/transpiler/index.mjs';
 import assert from 'node:assert/strict';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -33,7 +33,7 @@ describe('espowerAst', () => {
 
       const ast = parseFixture(fixtureFilepath);
       const modifiedAst = espowerAst(ast, {
-        runtime: '../../../src/runtime/runtime.mjs',
+        runtime: '../../../dist/runtime/runtime.mjs',
         code: readFileSync(fixtureFilepath).toString()
       });
       const actual = generate(modifiedAst);
