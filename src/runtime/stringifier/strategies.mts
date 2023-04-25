@@ -1,6 +1,11 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 import { typeName } from './type-name.mjs';
 import type { State } from './traverse.mjs';
+import { strict as assert } from 'node:assert';
+
+const END = Symbol('end');
+const ITERATE = Symbol('iterate');
+type Direction = typeof END | typeof ITERATE;
 
 export type StringifyConfig = {
   maxDepth: number | null,
@@ -25,36 +30,38 @@ export type Accumulator = {
   createMapKeyStringifier: MapKeyStringifierFactory
 };
 type Guard = (kvp: KeyValuePair, acc: Accumulator) => boolean;
-// type EndOrIterate = typeof END | typeof ITERATE;
-export type ValueHandler = (acc: Accumulator, x: any) => void;
-type Composable = (next: ValueHandler) => ValueHandler;
 
-// could be replaced with symbols?
-const END = {};
-const ITERATE = {};
+export type Component = (acc: Accumulator, x: any) => Direction;
+type Composable = (next: Component) => Component;
 
-// arguments should end with end or iterate
-// eslint-disable-next-line @typescript-eslint/ban-types
-function compose (...filters: Function[]): ValueHandler {
-  const chainedResult = filters.reduceRight((right, left) => left(right));
-  return chainedResult as ValueHandler;
+// chain of components should end with end() or iterate()
+function compose (...components: Composable[]): Component {
+  return components.reduceRight((right: Component, left: Composable) => left(right), terminator);
 }
 
+const terminator: Component = (_acc: Accumulator, _x: any) => {
+  assert(false, 'chain of components should end with end() or iterate()');
+};
+
 // skip children
-function end (): ValueHandler {
-  return (acc: Accumulator, _x: any) => {
-    acc.context.skip();
-    return END;
+function end (): Composable {
+  return (_next: Component) => {
+    return (acc: Accumulator, _x: any) => {
+      acc.context.skip();
+      return END;
+    };
   };
 }
 
 // iterate children
-function iterate (): ValueHandler {
-  return (_acc: Accumulator, _x: any) => ITERATE;
+function iterate (): Composable {
+  return (_next: Component) => {
+    return (_acc: Accumulator, _x: any) => ITERATE;
+  };
 }
 
 function allowedKeys (orderedAllowList?: string[]): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       if (!Array.isArray(x) && Array.isArray(orderedAllowList)) {
         acc.context.keys = orderedAllowList.filter((propKey) => Object.prototype.hasOwnProperty.call(x, propKey));
@@ -64,7 +71,7 @@ function allowedKeys (orderedAllowList?: string[]): Composable {
   };
 }
 
-function when (guard: Guard, then: ValueHandler): Composable {
+function when (guard: Guard, then: Component): Composable {
   return (next) => {
     return (acc: Accumulator, x: any) => {
       const kvp = {
@@ -80,7 +87,7 @@ function when (guard: Guard, then: ValueHandler): Composable {
 }
 
 function constructorName (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       const name = typeName(x);
       if (name === '') {
@@ -94,7 +101,7 @@ function constructorName (): Composable {
 }
 
 function objectSize (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.push(`(${acc.context.size})`);
       return next(acc, x);
@@ -103,7 +110,7 @@ function objectSize (): Composable {
 }
 
 function always (str: string): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.push(str);
       return next(acc, x);
@@ -112,7 +119,7 @@ function always (str: string): Composable {
 }
 
 function optionValue (key: string): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.push(acc.options[key]);
       return next(acc, x);
@@ -124,7 +131,7 @@ type ReplacerFunc = (this: any, key: string, value: any) => any;
 type ReplacerAllowList = (string | number)[] | null;
 type Replacer = ReplacerFunc | ReplacerAllowList;
 function json (replacer?: Replacer): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       if (typeof replacer === 'function') {
         acc.push(JSON.stringify(x, replacer));
@@ -139,7 +146,7 @@ function json (replacer?: Replacer): Composable {
 }
 
 function toStr (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.push(x.toString());
       return next(acc, x);
@@ -148,7 +155,7 @@ function toStr (): Composable {
 }
 
 function bigint (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.push(BigInt(x).toString() + 'n');
       return next(acc, x);
@@ -157,7 +164,7 @@ function bigint (): Composable {
 }
 
 function decorateArray (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.context.before(function (_node) {
         acc.push('[');
@@ -178,7 +185,7 @@ function decorateArray (): Composable {
 }
 
 function decorateSet (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.context.before(function (_node) {
         acc.push('{');
@@ -199,7 +206,7 @@ function decorateSet (): Composable {
 }
 
 function decorateMap (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       const stringifyMapKey = acc.createMapKeyStringifier();
       acc.context.before(function (_node) {
@@ -223,7 +230,7 @@ function decorateMap (): Composable {
 }
 
 function decorateObject (): Composable {
-  return (next: ValueHandler) => {
+  return (next: Component) => {
     return (acc: Accumulator, x: any) => {
       acc.context.before(function (_node) {
         acc.push('{');
@@ -273,23 +280,23 @@ function afterEachChild (childContext: State, push: CollectorFunc) {
   }
 }
 
-function nan (kvp: KeyValuePair, _acc: Accumulator) {
+function nan (kvp: KeyValuePair, _acc: Accumulator): boolean {
   return kvp.value !== kvp.value; // eslint-disable-line no-self-compare
 }
 
-function positiveInfinity (kvp: KeyValuePair, _acc: Accumulator) {
+function positiveInfinity (kvp: KeyValuePair, _acc: Accumulator): boolean {
   return !isFinite(kvp.value) && kvp.value === Infinity;
 }
 
-function negativeInfinity (kvp: KeyValuePair, _acc: Accumulator) {
+function negativeInfinity (kvp: KeyValuePair, _acc: Accumulator): boolean {
   return !isFinite(kvp.value) && kvp.value !== Infinity;
 }
 
-function circular (kvp: KeyValuePair, acc: Accumulator) {
+function circular (_kvp: KeyValuePair, acc: Accumulator): boolean {
   return !!acc.context.circular;
 }
 
-function maxDepth (kvp: KeyValuePair, acc: Accumulator): boolean {
+function maxDepth (_kvp: KeyValuePair, acc: Accumulator): boolean {
   return !!(acc.options.maxDepth && acc.options.maxDepth <= acc.context.level);
 }
 

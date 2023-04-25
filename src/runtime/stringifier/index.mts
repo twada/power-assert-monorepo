@@ -3,7 +3,7 @@ import { typeName } from './type-name.mjs';
 import { traverseWith } from './traverse.mjs';
 import { strategies as s } from './strategies.mjs';
 import type { State, InitialState, TraverseCallback } from './traverse.mjs';
-import type { Accumulator, ValueHandler, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mjs';
+import type { Accumulator, Component, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mjs';
 
 type StringifyCallback = (push: CollectorFunc, item: any, state: State) => CollectorFunc;
 
@@ -50,16 +50,16 @@ type StringifyOptions = {
   snip?: string,
   lineSeparator?: string,
   handlers?: {
-    [key: string]: ValueHandler
+    [key: string]: Component
   }
 };
 
-type StringifyConfigAndHandlers = StringifyConfig & { handlers?: { [key: string]: ValueHandler } };
+type StringifyConfigAndHandlers = StringifyConfig & { handlers?: { [key: string]: Component } };
 
 function createStringifier (customOptions?: StringifyOptions): StringifyCallback {
   const options: StringifyConfigAndHandlers = Object.assign({}, defaultOptions(), customOptions);
   const handlers = Object.assign({}, defaultHandlers(), options.handlers);
-  const handlerFor = function handlerFor (val: any): ValueHandler {
+  const handlerFor = function handlerFor (val: any): Component {
     const tname = typeName(val);
     if (typeof handlers[tname] === 'function') {
       return handlers[tname];
@@ -77,9 +77,9 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
     };
   };
 
-  return function stringifyAny (push: CollectorFunc, x: any, state: State) {
+  return function stringifyAny (push: CollectorFunc, x: any, state: State): CollectorFunc {
     const context = state;
-    let handler: ValueHandler = handlerFor(context.node);
+    let handler: Component = handlerFor(context.node);
     if (context.parent && Array.isArray(context.parent.node) && !(context.key in context.parent.node)) {
       // sparse arrays
       handler = s.always('');
