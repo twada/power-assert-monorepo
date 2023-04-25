@@ -1,8 +1,6 @@
+/* eslint @typescript-eslint/no-explicit-any: 0 */
 import { typeName } from './type-name.mjs';
 import type { State } from './traverse.mjs';
-
-export type ValueHandler = (acc: Accumulator, x: any) => void;
-export type CollectorFunc = (str: string) => void;
 
 export type StringifyConfig = {
   maxDepth: number | null,
@@ -16,6 +14,8 @@ export type StringifyConfig = {
 type KeyValueStore = { [key: string | number]: any };
 type KeyValuePair = { key: string | number, value: any };
 
+export type CollectorFunc = (str: string) => void;
+
 export type MapKeyStringifier = (val: any, childState: State) => string;
 export type MapKeyStringifierFactory = () => MapKeyStringifier;
 export type Accumulator = {
@@ -25,7 +25,8 @@ export type Accumulator = {
   createMapKeyStringifier: MapKeyStringifierFactory
 };
 type Guard = (kvp: KeyValuePair, acc: Accumulator) => boolean;
-type EndOrIterate = typeof END | typeof ITERATE;
+// type EndOrIterate = typeof END | typeof ITERATE;
+export type ValueHandler = (acc: Accumulator, x: any) => void;
 type Composable = (next: ValueHandler) => ValueHandler;
 
 // could be replaced with symbols?
@@ -33,15 +34,15 @@ const END = {};
 const ITERATE = {};
 
 // arguments should end with end or iterate
-function compose (...args: Function[]): ValueHandler {
-  const filters = Array.from(args);
+// eslint-disable-next-line @typescript-eslint/ban-types
+function compose (...filters: Function[]): ValueHandler {
   const chainedResult = filters.reduceRight((right, left) => left(right));
   return chainedResult as ValueHandler;
 }
 
 // skip children
 function end (): ValueHandler {
-  return (acc: Accumulator, x: any) => {
+  return (acc: Accumulator, _x: any) => {
     acc.context.skip();
     return END;
   };
@@ -49,14 +50,14 @@ function end (): ValueHandler {
 
 // iterate children
 function iterate (): ValueHandler {
-  return (acc: Accumulator, x: any) => ITERATE;
+  return (_acc: Accumulator, _x: any) => ITERATE;
 }
 
 function allowedKeys (orderedAllowList?: string[]): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
       if (!Array.isArray(x) && Array.isArray(orderedAllowList)) {
-        acc.context.keys = orderedAllowList.filter((propKey) => x.hasOwnProperty(propKey));
+        acc.context.keys = orderedAllowList.filter((propKey) => Object.prototype.hasOwnProperty.call(x, propKey));
       }
       return next(acc, x);
     };
@@ -158,14 +159,14 @@ function bigint (): Composable {
 function decorateArray (): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
-      acc.context.before(function (node) {
+      acc.context.before(function (_node) {
         acc.push('[');
       });
-      acc.context.after(function (node) {
+      acc.context.after(function (_node) {
         afterAllChildren(this, acc.push, acc.options);
         acc.push(']');
       });
-      acc.context.pre(function (val, key) {
+      acc.context.pre(function (_val, _key) {
         beforeEachChild(this, acc.push, acc.options);
       });
       acc.context.post(function (childContext) {
@@ -179,14 +180,14 @@ function decorateArray (): Composable {
 function decorateSet (): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
-      acc.context.before(function (node) {
+      acc.context.before(function (_node) {
         acc.push('{');
       });
-      acc.context.after(function (node) {
+      acc.context.after(function (_node) {
         afterAllChildren(this, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.pre(function (val, key) {
+      acc.context.pre(function (_val, _key) {
         beforeEachChild(this, acc.push, acc.options);
       });
       acc.context.post(function (childContext) {
@@ -201,10 +202,10 @@ function decorateMap (): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
       const stringifyMapKey = acc.createMapKeyStringifier();
-      acc.context.before(function (node) {
+      acc.context.before(function (_node) {
         acc.push('{');
       });
-      acc.context.after(function (node) {
+      acc.context.after(function (_node) {
         afterAllChildren(this, acc.push, acc.options);
         acc.push('}');
       });
@@ -224,10 +225,10 @@ function decorateMap (): Composable {
 function decorateObject (): Composable {
   return (next: ValueHandler) => {
     return (acc: Accumulator, x: any) => {
-      acc.context.before(function (node) {
+      acc.context.before(function (_node) {
         acc.push('{');
       });
-      acc.context.after(function (node) {
+      acc.context.after(function (_node) {
         afterAllChildren(this, acc.push, acc.options);
         acc.push('}');
       });
@@ -272,15 +273,15 @@ function afterEachChild (childContext: State, push: CollectorFunc) {
   }
 }
 
-function nan (kvp: KeyValuePair, acc: Accumulator) {
+function nan (kvp: KeyValuePair, _acc: Accumulator) {
   return kvp.value !== kvp.value; // eslint-disable-line no-self-compare
 }
 
-function positiveInfinity (kvp: KeyValuePair, acc: Accumulator) {
+function positiveInfinity (kvp: KeyValuePair, _acc: Accumulator) {
   return !isFinite(kvp.value) && kvp.value === Infinity;
 }
 
-function negativeInfinity (kvp: KeyValuePair, acc: Accumulator) {
+function negativeInfinity (kvp: KeyValuePair, _acc: Accumulator) {
   return !isFinite(kvp.value) && kvp.value !== Infinity;
 }
 
@@ -368,7 +369,8 @@ const strategies = {
       end()
     );
   },
-  array: (predicate?: Function | null) => {
+  // array: (predicate?: Function | null) => {
+  array: () => {
     return compose(
       omitCircular,
       omitMaxDepth,
@@ -377,7 +379,8 @@ const strategies = {
       iterate()
     );
   },
-  set: (predicate?: Function | null) => {
+  // set: (predicate?: Function | null) => {
+  set: () => {
     return compose(
       omitCircular,
       omitMaxDepth,
@@ -388,7 +391,8 @@ const strategies = {
       iterate()
     );
   },
-  map: (predicate?: Function | null, orderedAllowList?: string[]) => {
+  // map: (predicate?: Function | null, orderedAllowList?: string[]) => {
+  map: (orderedAllowList?: string[]) => {
     return compose(
       omitCircular,
       omitMaxDepth,
@@ -400,7 +404,8 @@ const strategies = {
       iterate()
     );
   },
-  object: (predicate?: Function | null, orderedAllowList?: string[]) => {
+  // object: (predicate?: Function | null, orderedAllowList?: string[]) => {
+  object: (orderedAllowList?: string[]) => {
     return compose(
       omitCircular,
       omitMaxDepth,

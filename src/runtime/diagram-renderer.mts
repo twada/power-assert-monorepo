@@ -1,12 +1,13 @@
 import { stringifier } from './stringifier/index.mjs';
-const stringify = stringifier();
-const createRow = (numCols: number, initial: string) => new Array<string>(numCols).fill(initial);
-const rightToLeft = (a: Log, b: Log) => b.leftIndex - a.leftIndex;
 
-type Log = {
-  value: any,
+type LogWithLeftIndex = {
+  value: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   leftIndex: number
 };
+
+const stringify = stringifier();
+const createRow = (numCols: number, initial: string) => new Array<string>(numCols).fill(initial);
+const rightToLeft = (a: LogWithLeftIndex, b: LogWithLeftIndex) => b.leftIndex - a.leftIndex;
 
 export class DiagramRenderer {
   readonly assertionLine: string;
@@ -17,8 +18,8 @@ export class DiagramRenderer {
     this.rows = [];
   }
 
-  render (logs: Log[]): string {
-    const events: Log[] = ([] as Log[]).concat(logs);
+  render (logs: LogWithLeftIndex[]): string {
+    const events: LogWithLeftIndex[] = ([] as LogWithLeftIndex[]).concat(logs);
     events.sort(rightToLeft);
     const initialVertivalBarLength = 1;
     for (let i = 0; i <= initialVertivalBarLength; i += 1) {
@@ -59,12 +60,12 @@ export class DiagramRenderer {
     }
   }
 
-  isOverlapped (prevCapturing: Log | undefined, nextCaputuring: Log, dumpedValue: string): boolean {
+  isOverlapped (prevCapturing: LogWithLeftIndex | undefined, nextCaputuring: LogWithLeftIndex, dumpedValue: string): boolean {
     return (typeof prevCapturing !== 'undefined') && this.startColumnFor(prevCapturing) <= (this.startColumnFor(nextCaputuring) + this.widthOf(dumpedValue));
   }
 
-  constructRows (capturedEvents: Log[]): void {
-    let prevCaptured: Log | undefined;
+  constructRows (capturedEvents: LogWithLeftIndex[]): void {
+    let prevCaptured: LogWithLeftIndex | undefined;
     capturedEvents.forEach((captured) => {
       const dumpedValue = this.stringify(captured.value);
       if (this.isOverlapped(prevCaptured, captured, dumpedValue)) {
@@ -76,7 +77,7 @@ export class DiagramRenderer {
     });
   }
 
-  startColumnFor (captured: Log) {
+  startColumnFor (captured: LogWithLeftIndex) {
     return this.widthOf(this.assertionLine.slice(0, captured.leftIndex));
   }
 
@@ -85,6 +86,7 @@ export class DiagramRenderer {
     return str.length;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stringify (input: any): string {
     return stringify(input);
   }

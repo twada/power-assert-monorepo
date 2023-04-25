@@ -1,11 +1,8 @@
+/* eslint @typescript-eslint/no-explicit-any: 0 */
 // minimal port of substack's traverse with Map / Set support
 import { strict as assert } from 'node:assert';
 
-type BeforeCallback = (this: State, node: any) => void;
-type PreCallback = (this: State, childNode: any, key: string | number, preChildState: State) => void;
-type PostCallback = (this: State, childState: State) => void;
-type AfterCallback = (this: State, node: any) => void;
-
+/* eslint-disable no-use-before-define */
 export type State = {
   node: any,
   path: Array<string | number>,
@@ -25,13 +22,12 @@ export type State = {
   bailOut: () => void,
   skip: () => void
 };
+/* eslint-ensable no-use-before-define */
 
-type Modifiers = {
-  before?: BeforeCallback,
-  after?: AfterCallback,
-  pre?: PreCallback,
-  post?: PostCallback
-};
+export type BeforeCallback = (this: State, node: any) => void;
+export type PreCallback = (this: State, childNode: any, key: string | number, preChildState: State) => void;
+export type PostCallback = (this: State, childState: State) => void;
+export type AfterCallback = (this: State, node: any) => void;
 
 export type InitialState = {
   path: Array<string | number>,
@@ -39,6 +35,13 @@ export type InitialState = {
 };
 
 export type TraverseCallback = (item: any, state: State) => void;
+
+type Modifiers = {
+  before?: BeforeCallback,
+  after?: AfterCallback,
+  pre?: PreCallback,
+  post?: PostCallback
+};
 
 export function traverseAny (root: any, cb: TraverseCallback): void {
   const initialState = {
@@ -49,7 +52,6 @@ export function traverseAny (root: any, cb: TraverseCallback): void {
 }
 
 class BailOut extends Error {}
-const emptyArray: (string | number)[] = [];
 
 export function traverseWith (root: any, cb: TraverseCallback, initialState: InitialState): void {
   const { path, parents } = initialState;
@@ -108,7 +110,7 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
         calculateChildrenSize();
       }
 
-      cb.call(null, state.node, state);
+      cb(state.node, state);
 
       if (modifiers.before) {
         // users may hack state.keys to reorder iteration
@@ -140,7 +142,7 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
           }
           const childState = walker(childNode);
           assert(state.size !== null, 'state.size should be set');
-          childState.isLast = (index == state.size - 1);
+          childState.isLast = (index === state.size - 1);
           if (modifiers.post) {
             modifiers.post.call(state, childState);
           }

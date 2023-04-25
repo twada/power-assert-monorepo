@@ -243,8 +243,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
       return undefined;
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
+    leave: function (this: Controller, currentNode: Node, _parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
         const path = controller.path();

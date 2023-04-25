@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-explicit-any: 0 */
 import { typeName } from './type-name.mjs';
 import { traverseWith } from './traverse.mjs';
 import { strategies as s } from './strategies.mjs';
@@ -25,7 +26,7 @@ function defaultHandlers () {
     Object: s.object(),
     Set: s.set(),
     Map: s.map(),
-    Error: s.object(null, ['message', 'code']),
+    Error: s.object(['message', 'code']),
     '@default': s.object()
   };
 }
@@ -101,7 +102,7 @@ function walkWith (val: any, reducer: StringifyCallback, initialState: InitialSt
     buffer.push(str);
   };
   const cb: TraverseCallback = (x: any, state: State) => {
-    reducer.call(null, acc, x, state);
+    reducer(acc, x, state);
   };
   traverseWith(root, cb, initialState);
   return buffer.join('');
