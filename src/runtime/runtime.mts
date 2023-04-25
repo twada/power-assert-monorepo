@@ -36,12 +36,13 @@ function isPromiseLike (o: any): o is Promise<any> {
   return o !== null && typeof o === 'object' && typeof o.then === 'function' && typeof o.catch === 'function';
 }
 
-const mark = (_this: $Promise$, s: 'resolved' | 'rejected') => {
-  return function (...args: any[]) {
-    _this.status = s;
-    _this.value = args.length === 1 ? args[0] : args;
+type PromiseTapper = (...args: any[]) => void;
+function mark (wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseTapper {
+  return (...args: any[]) => {
+    wrapper.status = status;
+    wrapper.value = args.length === 1 ? args[0] : args;
   };
-};
+}
 
 class $Promise$ {
   status: 'pending' | 'resolved' | 'rejected';
@@ -55,34 +56,34 @@ class $Promise$ {
 const wrap = (v: any) => isPromiseLike(v) ? new $Promise$(v) : v;
 
 class ArgumentRecorderImpl implements ArgumentRecorder {
-  readonly _powerAssert: PowerAssert;
-  readonly _argumentNumber: number;
-  _logs: WeavedLog[];
-  _recorded: Recorded | null;
-  _val: any;
+  readonly #powerAssert: PowerAssert;
+  readonly #argumentNumber: number;
+  #logs: WeavedLog[];
+  #recorded: Recorded | null;
+  #val: any;
 
   constructor (powerAssert: PowerAssert, argumentNumber: number) {
-    this._powerAssert = powerAssert;
-    this._argumentNumber = argumentNumber;
-    this._logs = [];
-    this._recorded = null;
-    this._val = null;
+    this.#powerAssert = powerAssert;
+    this.#argumentNumber = argumentNumber;
+    this.#logs = [];
+    this.#recorded = null;
+    this.#val = null;
   }
 
-  val (): any {
-    return this._val;
+  actualValue (): any {
+    return this.#val;
   }
 
-  eject (): Recorded {
-    const ret = this._recorded;
+  ejectRecordedLog (): Recorded {
+    const ret = this.#recorded;
     assert(ret !== null, 'eject() should be called after recording');
-    this._recorded = null;
-    this._val = null;
+    this.#recorded = null;
+    this.#val = null;
     return ret;
   }
 
   _tap (value: any, espath: string, left: number): any {
-    this._logs.push({
+    this.#logs.push({
       value: wrap(value),
       espath,
       left
@@ -90,14 +91,14 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  _rec (value: any, espath: string, left: number) {
+  _rec (value: any, espath: string, left: number): ArgumentRecorder {
     try {
       const log = {
         value: wrap(value),
         espath,
         left
       };
-      this._logs.push(log);
+      this.#logs.push(log);
       if (typeof value === 'function') {
         value = new Proxy(value, {
           apply (target, thisArg, args) {
@@ -114,35 +115,27 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
       }
       return this;
     } finally {
-      this._recorded = {
+      this.#recorded = {
         value,
-        logs: ([] as WeavedLog[]).concat(this._logs)
+        logs: ([] as WeavedLog[]).concat(this.#logs)
       };
-      this._val = value;
-      this._logs = [];
+      this.#val = value;
+      this.#logs = [];
     }
   }
 }
 
-const _pwmeta = (content: string, extra?: any) => {
-  return Object.assign({
-    transpiler: 'espower3',
-    version: '0.0.0',
-    content
-  }, extra);
-};
-
-const val = (v: any) => {
-  if (typeof v.val === 'function') {
-    return v.val();
+const actual = (v: any) => {
+  if (typeof v.actualValue === 'function') {
+    return v.actualValue();
   } else {
     return v;
   }
 };
 
 const eject = (v: any) => {
-  if (typeof v.eject === 'function') {
-    return v.eject();
+  if (typeof v.ejectRecordedLog === 'function') {
+    return v.ejectRecordedLog();
   } else {
     return v;
   }
@@ -150,15 +143,15 @@ const eject = (v: any) => {
 
 class PowerAssertImpl implements PowerAssert {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  readonly callee: Function;
-  readonly receiver: any;
-  readonly assertionMetadata: PowerAssertMetadata;
+  readonly #callee: Function;
+  readonly #receiver: any;
+  readonly #assertionMetadata: PowerAssertMetadata;
 
   // eslint-disable-next-line @typescript-eslint/ban-types
   constructor (callee: Function, receiver: any, assertionMetadata: PowerAssertMetadata) {
-    this.callee = callee;
-    this.receiver = receiver;
-    this.assertionMetadata = assertionMetadata;
+    this.#callee = callee;
+    this.#receiver = receiver;
+    this.#assertionMetadata = assertionMetadata;
   }
 
   newArgumentRecorder (argumentNumber: number): ArgumentRecorder {
@@ -166,9 +159,9 @@ class PowerAssertImpl implements PowerAssert {
   }
 
   run (...poweredArgs: any[]): any {
-    const actualArgs = poweredArgs.map((a) => val(a));
+    const actualArgs = poweredArgs.map((a) => actual(a));
     try {
-      return this.callee.apply(this.receiver, actualArgs);
+      return this.#callee.apply(this.#receiver, actualArgs);
     } catch (e: any) {
       if (!/^AssertionError/.test(e.name)) {
         throw e;
@@ -187,7 +180,7 @@ class PowerAssertImpl implements PowerAssert {
       // console.log(logs);
 
       // rethrow AssertionError with diagram message
-      const assertionLine = this.assertionMetadata.content;
+      const assertionLine = this.#assertionMetadata.content;
       const renderer = new DiagramRenderer(assertionLine);
       const diagram = renderer.render(logs);
       e.message = diagram;
@@ -197,9 +190,17 @@ class PowerAssertImpl implements PowerAssert {
   }
 }
 
+function createPowerAssertMetadata (content: string, extra?: any): PowerAssertMetadata {
+  return Object.assign({
+    transpiler: 'espower3',
+    version: '0.0.0',
+    content
+  }, extra);
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 const _power_: PowerAssertRuntime = (callee: Function, receiver: any, content: string, extra?: any) => {
-  return new PowerAssertImpl(callee, receiver, _pwmeta(content, extra));
+  return new PowerAssertImpl(callee, receiver, createPowerAssertMetadata(content, extra));
 };
 
 export {

@@ -20,27 +20,27 @@ type Mutations = { [key: string]: MutationCallback[] };
 type KeyValue = { [key: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export class Transformation {
-  readonly mutations: Mutations;
-  readonly nameCounts: NameCounts;
-  readonly blockStack: Scoped[];
+  readonly #mutations: Mutations;
+  readonly #nameCounts: NameCounts;
+  readonly #blockStack: Scoped[];
 
   constructor (blockStack: Scoped[]) {
-    this.mutations = {};
-    this.nameCounts = {};
-    this.blockStack = blockStack;
+    this.#mutations = {};
+    this.#nameCounts = {};
+    this.#blockStack = blockStack;
   }
 
   insertDeclIntoCurrentBlock (controller: Controller, decl: ImportDeclaration | VariableDeclaration): void {
-    this._insertDecl(controller, decl, findBlockNode(this.blockStack));
+    this.#insertDecl(controller, decl, findBlockNode(this.#blockStack));
   }
 
   insertDeclIntoTopLevel (controller: Controller, decl: ImportDeclaration | VariableDeclaration): void {
-    this._insertDecl(controller, decl, this.blockStack[0]);
+    this.#insertDecl(controller, decl, this.#blockStack[0]);
   }
 
-  _insertDecl (controller: Controller, decl: ImportDeclaration | VariableDeclaration, block: Scoped): void {
+  #insertDecl (controller: Controller, decl: ImportDeclaration | VariableDeclaration, block: Scoped): void {
     const scopeBlockEspath = findEspathOfTargetNode(block, controller);
-    this._register(scopeBlockEspath, (matchNode: Scoped) => {
+    this.#register(scopeBlockEspath, (matchNode: Scoped) => {
       let body: (Statement | ModuleDeclaration | Directive)[];
       if (isScopedFunction(matchNode)) {
         const blockStmt = matchNode.body;
@@ -52,29 +52,29 @@ export class Transformation {
     });
   }
 
-  _register (espath: string, callback: MutationCallback): void {
-    if (!this.mutations[espath]) {
-      this.mutations[espath] = [];
+  #register (espath: string, callback: MutationCallback): void {
+    if (!this.#mutations[espath]) {
+      this.#mutations[espath] = [];
     }
-    this.mutations[espath].unshift(callback);
+    this.#mutations[espath].unshift(callback);
   }
 
   apply (espath: string, node: Scoped): void {
-    this.mutations[espath].forEach((callback) => {
+    this.#mutations[espath].forEach((callback) => {
       callback(node);
     });
   }
 
   isTarget (espath: string, node: Node): node is Scoped {
-    return !!this.mutations[espath];
+    return !!this.#mutations[espath];
   }
 
   generateUniqueName (name: string): string {
-    if (!this.nameCounts[name]) {
-      this.nameCounts[name] = 0;
+    if (!this.#nameCounts[name]) {
+      this.#nameCounts[name] = 0;
     }
-    this.nameCounts[name] += 1;
-    return '_' + name + this.nameCounts[name];
+    this.#nameCounts[name] += 1;
+    return '_' + name + this.#nameCounts[name];
   }
 }
 
