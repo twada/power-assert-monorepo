@@ -63,7 +63,7 @@ class ArgumentModification {
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.callExpression(
-      types.memberExpression(this.#poweredAssertIdent, types.identifier('newArgumentRecorder')), [
+      types.memberExpression(this.#poweredAssertIdent, types.identifier('recorder')), [
         types.numericLiteral(this.#argNum)
       ]
     );
@@ -92,11 +92,11 @@ class ArgumentModification {
   }
 
   captureNode (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, '_tap');
+    return this.#insertRecorderNode(controller, 'tap');
   }
 
   #captureArgument (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, '_rec');
+    return this.#insertRecorderNode(controller, 'rec');
   }
 
   saveLoc (controller: Controller): void {

@@ -74,7 +74,7 @@ export class Transformation {
       this.#nameCounts[name] = 0;
     }
     this.#nameCounts[name] += 1;
-    return '_' + name + this.#nameCounts[name];
+    return `_p${name}${this.#nameCounts[name]}`;
   }
 }
 

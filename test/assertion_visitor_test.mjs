@@ -26,7 +26,7 @@ assert.ok(truthy);
       insertDeclIntoCurrentBlock: (controller, decl) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
-      generateUniqueName: (str) => `_${str}1`
+      generateUniqueName: (str) => `_p${str}1`
     };
     const decoratorFunctionIdent = {
       type: 'Identifier',
@@ -54,7 +54,7 @@ assert.ok(truthy);
       assert(assertionVisitor.poweredAssertIdent !== undefined);
       const pwIdent = assertionVisitor.poweredAssertIdent;
       assert.equal(pwIdent.type, 'Identifier');
-      assert.equal(pwIdent.name, '_asrt1');
+      assert.equal(pwIdent.name, '_pasrt1');
     });
 
     it('#isCapturingArgument returns false', () => {
@@ -127,18 +127,18 @@ assert.ok(truthy);
     });
 
     describe('resultNode of leaveArgument', () => {
-      // _arg1._rec(truthy, 'arguments/0', 10)
+      // _parg1._rec(truthy, 'arguments/0', 10)
       it('its type', () => {
         assert.equal(resultNode.type, 'CallExpression');
       });
       it('its callee', () => {
-        // _arg1._rec
+        // _parg1._rec
         const callee = resultNode.callee;
         assert.equal(callee.type, 'MemberExpression');
         assert.equal(callee.object.type, 'Identifier');
-        assert.equal(callee.object.name, '_arg1');
+        assert.equal(callee.object.name, '_parg1');
         assert.equal(callee.property.type, 'Identifier');
-        assert.equal(callee.property.name, '_rec');
+        assert.equal(callee.property.name, 'rec');
       });
       it('its arguments', () => {
         // (truthy, 'arguments/0', 10)
@@ -200,7 +200,7 @@ assert.ok(truthy);
         const callee = resultNode.callee;
         assert.equal(callee.type, 'MemberExpression');
         assert.equal(callee.object.type, 'Identifier');
-        assert.equal(callee.object.name, '_asrt1');
+        assert.equal(callee.object.name, '_pasrt1');
         assert.equal(callee.property.type, 'Identifier');
         assert.equal(callee.property.name, 'run');
       });

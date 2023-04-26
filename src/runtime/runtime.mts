@@ -20,13 +20,13 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-    _tap(value: any, espath: string, left: number): any;
-    _rec(value: any, espath: string, left: number): ArgumentRecorder;
+  tap(value: any, espath: string, left: number): any;
+  rec(value: any, espath: string, left: number): ArgumentRecorder;
 }
 
 type PowerAssert = {
-    newArgumentRecorder(argumentNumber: number): ArgumentRecorder;
-    run(...args: any[]): any;
+  recorder(argumentNumber: number): ArgumentRecorder;
+  run(...args: any[]): any;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -82,7 +82,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  _tap (value: any, espath: string, left: number): any {
+  tap (value: any, espath: string, left: number): any {
     this.#capturedValues.push({
       value: wrap(value),
       espath,
@@ -91,7 +91,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  _rec (value: any, espath: string, left: number): ArgumentRecorder {
+  rec (value: any, espath: string, left: number): ArgumentRecorder {
     try {
       const cap = {
         value: wrap(value),
@@ -138,6 +138,7 @@ type PoweredArgument = {
   value: any;
   capturedValues: CapturedValue[];
 };
+
 type NonPoweredArgument = {
   type: 'NonPoweredArgument'
   value: any;
@@ -170,7 +171,7 @@ class PowerAssertImpl implements PowerAssert {
     this.#assertionMetadata = assertionMetadata;
   }
 
-  newArgumentRecorder (argumentNumber: number): ArgumentRecorder {
+  recorder (argumentNumber: number): ArgumentRecorder {
     return new ArgumentRecorderImpl(this, argumentNumber);
   }
 
