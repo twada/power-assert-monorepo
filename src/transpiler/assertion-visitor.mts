@@ -162,16 +162,19 @@ export class AssertionVisitor {
   readonly #assertionCode: string;
   readonly #poweredAssertIdent: Identifier;
 
-  get assertionCode() {
+  get assertionCode () {
     return this.#assertionCode;
   }
-  get currentModification() {
+
+  get currentModification () {
     return this.#currentModification;
   }
-  get argumentModifications() {
+
+  get argumentModifications () {
     return ([] as ArgumentModification[]).concat(this.#argumentModifications);
   }
-  get poweredAssertIdent() {
+
+  get poweredAssertIdent () {
     return structuredClone(this.#poweredAssertIdent);
   }
 

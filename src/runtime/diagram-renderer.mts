@@ -13,7 +13,7 @@ export class DiagramRenderer {
   readonly #assertionLine: string;
   readonly #rows: string[][];
 
-  get assertionLine() {
+  get assertionLine () {
     return this.#assertionLine;
   }
 
