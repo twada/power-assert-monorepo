@@ -8,15 +8,15 @@ type PowerAssertMetadata = {
   content: string;
 };
 
-type WeavedLog = {
+type CapturedValue = {
   value: any;
   espath: string;
   left: number;
 };
 
-type Recorded = {
+type RecordedArgument = {
   value: any;
-  logs: WeavedLog[];
+  capturedValues: CapturedValue[];
 };
 
 type ArgumentRecorder = {
@@ -36,8 +36,8 @@ function isPromiseLike (o: any): o is Promise<any> {
   return o !== null && typeof o === 'object' && typeof o.then === 'function' && typeof o.catch === 'function';
 }
 
-type PromiseTapper = (...args: any[]) => void;
-function mark (wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseTapper {
+type PromiseWatcher = (...args: any[]) => void;
+function mark (wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseWatcher {
   return (...args: any[]) => {
     wrapper.status = status;
     wrapper.value = args.length === 1 ? args[0] : args;
@@ -58,14 +58,14 @@ const wrap = (v: any) => isPromiseLike(v) ? new $Promise$(v) : v;
 class ArgumentRecorderImpl implements ArgumentRecorder {
   readonly #powerAssert: PowerAssert;
   readonly #argumentNumber: number;
-  #logs: WeavedLog[];
-  #recorded: Recorded | null;
+  #capturedValues: CapturedValue[];
+  #recorded: RecordedArgument | null;
   #val: any;
 
   constructor (powerAssert: PowerAssert, argumentNumber: number) {
     this.#powerAssert = powerAssert;
     this.#argumentNumber = argumentNumber;
-    this.#logs = [];
+    this.#capturedValues = [];
     this.#recorded = null;
     this.#val = null;
   }
@@ -74,16 +74,16 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return this.#val;
   }
 
-  ejectRecordedLog (): Recorded {
+  ejectRecordedArgument (): RecordedArgument {
     const ret = this.#recorded;
-    assert(ret !== null, 'eject() should be called after recording');
+    assert(ret !== null, 'ejectRecordedArgument() should be called after recording');
     this.#recorded = null;
     this.#val = null;
     return ret;
   }
 
   _tap (value: any, espath: string, left: number): any {
-    this.#logs.push({
+    this.#capturedValues.push({
       value: wrap(value),
       espath,
       left
@@ -93,21 +93,21 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
 
   _rec (value: any, espath: string, left: number): ArgumentRecorder {
     try {
-      const log = {
+      const cap = {
         value: wrap(value),
         espath,
         left
       };
-      this.#logs.push(log);
+      this.#capturedValues.push(cap);
       if (typeof value === 'function') {
         value = new Proxy(value, {
           apply (target, thisArg, args) {
             try {
               const ret = target.apply(thisArg, args);
-              log.value = wrap(ret);
+              cap.value = wrap(ret);
               return ret;
             } catch (e) {
-              log.value = e;
+              cap.value = e;
               throw e;
             }
           }
@@ -117,29 +117,45 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     } finally {
       this.#recorded = {
         value,
-        logs: ([] as WeavedLog[]).concat(this.#logs)
+        capturedValues: ([] as CapturedValue[]).concat(this.#capturedValues)
       };
       this.#val = value;
-      this.#logs = [];
+      this.#capturedValues = [];
     }
   }
 }
 
-const actual = (v: any) => {
-  if (typeof v.actualValue === 'function') {
+function actual (v: any): any {
+  if (v instanceof ArgumentRecorderImpl) {
     return v.actualValue();
   } else {
     return v;
   }
+}
+
+type PoweredArgument = {
+  type: 'PoweredArgument'
+  value: any;
+  capturedValues: CapturedValue[];
+};
+type NonPoweredArgument = {
+  type: 'NonPoweredArgument'
+  value: any;
 };
 
-const eject = (v: any) => {
-  if (typeof v.ejectRecordedLog === 'function') {
-    return v.ejectRecordedLog();
+function eject (v: any): PoweredArgument | NonPoweredArgument {
+  if (v instanceof ArgumentRecorderImpl) {
+    return {
+      type: 'PoweredArgument',
+      ...v.ejectRecordedArgument()
+    };
   } else {
-    return v;
+    return {
+      type: 'NonPoweredArgument',
+      value: v
+    };
   }
-};
+}
 
 class PowerAssertImpl implements PowerAssert {
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -169,11 +185,13 @@ class PowerAssertImpl implements PowerAssert {
       const recorded = poweredArgs.map((p) => eject(p));
       const logs = [];
       for (const rec of recorded) {
-        for (const log of rec.logs) {
-          logs.push({
-            value: log.value,
-            leftIndex: log.left
-          });
+        if (rec.type === 'PoweredArgument') {
+          for (const cap of rec.capturedValues) {
+            logs.push({
+              value: cap.value,
+              leftIndex: cap.left
+            });
+          }
         }
       }
 
