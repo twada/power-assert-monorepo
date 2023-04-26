@@ -45,13 +45,6 @@ assert.ok(truthy);
     );
   });
 
-  it('assertionCode is generated', () => {
-    assert(assertionVisitor.assertionCode !== undefined);
-  });
-  it('#isCapturingArgument returns false', () => {
-    assert.equal(assertionVisitor.isCapturingArgument(), false);
-  });
-
   describe('after #constructor', () => {
     it('assertionCode is generated', () => {
       assert.equal(assertionVisitor.assertionCode, 'assert.ok(truthy)');
