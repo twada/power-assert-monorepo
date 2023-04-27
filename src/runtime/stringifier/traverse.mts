@@ -14,19 +14,19 @@ export type State = {
   keys: Array<string | number> | null,
   size: number | null,
   isLast?: boolean,
-  before: (f: BeforeCallback) => void,
-  after: (f: AfterCallback) => void,
-  pre: (f: PreCallback) => void,
-  post: (f: PostCallback) => void,
+  beforeAllChildren: (f: BeforeAllChildrenCallback) => void,
+  afterAllChildren: (f: AfterAllChildrenCallback) => void,
+  beforeEachChild: (f: BeforeEachChildCallback) => void,
+  afterEachChild: (f: AfterEachChildCallback) => void,
   bailOut: () => void,
   skip: () => void
 };
 /* eslint-ensable no-use-before-define */
 
-export type BeforeCallback = (state: State, node: unknown) => void;
-export type PreCallback = (state: State, childNode: unknown, key: string | number, preChildState: State) => void;
-export type PostCallback = (state: State, childState: State) => void;
-export type AfterCallback = (state: State, node: unknown) => void;
+export type BeforeAllChildrenCallback = (state: State, node: unknown) => void;
+export type BeforeEachChildCallback = (state: State, childNode: unknown, key: string | number, beforeEachChildState: State) => void;
+export type AfterEachChildCallback = (state: State, afterEachChildState: State) => void;
+export type AfterAllChildrenCallback = (state: State, node: unknown) => void;
 
 export type InitialState = {
   path: Array<string | number>,
@@ -36,10 +36,10 @@ export type InitialState = {
 export type TraverseCallback = (item: unknown, state: State) => void;
 
 type Modifiers = {
-  before?: BeforeCallback,
-  after?: AfterCallback,
-  pre?: PreCallback,
-  post?: PostCallback
+  beforeAllChildren?: BeforeAllChildrenCallback,
+  afterAllChildren?: AfterAllChildrenCallback,
+  beforeEachChild?: BeforeEachChildCallback,
+  afterEachChild?: AfterEachChildCallback
 };
 
 export function traverseAny (root: unknown, cb: TraverseCallback): void {
@@ -89,10 +89,10 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
         circular: null,
         keys: null,
         size: null,
-        before: function (f) { modifiers.before = f; },
-        after: function (f) { modifiers.after = f; },
-        pre: function (f) { modifiers.pre = f; },
-        post: function (f) { modifiers.post = f; },
+        beforeAllChildren: function (f) { modifiers.beforeAllChildren = f; },
+        afterAllChildren: function (f) { modifiers.afterAllChildren = f; },
+        beforeEachChild: function (f) { modifiers.beforeEachChild = f; },
+        afterEachChild: function (f) { modifiers.afterEachChild = f; },
         bailOut: function () {
           throw new BailOut();
         },
@@ -115,9 +115,9 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
 
       cb(state.node, state);
 
-      if (modifiers.before) {
+      if (modifiers.beforeAllChildren) {
         // users may hack state.keys to reorder iteration
-        modifiers.before.call(null, state, state.node);
+        modifiers.beforeAllChildren.call(null, state, state.node);
       }
 
       if (!keepGoing) {
@@ -130,7 +130,7 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
         const handleChild = function (key: string | number, value: unknown, index: number) {
           path.push(key);
           const childNode = value;
-          const preChildState = Object.assign({}, state, {
+          const beforeEachChildState = Object.assign({}, state, {
             node: childNode,
             path: ([] as (string|number)[]).concat(path),
             parent: parents[parents.length - 1],
@@ -140,14 +140,14 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
             level: path.length,
             index
           });
-          if (modifiers.pre) {
-            modifiers.pre.call(null, state, childNode, key, preChildState);
+          if (modifiers.beforeEachChild) {
+            modifiers.beforeEachChild.call(null, state, childNode, key, beforeEachChildState);
           }
-          const childState = walker(childNode);
+          const afterEachChildState = walker(childNode);
           assert(state.size !== null, 'state.size should be set');
-          childState.isLast = (index === state.size - 1);
-          if (modifiers.post) {
-            modifiers.post.call(null, state, childState);
+          afterEachChildState.isLast = (index === state.size - 1);
+          if (modifiers.afterEachChild) {
+            modifiers.afterEachChild.call(null, state, afterEachChildState);
           }
           path.pop();
         };
@@ -186,8 +186,8 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
         parents.pop();
       }
 
-      if (modifiers.after) {
-        modifiers.after.call(null, state, state.node);
+      if (modifiers.afterAllChildren) {
+        modifiers.afterAllChildren.call(null, state, state.node);
       }
 
       return state;
