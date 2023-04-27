@@ -169,18 +169,18 @@ function bigint (): Composable {
 function decorateArray (): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
-      acc.context.before(function (_node) {
+      acc.context.before((_state: State, _node: unknown) => {
         acc.push('[');
       });
-      acc.context.after(function (_node) {
-        afterAllChildren(this, acc.push, acc.options);
+      acc.context.after((state: State, _node: unknown) => {
+        afterAllChildren(state, acc.push, acc.options);
         acc.push(']');
       });
-      acc.context.pre(function (_val, _key) {
-        beforeEachChild(this, acc.push, acc.options);
+      acc.context.pre((state: State, _val: unknown, _key: string | number, _preChildState: State) => {
+        beforeEachChild(state, acc.push, acc.options);
       });
-      acc.context.post(function (childContext) {
-        afterEachChild(childContext, acc.push);
+      acc.context.post((_state: State, childState: State) => {
+        afterEachChild(childState, acc.push);
       });
       return next(acc, x);
     };
@@ -190,18 +190,18 @@ function decorateArray (): Composable {
 function decorateSet (): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
-      acc.context.before(function (_node) {
+      acc.context.before((_state: State, _node: unknown) => {
         acc.push('{');
       });
-      acc.context.after(function (_node) {
-        afterAllChildren(this, acc.push, acc.options);
+      acc.context.after((state: State, _node: unknown) => {
+        afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.pre(function (_val, _key) {
-        beforeEachChild(this, acc.push, acc.options);
+      acc.context.pre((state: State, _val: unknown, _key: string | number, _preChildState: State) => {
+        beforeEachChild(state, acc.push, acc.options);
       });
-      acc.context.post(function (childContext) {
-        afterEachChild(childContext, acc.push);
+      acc.context.post((_state: State, childState: State) => {
+        afterEachChild(childState, acc.push);
       });
       return next(acc, x);
     };
@@ -212,20 +212,20 @@ function decorateMap (): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       const stringifyMapKey = acc.createMapKeyStringifier();
-      acc.context.before(function (_node) {
+      acc.context.before((_state: State, _node: unknown) => {
         acc.push('{');
       });
-      acc.context.after(function (_node) {
-        afterAllChildren(this, acc.push, acc.options);
+      acc.context.after((state: State, _node: unknown) => {
+        afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.pre(function (val, key, childState) {
-        beforeEachChild(this, acc.push, acc.options);
-        const keyStr = stringifyMapKey(key, childState);
+      acc.context.pre((state: State, _val: unknown, key: string | number, preChildState: State) => {
+        beforeEachChild(state, acc.push, acc.options);
+        const keyStr = stringifyMapKey(key, preChildState);
         acc.push(keyStr + (acc.options.indent ? '=> ' : '=>'));
       });
-      acc.context.post(function (childContext) {
-        afterEachChild(childContext, acc.push);
+      acc.context.post((_state: State, childState: State) => {
+        afterEachChild(childState, acc.push);
       });
       return next(acc, x);
     };
@@ -235,19 +235,19 @@ function decorateMap (): Composable {
 function decorateObject (): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
-      acc.context.before(function (_node) {
+      acc.context.before((_state: State, _node: unknown) => {
         acc.push('{');
       });
-      acc.context.after(function (_node) {
-        afterAllChildren(this, acc.push, acc.options);
+      acc.context.after((state: State, _node: unknown) => {
+        afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.pre(function (val, key) {
-        beforeEachChild(this, acc.push, acc.options);
+      acc.context.pre((state: State, _val: unknown, key: string | number, _preChildState: State) => {
+        beforeEachChild(state, acc.push, acc.options);
         acc.push(sanitizeKey(key) + (acc.options.indent ? ': ' : ':'));
       });
-      acc.context.post(function (childContext) {
-        afterEachChild(childContext, acc.push);
+      acc.context.post((_state: State, childState: State) => {
+        afterEachChild(childState, acc.push);
       });
       return next(acc, x);
     };

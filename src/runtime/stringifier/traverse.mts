@@ -23,10 +23,10 @@ export type State = {
 };
 /* eslint-ensable no-use-before-define */
 
-export type BeforeCallback = (this: State, node: unknown) => void;
-export type PreCallback = (this: State, childNode: unknown, key: string | number, preChildState: State) => void;
-export type PostCallback = (this: State, childState: State) => void;
-export type AfterCallback = (this: State, node: unknown) => void;
+export type BeforeCallback = (state: State, node: unknown) => void;
+export type PreCallback = (state: State, childNode: unknown, key: string | number, preChildState: State) => void;
+export type PostCallback = (state: State, childState: State) => void;
+export type AfterCallback = (state: State, node: unknown) => void;
 
 export type InitialState = {
   path: Array<string | number>,
@@ -117,7 +117,7 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
 
       if (modifiers.before) {
         // users may hack state.keys to reorder iteration
-        modifiers.before.call(state, state.node);
+        modifiers.before.call(null, state, state.node);
       }
 
       if (!keepGoing) {
@@ -141,13 +141,13 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
             index
           });
           if (modifiers.pre) {
-            modifiers.pre.call(state, childNode, key, preChildState);
+            modifiers.pre.call(null, state, childNode, key, preChildState);
           }
           const childState = walker(childNode);
           assert(state.size !== null, 'state.size should be set');
           childState.isLast = (index === state.size - 1);
           if (modifiers.post) {
-            modifiers.post.call(state, childState);
+            modifiers.post.call(null, state, childState);
           }
           path.pop();
         };
@@ -187,7 +187,7 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
       }
 
       if (modifiers.after) {
-        modifiers.after.call(state, state.node);
+        modifiers.after.call(null, state, state.node);
       }
 
       return state;
