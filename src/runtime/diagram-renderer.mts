@@ -1,7 +1,7 @@
 import { stringifier } from './stringifier/index.mjs';
 
 type LogWithLeftIndex = {
-  value: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  value: unknown,
   leftIndex: number
 };
 
@@ -90,8 +90,7 @@ export class DiagramRenderer {
     return str.length;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  #stringify (input: any): string {
+  #stringify (input: unknown): string {
     return stringify(input);
   }
 }

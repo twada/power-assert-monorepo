@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 import { typeName } from './type-name.mjs';
 import type { State } from './traverse.mjs';
 import { strict as assert } from 'node:assert';
@@ -16,12 +15,14 @@ export type StringifyConfig = {
   lineSeparator: string,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValueStore = { [key: string | number]: any };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValuePair = { key: string | number, value: any };
 
 export type CollectorFunc = (str: string) => void;
 
-export type MapKeyStringifier = (val: any, childState: State) => string;
+export type MapKeyStringifier = (val: unknown, childState: State) => string;
 export type MapKeyStringifierFactory = () => MapKeyStringifier;
 export type Accumulator = {
   push: CollectorFunc,
@@ -31,7 +32,7 @@ export type Accumulator = {
 };
 type Guard = (kvp: KeyValuePair, acc: Accumulator) => boolean;
 
-export type Component = (acc: Accumulator, x: any) => Direction;
+export type Component = (acc: Accumulator, x: unknown) => Direction;
 type Composable = (next: Component) => Component;
 
 // chain of components should end with end() or iterate()
@@ -39,14 +40,14 @@ function compose (...components: Composable[]): Component {
   return components.reduceRight((right: Component, left: Composable) => left(right), terminator);
 }
 
-const terminator: Component = (_acc: Accumulator, _x: any) => {
+const terminator: Component = (_acc: Accumulator, _x: unknown) => {
   assert(false, 'chain of components should end with end() or iterate()');
 };
 
 // skip children
 function end (): Composable {
   return (_next: Component) => {
-    return (acc: Accumulator, _x: any) => {
+    return (acc: Accumulator, _x: unknown) => {
       acc.context.skip();
       return END;
     };
@@ -56,13 +57,13 @@ function end (): Composable {
 // iterate children
 function iterate (): Composable {
   return (_next: Component) => {
-    return (_acc: Accumulator, _x: any) => ITERATE;
+    return (_acc: Accumulator, _x: unknown) => ITERATE;
   };
 }
 
 function allowedKeys (orderedAllowList?: string[]): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       if (!Array.isArray(x) && Array.isArray(orderedAllowList)) {
         acc.context.keys = orderedAllowList.filter((propKey) => Object.prototype.hasOwnProperty.call(x, propKey));
       }
@@ -73,7 +74,7 @@ function allowedKeys (orderedAllowList?: string[]): Composable {
 
 function when (guard: Guard, then: Component): Composable {
   return (next) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       const kvp = {
         key: acc.context.key,
         value: x
@@ -88,7 +89,7 @@ function when (guard: Guard, then: Component): Composable {
 
 function constructorName (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       const name = typeName(x);
       if (name === '') {
         acc.push(acc.options.anonymous);
@@ -102,7 +103,7 @@ function constructorName (): Composable {
 
 function objectSize (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.push(`(${acc.context.size})`);
       return next(acc, x);
     };
@@ -111,7 +112,7 @@ function objectSize (): Composable {
 
 function always (str: string): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.push(str);
       return next(acc, x);
     };
@@ -120,19 +121,19 @@ function always (str: string): Composable {
 
 function optionValue (key: string): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.push(acc.options[key]);
       return next(acc, x);
     };
   };
 }
 
-type ReplacerFunc = (this: any, key: string, value: any) => any;
+type ReplacerFunc = (this: unknown, key: string, value: unknown) => unknown;
 type ReplacerAllowList = (string | number)[] | null;
 type Replacer = ReplacerFunc | ReplacerAllowList;
 function json (replacer?: Replacer): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       if (typeof replacer === 'function') {
         acc.push(JSON.stringify(x, replacer));
       } else if (Array.isArray(replacer)) {
@@ -147,8 +148,8 @@ function json (replacer?: Replacer): Composable {
 
 function toStr (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
-      acc.push(x.toString());
+    return (acc: Accumulator, x: unknown) => {
+      acc.push(String(x));
       return next(acc, x);
     };
   };
@@ -156,8 +157,10 @@ function toStr (): Composable {
 
 function bigint (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
-      acc.push(BigInt(x).toString() + 'n');
+    return (acc: Accumulator, x: unknown) => {
+      if (typeof x === 'bigint' || typeof x === 'number' || typeof x === 'string' || typeof x === 'boolean') {
+        acc.push(BigInt(x).toString() + 'n');
+      }
       return next(acc, x);
     };
   };
@@ -165,7 +168,7 @@ function bigint (): Composable {
 
 function decorateArray (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.context.before(function (_node) {
         acc.push('[');
       });
@@ -186,7 +189,7 @@ function decorateArray (): Composable {
 
 function decorateSet (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.context.before(function (_node) {
         acc.push('{');
       });
@@ -207,7 +210,7 @@ function decorateSet (): Composable {
 
 function decorateMap (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       const stringifyMapKey = acc.createMapKeyStringifier();
       acc.context.before(function (_node) {
         acc.push('{');
@@ -231,7 +234,7 @@ function decorateMap (): Composable {
 
 function decorateObject (): Composable {
   return (next: Component) => {
-    return (acc: Accumulator, x: any) => {
+    return (acc: Accumulator, x: unknown) => {
       acc.context.before(function (_node) {
         acc.push('{');
       });
@@ -399,14 +402,15 @@ const strategies = {
     );
   },
   // map: (predicate?: Function | null, orderedAllowList?: string[]) => {
-  map: (orderedAllowList?: string[]) => {
+  // map: (orderedAllowList?: string[]) => {
+  map: () => {
     return compose(
       omitCircular,
       omitMaxDepth,
       constructorName(),
       objectSize(),
       decorateMap(),
-      allowedKeys(orderedAllowList),
+      // allowedKeys(orderedAllowList),
       // filter(predicate),
       iterate()
     );

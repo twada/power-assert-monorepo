@@ -1,11 +1,10 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 import { typeName } from './type-name.mjs';
 import { traverseWith } from './traverse.mjs';
 import { strategies as s } from './strategies.mjs';
 import type { State, InitialState, TraverseCallback } from './traverse.mjs';
 import type { Accumulator, Component, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mjs';
 
-type StringifyCallback = (push: CollectorFunc, item: any, state: State) => CollectorFunc;
+type StringifyCallback = (push: CollectorFunc, item: unknown, state: State) => CollectorFunc;
 
 function defaultHandlers () {
   return {
@@ -59,7 +58,7 @@ type StringifyConfigAndHandlers = StringifyConfig & { handlers?: { [key: string]
 function createStringifier (customOptions?: StringifyOptions): StringifyCallback {
   const options: StringifyConfigAndHandlers = Object.assign({}, defaultOptions(), customOptions);
   const handlers = Object.assign({}, defaultHandlers(), options.handlers);
-  const handlerFor = function handlerFor (val: any): Component {
+  const handlerFor = function handlerFor (val: unknown): Component {
     const tname = typeName(val);
     if (typeof handlers[tname] === 'function') {
       return handlers[tname];
@@ -72,12 +71,12 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
 
   const createMapKeyStringifier: MapKeyStringifierFactory = () => {
     const reducer = createStringifier(options);
-    return function (val: any, childState: State) {
+    return function (val: unknown, childState: State) {
       return walkWith(val, reducer, childState);
     };
   };
 
-  return function stringifyAny (push: CollectorFunc, x: any, state: State): CollectorFunc {
+  return function stringifyAny (push: CollectorFunc, x: unknown, state: State): CollectorFunc {
     const context = state;
     let handler: Component = handlerFor(context.node);
     if (context.parent && Array.isArray(context.parent.node) && !(context.key in context.parent.node)) {
@@ -95,20 +94,20 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
   };
 }
 
-function walkWith (val: any, reducer: StringifyCallback, initialState: InitialState): string {
+function walkWith (val: unknown, reducer: StringifyCallback, initialState: InitialState): string {
   const root = val;
   const buffer: string[] = [];
   const acc: CollectorFunc = function (str) {
     buffer.push(str);
   };
-  const cb: TraverseCallback = (x: any, state: State) => {
+  const cb: TraverseCallback = (x: unknown, state: State) => {
     reducer(acc, x, state);
   };
   traverseWith(root, cb, initialState);
   return buffer.join('');
 }
 
-function walk (val: any, reducer: StringifyCallback): string {
+function walk (val: unknown, reducer: StringifyCallback): string {
   const initialState = {
     path: [],
     parents: []
@@ -116,12 +115,12 @@ function walk (val: any, reducer: StringifyCallback): string {
   return walkWith(val, reducer, initialState);
 }
 
-export function stringify (val: any, options?: StringifyOptions): string {
+export function stringify (val: unknown, options?: StringifyOptions): string {
   return walk(val, createStringifier(options));
 }
 
-export function stringifier (options?: StringifyOptions): (val: any) => string {
-  return function (val: any) {
+export function stringifier (options?: StringifyOptions): (val: unknown) => string {
+  return function (val: unknown) {
     return walk(val, createStringifier(options));
   };
 }

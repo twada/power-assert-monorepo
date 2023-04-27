@@ -1,10 +1,9 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 // minimal port of substack's traverse with Map / Set support
 import { strict as assert } from 'node:assert';
 
 /* eslint-disable no-use-before-define */
 export type State = {
-  node: any,
+  node: unknown,
   path: Array<string | number>,
   parent: State,
   parents: Array<State>,
@@ -24,17 +23,17 @@ export type State = {
 };
 /* eslint-ensable no-use-before-define */
 
-export type BeforeCallback = (this: State, node: any) => void;
-export type PreCallback = (this: State, childNode: any, key: string | number, preChildState: State) => void;
+export type BeforeCallback = (this: State, node: unknown) => void;
+export type PreCallback = (this: State, childNode: unknown, key: string | number, preChildState: State) => void;
 export type PostCallback = (this: State, childState: State) => void;
-export type AfterCallback = (this: State, node: any) => void;
+export type AfterCallback = (this: State, node: unknown) => void;
 
 export type InitialState = {
   path: Array<string | number>,
   parents: Array<State>
 };
 
-export type TraverseCallback = (item: any, state: State) => void;
+export type TraverseCallback = (item: unknown, state: State) => void;
 
 type Modifiers = {
   before?: BeforeCallback,
@@ -43,7 +42,7 @@ type Modifiers = {
   post?: PostCallback
 };
 
-export function traverseAny (root: any, cb: TraverseCallback): void {
+export function traverseAny (root: unknown, cb: TraverseCallback): void {
   const initialState = {
     path: [],
     parents: []
@@ -53,10 +52,30 @@ export function traverseAny (root: any, cb: TraverseCallback): void {
 
 class BailOut extends Error {}
 
-export function traverseWith (root: any, cb: TraverseCallback, initialState: InitialState): void {
+type PropKeyAccessible = { [key: string | number]: unknown };
+
+function hasChildren (node: unknown): node is object & PropKeyAccessible {
+  return typeof node === 'object' && node !== null;
+}
+
+function calculateChildrenSize (state: State): number {
+  if (Array.isArray(state.node)) {
+    return state.node.length;
+  } else if (state.node instanceof Set) {
+    return state.node.size;
+  } else if (state.node instanceof Map) {
+    return state.node.size;
+  } else if (typeof state.node === 'object' && state.node !== null) {
+    return Object.keys(state.node).length;
+  } else {
+    assert(false, 'should not reach here');
+  }
+}
+
+export function traverseWith (root: unknown, cb: TraverseCallback, initialState: InitialState): void {
   const { path, parents } = initialState;
   try {
-    (function walker (node: any): State {
+    (function walker (node: unknown): State {
       const modifiers: Modifiers = {};
       let keepGoing = true;
       const state: State = {
@@ -80,10 +99,6 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
         skip: function () { keepGoing = false; }
       };
 
-      function hasChildren (): boolean {
-        return typeof state.node === 'object' && state.node !== null;
-      }
-
       function markCircularRef (): void {
         for (const parent of parents) {
           if (parent.node === node) {
@@ -93,21 +108,9 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
         }
       }
 
-      function calculateChildrenSize (): void {
-        if (Array.isArray(state.node)) {
-          state.size = state.node.length;
-        } else if (state.node instanceof Set) {
-          state.size = state.node.size;
-        } else if (state.node instanceof Map) {
-          state.size = state.node.size;
-        } else {
-          state.size = Object.keys(state.node).length;
-        }
-      }
-
-      if (hasChildren()) {
+      if (hasChildren(state.node)) {
         markCircularRef();
-        calculateChildrenSize();
+        state.size = calculateChildrenSize(state);
       }
 
       cb(state.node, state);
@@ -121,10 +124,10 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
         return state;
       }
 
-      if (hasChildren() && !state.circular) {
+      if (hasChildren(state.node) && !state.circular) {
         parents.push(state);
 
-        const handleChild = function (key: string | number, value: any, index: number) {
+        const handleChild = function (key: string | number, value: unknown, index: number) {
           path.push(key);
           const childNode = value;
           const preChildState = Object.assign({}, state, {
@@ -153,6 +156,7 @@ export function traverseWith (root: any, cb: TraverseCallback, initialState: Ini
           // when user set state.keys explicitly to filter and reorder iteration
           state.size = state.keys.length;
           let i = 0;
+          assert(!(state.node instanceof Map), 'filtering keys in Map is not supported');
           for (const key of state.keys) {
             handleChild(key, state.node[key], i);
             i += 1;

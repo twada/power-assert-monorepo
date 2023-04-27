@@ -231,8 +231,7 @@ class NodeCreator {
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  valueToNode (value: any): Expression | Pattern {
+  valueToNode (value: unknown): Expression | Pattern {
     // undefined
     if (value === undefined) {
       return this.identifier('undefined');
@@ -286,8 +285,11 @@ function isValidIdentifier (name: string): boolean {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isPlainObject (value: any): boolean {
+type PropKeyAccessible = {
+  [key: string]: unknown;
+}
+
+function isPlainObject (value: unknown): value is object & PropKeyAccessible {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
     return false;
   }
@@ -301,12 +303,11 @@ function isPlainObject (value: any): boolean {
   return Object.getPrototypeOf(value) === proto;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function pToString (obj: any): string {
+function pToString (obj: unknown): string {
   return Object.prototype.toString.call(obj);
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isObject (arg: any): boolean {
+
+function isObject (arg: unknown): boolean {
   return typeof arg === 'object' && arg !== null;
 }
 
