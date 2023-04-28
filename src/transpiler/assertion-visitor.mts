@@ -1,6 +1,6 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
-import { locationOf } from './position.mjs';
+import { positionOf } from './position.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
@@ -43,7 +43,7 @@ class ArgumentModification {
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
-  readonly #locations: Map<Node, Position>;
+  readonly #positions: Map<Node, Position>;
   readonly #argumentRecorderIdent: Identifier;
   #argumentModified: boolean;
 
@@ -56,7 +56,7 @@ class ArgumentModification {
     this.#transformation = transformation;
     this.#poweredAssertIdent = poweredAssertIdent;
     this.#argumentModified = false;
-    this.#locations = new Map<Node, Position>();
+    this.#positions = new Map<Node, Position>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
     const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
@@ -98,25 +98,25 @@ class ArgumentModification {
     return this.#insertRecorderNode(controller, 'rec');
   }
 
-  saveLoc (controller: Controller): void {
+  savePosition (controller: Controller): void {
     const currentNode = controller.current();
-    const targetLoc = this.#calculateLoc(controller);
-    this.#locations.set(currentNode, targetLoc);
+    const targetPos = this.#calculatePosition(controller);
+    this.#positions.set(currentNode, targetPos);
   }
 
-  #targetLoc (controller: Controller): Position | undefined {
+  #targetPosition (controller: Controller): Position | undefined {
     const currentNode = controller.current();
-    return this.#locations.get(currentNode);
+    return this.#positions.get(currentNode);
   }
 
-  #calculateLoc (controller: Controller): Position {
+  #calculatePosition (controller: Controller): Position {
     const relativeAstPath = this.#relativeAstPath(controller);
     const code = this.#assertionCode;
     const ast = this.#callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue, key: string | number) => parent[key], ast);
     assert(this.#callexp.loc, 'callexp.loc must exist');
     const offset = this.#callexp.loc.start;
-    return locationOf(targetNodeInAst, offset, code);
+    return positionOf(targetNodeInAst, offset, code);
   }
 
   #relativeAstPath (controller: Controller): (string | number)[] {
@@ -128,15 +128,15 @@ class ArgumentModification {
   #insertRecorderNode (controller: Controller, methodName: string): CallExpression {
     const currentNode = controller.current();
     const relativeAstPath = this.#relativeAstPath(controller);
-    const targetLoc = this.#targetLoc(controller);
-    assert(targetLoc, 'targetLoc must exist');
+    const targetPos = this.#targetPosition(controller);
+    assert(targetPos, 'targetPos must exist');
 
     const types = new NodeCreator(currentNode);
     const args = [
       currentNode,
       types.valueToNode(relativeAstPath.join('/')),
-      types.valueToNode(targetLoc.column)
-      // types.valueToNode(targetLoc.line)
+      types.valueToNode(targetPos.column)
+      // types.valueToNode(targetPos.line)
     ];
 
     const receiver = this.#argumentRecorderIdent;
@@ -310,6 +310,6 @@ export class AssertionVisitor {
 
   enterNodeToBeCaptured (controller: Controller): void {
     assert(this.#currentModification, 'currentModification must exist');
-    this.#currentModification.saveLoc(controller);
+    this.#currentModification.savePosition(controller);
   }
 }

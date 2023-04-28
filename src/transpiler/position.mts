@@ -8,7 +8,7 @@ import type {
 } from 'estree';
 import { strict as assert } from 'node:assert';
 
-export function locationOf (currentNode: Node, offset: Position, code: string): Position {
+export function positionOf (currentNode: Node, offset: Position, code: string): Position {
   return applyOffset(calculatePositionOf(currentNode, offset, code), offset);
 }
 
