@@ -1,4 +1,4 @@
-import { stringifier } from './stringifier/index.mjs';
+import { stringifier } from './stringifier/stringifier.mjs';
 
 type LogWithLeftIndex = {
   value: unknown,

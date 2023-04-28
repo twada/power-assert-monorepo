@@ -1,6 +1,6 @@
 import test from 'node:test';
 import { strict as assert } from 'node:assert';
-import { stringify } from '../../dist/runtime/stringifier/index.mjs';
+import { stringify } from '../../dist/runtime/stringifier/stringifier.mjs';
 import { typeName } from '../../dist/runtime/stringifier/type-name.mjs';
 
 function Person (name, age) {

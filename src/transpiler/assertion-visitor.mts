@@ -1,6 +1,6 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
-import { locationOf } from './location.mjs';
+import { locationOf } from './position.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import { strict as assert } from 'node:assert';
-import { stringify } from '../../dist/runtime/stringifier/index.mjs';
+import { stringify } from '../../dist/runtime/stringifier/stringifier.mjs';
 
 test('Map', async (t) => {
   await t.test('empty Map', () => {
