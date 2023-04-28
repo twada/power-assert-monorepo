@@ -30,7 +30,7 @@ type PowerAssert = {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-type PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra: unknown) => PowerAssert;
+type PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra?: unknown) => PowerAssert;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isPromiseLike (o: any): o is Promise<any> {
