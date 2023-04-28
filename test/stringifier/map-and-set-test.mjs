@@ -1,21 +1,21 @@
-import test from 'node:test';
+import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { stringify } from '../../dist/runtime/stringifier/stringifier.mjs';
 
-test('Map', async (t) => {
-  await t.test('empty Map', () => {
+describe('stringify Map', () => {
+  it('empty Map', () => {
     const map = new Map();
     assert.equal(stringify(map), 'Map(0){}');
   });
 
-  await t.test('flat Map', () => {
+  it('flat Map', () => {
     const map = new Map();
     map.set('a', 'A');
     map.set('b', 'B');
     assert.equal(stringify(map), 'Map(2){"a"=>"A","b"=>"B"}');
   });
 
-  await t.test('nested Map', () => {
+  it('nested Map', () => {
     const map = new Map();
     map.set('a', 'A');
     const m2 = new Map();
@@ -26,7 +26,7 @@ test('Map', async (t) => {
     assert.equal(stringify(map), 'Map(3){"a"=>"A","b"=>Map(2){"ba"=>"BA","bb"=>"BB"},"c"=>4}');
   });
 
-  await t.test('circular detection', async () => {
+  it('circular detection', async () => {
     const root = new Map();
     root.set('a', 'A');
     const m2 = new Map();
@@ -37,8 +37,8 @@ test('Map', async (t) => {
     assert.equal(stringify(root), 'Map(3){"a"=>"A","m2"=>Map(2){"root"=>#@Circular#,"bb"=>"BB"},"c"=>0}');
   });
 
-  await t.test('various key type', async (t) => {
-    await t.test('special number key', () => {
+  describe('various key type', () => {
+    it('special number key', () => {
       const map = new Map();
       map.set(NaN, 'not a number');
       map.set(Infinity, 'positive infinity');
@@ -46,14 +46,14 @@ test('Map', async (t) => {
       assert.equal(stringify(map), 'Map(3){NaN=>"not a number",Infinity=>"positive infinity",-Infinity=>"negative infinity"}');
     });
 
-    await t.test('object key', () => {
+    it('object key', () => {
       const map = new Map();
       map.set({}, 'empty object');
       map.set({ name: 'robert', nickname: 'bob' }, 10);
       assert.equal(stringify(map), 'Map(2){Object{}=>"empty object",Object{name:"robert",nickname:"bob"}=>10}');
     });
 
-    await t.test('array key', () => {
+    it('array key', () => {
       const map = new Map();
       map.set([], 'empty array');
       map.set(['alice', 10], 'alice');
@@ -61,7 +61,7 @@ test('Map', async (t) => {
       assert.equal(stringify(map), 'Map(3){[]=>"empty array",["alice",10]=>"alice",["bob",15]=>"bob"}');
     });
 
-    await t.test('circular detection between keys and values', async () => {
+    it('circular detection between keys and values', async () => {
       const m1 = new Map();
       const m2 = new Map();
       m1.set(m2, 1);
@@ -71,20 +71,20 @@ test('Map', async (t) => {
   });
 });
 
-test('Set', async (t) => {
-  await t.test('empty Set', () => {
+describe('stringify Set', () => {
+  it('empty Set', () => {
     const set = new Set();
     assert.equal(stringify(set), 'Set(0){}');
   });
 
-  await t.test('flat Set', () => {
+  it('flat Set', () => {
     const set = new Set();
     set.add('a');
     set.add('b');
     assert.equal(stringify(set), 'Set(2){"a","b"}');
   });
 
-  await t.test('nested Set', () => {
+  it('nested Set', () => {
     const set = new Set();
     set.add('a');
     const s2 = new Set();

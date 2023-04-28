@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { stringify } from '../../dist/runtime/stringifier/stringifier.mjs';
 import { typeName } from '../../dist/runtime/stringifier/type-name.mjs';
@@ -187,36 +187,40 @@ if (typeName(anonymous) === 'AnonPerson') {
   };
 }
 
-for (const [fixtureName, { input, expected, pruned }] of Object.entries(fixtures)) {
-  test('single ' + fixtureName, () => {
-    assert.equal(stringify(input), expected);
-  });
-  test('Array containing ' + fixtureName, () => {
-    const ary = [];
-    ary.push(input);
-    assert.equal(stringify(ary), '[' + expected + ']');
-  });
-  test('Object containing ' + fixtureName, () => {
-    const obj = {};
-    obj.val = input;
-    assert.equal(stringify(obj), 'Object{val:' + expected + '}');
-  });
-  test('with maxDepth = 1: single ' + fixtureName, () => {
-    assert.equal(stringify(input, { maxDepth: 1 }), expected);
-  });
-  test('with maxDepth = 1: Array containing ' + fixtureName, () => {
-    const ary = [];
-    ary.push(input);
-    assert.equal(stringify(ary, { maxDepth: 1 }), '[' + pruned + ']');
-  });
-  test('with maxDepth = 1: Object containing ' + fixtureName, () => {
-    const obj = {};
-    obj.val = input;
-    assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{val:' + pruned + '}');
-  });
-  test('non-regular prop name ' + fixtureName, () => {
-    const obj = {};
-    obj['^pr"op-na:me'] = input;
-    assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{"^pr\\"op-na:me":' + pruned + '}');
-  });
-}
+describe('stringify and type-name', () => {
+  for (const [fixtureName, { input, expected, pruned }] of Object.entries(fixtures)) {
+    describe(fixtureName, () => {
+      it('single ' + fixtureName, () => {
+        assert.equal(stringify(input), expected);
+      });
+      it('Array containing ' + fixtureName, () => {
+        const ary = [];
+        ary.push(input);
+        assert.equal(stringify(ary), '[' + expected + ']');
+      });
+      it('Object containing ' + fixtureName, () => {
+        const obj = {};
+        obj.val = input;
+        assert.equal(stringify(obj), 'Object{val:' + expected + '}');
+      });
+      it('with maxDepth = 1: single ' + fixtureName, () => {
+        assert.equal(stringify(input, { maxDepth: 1 }), expected);
+      });
+      it('with maxDepth = 1: Array containing ' + fixtureName, () => {
+        const ary = [];
+        ary.push(input);
+        assert.equal(stringify(ary, { maxDepth: 1 }), '[' + pruned + ']');
+      });
+      it('with maxDepth = 1: Object containing ' + fixtureName, () => {
+        const obj = {};
+        obj.val = input;
+        assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{val:' + pruned + '}');
+      });
+      it('non-regular prop name ' + fixtureName, () => {
+        const obj = {};
+        obj['^pr"op-na:me'] = input;
+        assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{"^pr\\"op-na:me":' + pruned + '}');
+      });
+    });
+  }
+});
