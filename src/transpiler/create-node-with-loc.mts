@@ -78,7 +78,7 @@ export function isScoped (node: Node): node is Scoped {
   return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
 
-class NodeCreator {
+export class NodeCreator {
   readonly baseNode: Node | undefined;
 
   constructor (baseNode?: Node) {
@@ -310,7 +310,3 @@ function pToString (obj: unknown): string {
 function isObject (arg: unknown): boolean {
   return typeof arg === 'object' && arg !== null;
 }
-
-export {
-  NodeCreator
-};

@@ -9,7 +9,7 @@ import type {
 import { strict as assert } from 'node:assert';
 
 export function locationOf (currentNode: Node, offset: Position, code: string): Position {
-  return applyOffset(locOf(currentNode, offset, code), offset);
+  return applyOffset(calculatePositionOf(currentNode, offset, code), offset);
 }
 
 function applyOffset (start: Position, offset: Position): Position {
@@ -19,7 +19,7 @@ function applyOffset (start: Position, offset: Position): Position {
   };
 }
 
-export function locOf (currentNode: Node, offset: Position, code: string): Position {
+function calculatePositionOf (currentNode: Node, offset: Position, code: string): Position {
   switch (currentNode.type) {
     case 'MemberExpression':
       return propertyLocationOf(currentNode, offset, code);

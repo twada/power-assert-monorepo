@@ -13,7 +13,6 @@ import type {
   Expression,
   CallExpression,
   MemberExpression,
-  SimpleLiteral,
   SpreadElement,
   Position
 } from 'estree';
@@ -185,8 +184,7 @@ export class AssertionVisitor {
     this.#argumentModifications = [];
     const nodepath = controller.path();
     assert(nodepath, 'Node path must exist');
-    const emptyArray: (string | number)[] = [];
-    this.#assertionPath = emptyArray.concat(nodepath);
+    this.#assertionPath = ([] as (string | number)[]).concat(nodepath);
     const currentNode = controller.current();
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     this.#callexp = currentNode;
@@ -224,31 +222,30 @@ export class AssertionVisitor {
     const currentNode = controller.current();
     const transformation = this.#transformation;
     const types = new NodeCreator(currentNode);
-    const props = {};
+    // extra properties are not required for now
+    // const props = {};
     // if (this.withinAsync) {
     //   props.async = true;
     // }
     // if (this.withinGenerator) {
     //   props.generator = true;
     // }
-    const propsNode = types.valueToNode(props);
-    assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
-
+    // const propsNode = types.valueToNode(props);
+    // assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
     const callee = this.#calleeNode;
     const receiver = isMemberExpression(callee) ? callee.object : types.nullLiteral();
-    const codeLiteral: SimpleLiteral = types.valueToNode(this.#assertionCode) as SimpleLiteral;
+    const codeLiteral = types.stringLiteral(this.#assertionCode);
     assert(receiver.type !== 'Super', 'Super is not supported');
     const args: Array<Expression | SpreadElement> = [
       callee,
       receiver,
       codeLiteral
     ];
-    if (propsNode.properties.length > 0) {
-      args.push(propsNode);
-    }
+    // if (propsNode.properties.length > 0) {
+    //   args.push(propsNode);
+    // }
     const init = types.callExpression(this.#decoratorFunctionIdent, args);
-    const varName = transformation.generateUniqueName('asrt');
-    const ident = types.identifier(varName);
+    const ident = types.identifier(transformation.generateUniqueName('asrt'));
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
