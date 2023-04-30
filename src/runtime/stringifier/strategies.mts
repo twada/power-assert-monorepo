@@ -332,75 +332,63 @@ const strategies = {
   json: () => compose(json(), end()),
   toStr: () => compose(toStr(), end()),
   prune: () => prune,
-  number: () => {
-    return compose(
-      omitNaN,
-      omitPositiveInfinity,
-      omitNegativeInfinity,
-      json(),
-      end()
-    );
-  },
+  number: () => compose(
+    omitNaN,
+    omitPositiveInfinity,
+    omitNegativeInfinity,
+    json(),
+    end()
+  ),
   bigint: () => compose(bigint(), end()),
-  newLike: () => {
-    return compose(
-      always('new '),
-      constructorName(),
-      always('('),
-      json(),
-      always(')'),
-      end()
-    );
-  },
+  newLike: () => compose(
+    always('new '),
+    constructorName(),
+    always('('),
+    json(),
+    always(')'),
+    end()
+  ),
   // array: (predicate?: Function | null) => {
-  array: () => {
-    return compose(
-      omitCircular,
-      omitMaxDepth,
-      decorateArray(),
-      // filter(predicate),
-      iterate()
-    );
-  },
+  array: () => compose(
+    omitCircular,
+    omitMaxDepth,
+    decorateArray(),
+    // filter(predicate),
+    iterate()
+  ),
   // set: (predicate?: Function | null) => {
-  set: () => {
-    return compose(
-      omitCircular,
-      omitMaxDepth,
-      constructorName(),
-      objectSize(),
-      decorateSet(),
-      // filter(predicate),
-      iterate()
-    );
-  },
+  set: () => compose(
+    omitCircular,
+    omitMaxDepth,
+    constructorName(),
+    objectSize(),
+    decorateSet(),
+    // filter(predicate),
+    iterate()
+  ),
   // map: (predicate?: Function | null, orderedAllowList?: string[]) => {
   // map: (orderedAllowList?: string[]) => {
-  map: () => {
-    return compose(
-      omitCircular,
-      omitMaxDepth,
-      constructorName(),
-      objectSize(),
-      decorateMap(),
-      // allowedKeys(orderedAllowList),
-      // filter(predicate),
-      iterate()
-    );
-  },
+  map: () => compose(
+    omitCircular,
+    omitMaxDepth,
+    constructorName(),
+    objectSize(),
+    decorateMap(),
+    // allowedKeys(orderedAllowList),
+    // filter(predicate),
+    iterate()
+  ),
   // object: (predicate?: Function | null, orderedAllowList?: string[]) => {
-  object: (orderedAllowList?: string[]) => {
-    return compose(
-      omitCircular,
-      omitMaxDepth,
-      constructorName(),
-      decorateObject(),
-      allowedKeys(orderedAllowList),
-      // safeKeys(),
-      // filter(predicate),
-      iterate()
-    );
-  }
+  object: (orderedAllowList?: string[]) => compose(
+    omitCircular,
+    omitMaxDepth,
+    constructorName(),
+    decorateObject(),
+    allowedKeys(orderedAllowList),
+    // safeKeys(),
+    // filter(predicate),
+    iterate()
+  )
 };
 
 export { strategies };
