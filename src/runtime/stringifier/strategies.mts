@@ -41,7 +41,7 @@ function compose (...components: Composable[]): Component {
 }
 
 const terminator: Component = (_acc: Accumulator, _x: unknown) => {
-  assert(false, 'chain of components should end with end() or iterate()');
+  assert(false, 'chain of composable components should end with end() or iterate()');
 };
 
 // skip children
