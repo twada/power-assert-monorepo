@@ -328,33 +328,6 @@ const omitCircular = when(circular, compose(
 const omitMaxDepth = when(maxDepth, prune);
 
 const strategies = {
-  filters: {
-    always,
-    optionValue,
-    constructorName,
-    objectSize,
-    json,
-    toStr,
-    prune,
-    // truncate,
-    decorateArray,
-    decorateSet,
-    decorateMap,
-    decorateObject
-  },
-  flow: {
-    compose,
-    when,
-    allowedKeys,
-    // safeKeys,
-    // filter,
-    iterate,
-    end
-  },
-  symbols: {
-    END,
-    ITERATE
-  },
   always: (str: string) => compose(always(str), end()),
   json: () => compose(json(), end()),
   toStr: () => compose(toStr(), end()),
