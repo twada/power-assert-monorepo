@@ -15,7 +15,7 @@ export function positionOf (currentNode: Node, offset: Position, code: string): 
 function applyOffset (start: Position, offset: Position): Position {
   return {
     column: start.column - offset.column,
-    line: start.line - offset.line
+    line: (start.line - offset.line) + 1
   };
 }
 

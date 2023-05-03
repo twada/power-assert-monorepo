@@ -163,6 +163,10 @@ function isAssertionError (e: unknown): e is AssertionError {
   return e instanceof Error && /^AssertionError/.test(e.name);
 }
 
+function isMultiline (s: string): boolean {
+  return s.indexOf('\n') !== -1;
+}
+
 class PowerAssertImpl implements PowerAssert {
   // eslint-disable-next-line @typescript-eslint/ban-types
   readonly #callee: Function;
@@ -205,10 +209,18 @@ class PowerAssertImpl implements PowerAssert {
 
       // rethrow AssertionError with diagram message
       const assertionLine = this.#assertionMetadata.content;
-      const renderer = new DiagramRenderer(assertionLine);
-      const diagram = renderer.render(logs);
-      e.message = diagram;
-      e.generatedMessage = false;
+      if (isMultiline(assertionLine)) {
+        e.message = `
+${assertionLine}
+
+${e.message}`;
+        e.generatedMessage = false;
+      } else {
+        const renderer = new DiagramRenderer(assertionLine);
+        const diagram = renderer.render(logs);
+        e.message = diagram;
+        e.generatedMessage = false;
+      }
       throw e;
     }
   }

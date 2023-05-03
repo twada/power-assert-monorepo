@@ -21,9 +21,9 @@ function transpile (code) {
   return generate(poweredAst);
 }
 
-export function ptest (title, testFunc, expected) {
-  // extract assertion expression
-  const expression = expected.split('\n').slice(1)[0];
+export function ptest (title, testFunc, expected, howManyLines = 1) {
+  // chop first line then extract assertion expression
+  const expression = expected.split('\n').slice(1, (1 + howManyLines)).join('\n');
   test(title + ': ' + expression, () => {
     // remove first line contains import { _power_ } from '@power-assert/runtime'
     const transpiledCode = transpile(expression).split('\n').slice(1).join('\n');
