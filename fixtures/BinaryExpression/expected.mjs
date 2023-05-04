@@ -6,7 +6,7 @@ import {
 import assert from 'node:assert/strict';
 describe('description', () => {
     it('example', () => {
-        const _pasrt1 = _power_(assert, null, 'assert(truthy === falsy)');
+      const _pasrt1 = _power_(assert, null, 'assert(truthy === falsy)', { binexp: '===' });
         const _parg1 = _pasrt1.recorder(0);
         const truthy = '1';
         const falsy = 0;
