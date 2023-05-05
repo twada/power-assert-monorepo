@@ -31,6 +31,10 @@ type ArgumentModificationParams = {
   poweredAssertIdent: Identifier
 };
 
+type ExtraProps = {
+  [key: string]: string | number | boolean | null | undefined
+};
+
 function isMemberExpression (node: Node): node is MemberExpression {
   return node && node.type === 'MemberExpression';
 }
@@ -160,6 +164,7 @@ export class AssertionVisitor {
   readonly #calleeNode: Expression;
   readonly #assertionCode: string;
   readonly #poweredAssertIdent: Identifier;
+  readonly #binexp: string | undefined;
 
   get assertionCode () {
     return this.#assertionCode;
@@ -190,6 +195,9 @@ export class AssertionVisitor {
     this.#callexp = currentNode;
     assert(currentNode.callee.type !== 'Super', 'Super is not supported');
     this.#calleeNode = currentNode.callee;
+    if (currentNode.arguments.length === 1 && currentNode.arguments[0].type === 'BinaryExpression') {
+      this.#binexp = currentNode.arguments[0].operator;
+    }
     assert(currentNode.range, 'Node must have a range');
     const [start, end] = currentNode.range;
     this.#assertionCode = wholeCode.slice(start, end);
@@ -223,15 +231,18 @@ export class AssertionVisitor {
     const transformation = this.#transformation;
     const types = new NodeCreator(currentNode);
     // extra properties are not required for now
-    // const props = {};
+    const extraProps: ExtraProps = {};
+    if (this.#binexp) {
+      extraProps.binexp = this.#binexp;
+    }
     // if (this.withinAsync) {
-    //   props.async = true;
+    //   extraProps.async = true;
     // }
     // if (this.withinGenerator) {
-    //   props.generator = true;
+    //   extraProps.generator = true;
     // }
-    // const propsNode = types.valueToNode(props);
-    // assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
+    const propsNode = types.valueToNode(extraProps);
+    assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
     const callee = this.#calleeNode;
     const receiver = isMemberExpression(callee) ? callee.object : types.nullLiteral();
     const codeLiteral = types.stringLiteral(this.#assertionCode);
@@ -241,9 +252,9 @@ export class AssertionVisitor {
       receiver,
       codeLiteral
     ];
-    // if (propsNode.properties.length > 0) {
-    //   args.push(propsNode);
-    // }
+    if (propsNode.properties.length > 0) {
+      args.push(propsNode);
+    }
     const init = types.callExpression(this.#decoratorFunctionIdent, args);
     const ident = types.identifier(transformation.generateUniqueName('asrt'));
     const decl = types.variableDeclaration('const', [
