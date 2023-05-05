@@ -196,7 +196,10 @@ export class AssertionVisitor {
     assert(currentNode.callee.type !== 'Super', 'Super is not supported');
     this.#calleeNode = currentNode.callee;
     if (currentNode.arguments.length === 1 && currentNode.arguments[0].type === 'BinaryExpression') {
-      this.#binexp = currentNode.arguments[0].operator;
+      const operator = currentNode.arguments[0].operator;
+      if (operator === '==' || operator === '===' || operator === '!=' || operator === '!==') {
+        this.#binexp = operator;
+      }
     }
     assert(currentNode.range, 'Node must have a range');
     const [start, end] = currentNode.range;
