@@ -4,6 +4,7 @@ import type { Controller } from 'estraverse';
 import type { Node } from 'estree';
 
 const caputuringTargetTypes = [
+  'Literal',
   // 'Property',
   'ObjectExpression',
   'ArrayExpression',

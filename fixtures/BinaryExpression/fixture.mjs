@@ -7,4 +7,8 @@ describe('description', () => {
     const falsy = 0;
     assert(truthy === falsy);
   });
+  it('literal', () => {
+    const truthy = '1';
+    assert(truthy === 0);
+  });
 });

@@ -1,4 +1,5 @@
 const supportedNodeTypes = () => [
+  'Literal',
   'Identifier',
   'MemberExpression',
   'CallExpression',
