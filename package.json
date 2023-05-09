@@ -32,6 +32,7 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "example": "node --enable-source-maps --no-warnings --experimental-loader ./power-assert.mjs --test examples/bowling_test.mjs",
     "preversion": "npm run build && npm test",
     "build": "npm run build:clean && npm run build:mjs && npm run build:cjs",
     "build:clean": "rimraf dist",
