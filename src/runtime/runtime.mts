@@ -1,7 +1,6 @@
 import { DiagramRenderer } from './diagram-renderer.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
-import { strict as assert } from 'node:assert';
-import { AssertionError } from 'node:assert';
+import { strict as assert, AssertionError } from 'node:assert';
 
 type PowerAssertMetadata = {
   transpiler: string;
@@ -232,7 +231,7 @@ class PowerAssertImpl implements PowerAssert {
         actual: e.actual,
         expected: e.expected,
         stackStartFn: this.run // the generated stack trace omits frames before this function.
-      }
+      };
 
       // BinaryExpression analysis
       if (this.#assertionMetadata.binexp) {
