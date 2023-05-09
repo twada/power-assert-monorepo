@@ -1,4 +1,5 @@
 import { DiagramRenderer } from './diagram-renderer.mjs';
+import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert } from 'node:assert';
 import type { AssertionError } from 'node:assert';
 
@@ -6,6 +7,7 @@ type PowerAssertMetadata = {
   transpiler: string;
   version: string;
   content: string;
+  binexp?: string;
 };
 
 type CapturedValue = {
@@ -167,6 +169,8 @@ function isMultiline (s: string): boolean {
   return s.indexOf('\n') !== -1;
 }
 
+const stringify = stringifier();
+
 class PowerAssertImpl implements PowerAssert {
   // eslint-disable-next-line @typescript-eslint/ban-types
   readonly #callee: Function;
@@ -199,28 +203,45 @@ class PowerAssertImpl implements PowerAssert {
           for (const cap of rec.capturedValues) {
             logs.push({
               value: cap.value,
+              espath: cap.espath,
               leftIndex: cap.left
             });
           }
         }
       }
-
       // console.log(logs);
 
-      // rethrow AssertionError with diagram message
+      const originalMessage = e.message;
+      const newMessageFragments: string[] = [];
       const assertionLine = this.#assertionMetadata.content;
-      if (isMultiline(assertionLine)) {
-        e.message = `
-${assertionLine}
 
-${e.message}`;
-        e.generatedMessage = false;
+      if (isMultiline(assertionLine)) {
+        newMessageFragments.push('');
+        newMessageFragments.push(assertionLine);
+        newMessageFragments.push('');
       } else {
+        // rethrow AssertionError with diagram message
         const renderer = new DiagramRenderer(assertionLine);
         const diagram = renderer.render(logs);
-        e.message = diagram;
-        e.generatedMessage = false;
+        newMessageFragments.push(diagram);
       }
+
+      // BinaryExpression analysis
+      if (this.#assertionMetadata.binexp) {
+        const binexp = this.#assertionMetadata.binexp;
+        e.operator = binexp;
+        e.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
+        e.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
+        newMessageFragments.push(`${stringify(e.actual)} ${e.operator} ${stringify(e.expected)}`);
+        newMessageFragments.push('');
+      } else {
+        if (isMultiline(assertionLine)) {
+          newMessageFragments.push(originalMessage);
+        }
+      }
+
+      e.message = newMessageFragments.join('\n');
+      e.generatedMessage = false;
       throw e;
     }
   }

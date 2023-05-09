@@ -25,6 +25,8 @@ assert(truthy === falsy)
        |      |   |     
        |      |   0     
        "1"    false     
+
+"1" === 0
 `);
 
   ptest('assertion with multiple lines', (transpiledCode) => {
@@ -39,4 +41,16 @@ Expected values to be strictly equal:
 
 '1' !== 0
 `, 2);
+
+  ptest('BinaryExpression analysis', (transpiledCode) => {
+    const truthy = '1';
+    const falsy = 0;
+    eval(transpiledCode);
+  }, `
+assert(truthy
+       ===
+       falsy)
+
+"1" === 0
+`, 3);
 });
