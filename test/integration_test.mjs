@@ -14,6 +14,8 @@ describe('Integration of transpiler and runtime', () => {
 assert(truthy)
        |      
        ""     
+
+'' == true
 `);
 
   ptest('BinaryExpression', (transpiledCode) => {
@@ -40,6 +42,7 @@ assert.equal(truthy,
 Expected values to be strictly equal:
 
 '1' !== 0
+
 `, 2);
 
   ptest('BinaryExpression analysis', (transpiledCode) => {

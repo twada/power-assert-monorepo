@@ -235,9 +235,8 @@ class PowerAssertImpl implements PowerAssert {
         newMessageFragments.push(`${stringify(e.actual)} ${e.operator} ${stringify(e.expected)}`);
         newMessageFragments.push('');
       } else {
-        if (isMultiline(assertionLine)) {
-          newMessageFragments.push(originalMessage);
-        }
+        newMessageFragments.push(originalMessage);
+        newMessageFragments.push('');
       }
 
       e.message = newMessageFragments.join('\n');
