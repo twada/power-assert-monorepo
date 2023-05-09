@@ -16,6 +16,6 @@ assert.ok(truthy === falsy)
           |      |   0     
           "1"    false     
 `;
-    assert.equal(diagram.render(logs), expected);
+    assert.equal('\n' + diagram.render(logs) + '\n', expected);
   });
 });

@@ -215,16 +215,16 @@ class PowerAssertImpl implements PowerAssert {
       const newMessageFragments: string[] = [];
       const assertionLine = this.#assertionMetadata.content;
 
+      newMessageFragments.push('');
       if (isMultiline(assertionLine)) {
-        newMessageFragments.push('');
         newMessageFragments.push(assertionLine);
-        newMessageFragments.push('');
       } else {
         // rethrow AssertionError with diagram message
         const renderer = new DiagramRenderer(assertionLine);
         const diagram = renderer.render(logs);
         newMessageFragments.push(diagram);
       }
+      newMessageFragments.push('');
 
       // BinaryExpression analysis
       if (this.#assertionMetadata.binexp) {

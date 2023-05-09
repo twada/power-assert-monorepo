@@ -30,11 +30,10 @@ export class DiagramRenderer {
       this.#addOneMoreRow();
     }
     this.#constructRows(events);
-    const wrote = ['', this.#assertionLine];
+    const wrote = [this.#assertionLine];
     this.#rows.forEach((columns) => {
       wrote.push(columns.join(''));
     });
-    wrote.push('');
     return wrote.join('\n');
   }
 
