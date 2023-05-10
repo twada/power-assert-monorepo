@@ -226,7 +226,7 @@ class PowerAssertImpl implements PowerAssert {
       newMessageFragments.push('');
 
       const newAssertionErrorProps = {
-        message: e.message,
+        message: originalMessage,
         operator: e.operator,
         actual: e.actual,
         expected: e.expected,
@@ -239,21 +239,16 @@ class PowerAssertImpl implements PowerAssert {
         newAssertionErrorProps.operator = binexp;
         newAssertionErrorProps.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
         newAssertionErrorProps.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
-        // e.operator = binexp;
-        // e.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
-        // e.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
-        newMessageFragments.push(`${stringify(e.actual)} ${e.operator} ${stringify(e.expected)}`);
+        const { expected, actual, operator } = newAssertionErrorProps;
+        newMessageFragments.push(`${stringify(actual)} ${operator} ${stringify(expected)}`);
         newMessageFragments.push('');
       } else {
         newMessageFragments.push(originalMessage);
         newMessageFragments.push('');
       }
 
-      // e.message = newMessageFragments.join('\n');
-      // e.generatedMessage = false;
-      // e.stackStartFn = this.run
-      // throw e;
       newAssertionErrorProps.message = newMessageFragments.join('\n');
+
       throw new AssertionError(newAssertionErrorProps);
     }
   }
