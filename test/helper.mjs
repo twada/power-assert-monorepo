@@ -1,8 +1,10 @@
 import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import { strict as assert } from 'node:assert';
 import { espowerAst } from '../dist/transpiler/transpiler.mjs';
 import { parse } from 'acorn';
-import { generate } from 'escodegen';
+import { generate } from 'astring';
+import { SourceMapGenerator } from 'source-map';
+import { fromJSON } from 'convert-source-map';
 
 function transpile (code) {
   const ast = parse(code, {
@@ -16,9 +18,21 @@ function transpile (code) {
       // set variable name explicitly for testing
       'assert'
     ],
+    // runtime: '../dist/runtime/runtime.mjs',
     code
   });
-  return generate(poweredAst);
+  const smg = new SourceMapGenerator({
+    file: 'source.mjs',
+  });
+  const transpiledCode = generate(poweredAst, {
+    sourceMap: smg,
+  });
+  const outMap = fromJSON(smg.toString());
+  return transpiledCode + '\n' + outMap.toComment() + '\n';
+}
+
+function isAssertionError (e) {
+  return e instanceof Error && /^AssertionError/.test(e.name);
 }
 
 export function ptest (title, testFunc, expected, howManyLines = 1) {
@@ -29,9 +43,13 @@ export function ptest (title, testFunc, expected, howManyLines = 1) {
     const transpiledCode = transpile(expression).split('\n').slice(1).join('\n');
     try {
       testFunc(transpiledCode);
-      assert.fail('AssertionError should be thrown');
+      throw new Error('AssertionError should be thrown');
     } catch (e) {
-      assert.equal(e.message, expected);
+      if (isAssertionError(e)) {
+        assert.equal(e.message, expected);
+      } else {
+        throw e;
+      }
     }
   });
 }
