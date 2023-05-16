@@ -51,6 +51,7 @@ test('SourceMap support', async () => {
   lines[0] = "//port { _power_ } from '@power-assert/runtime';";
   const evalTargetCode = lines.join('\n');
   console.log(evalTargetCode);
+  // ############# evalTargetCode start #############
   // //port { _power_ } from '@power-assert/runtime';
   // const _pasrt1 = _power_(assert, null, "assert(truthy === falsy)", {
   //   binexp:
@@ -59,6 +60,7 @@ test('SourceMap support', async () => {
   // const truthy = true;
   // const falsy = false;
   // _pasrt1.run(_parg1.rec(_parg1.tap(truthy, "arguments/0/left", 7) === _parg1.tap(falsy, "arguments/0/right", 18), "arguments/0", 14));
+  // ############# evalTargetCode end #############
   try {
     eval(evalTargetCode);
     throw new Error('AssertionError should be thrown');
