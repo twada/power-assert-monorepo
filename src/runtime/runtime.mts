@@ -1,7 +1,6 @@
 import { DiagramRenderer } from './diagram-renderer.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
-import { strict as assert } from 'node:assert';
-import type { AssertionError } from 'node:assert';
+import { strict as assert, AssertionError } from 'node:assert';
 
 type PowerAssertMetadata = {
   transpiler: string;
@@ -226,23 +225,31 @@ class PowerAssertImpl implements PowerAssert {
       }
       newMessageFragments.push('');
 
+      const newAssertionErrorProps = {
+        message: originalMessage,
+        operator: e.operator,
+        actual: e.actual,
+        expected: e.expected,
+        stackStartFn: this.run // the generated stack trace omits frames before this function.
+      };
+
       // BinaryExpression analysis
       if (this.#assertionMetadata.binexp) {
         const binexp = this.#assertionMetadata.binexp;
-        e.operator = binexp;
-        e.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
-        e.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
-        newMessageFragments.push(`${stringify(e.actual)} ${e.operator} ${stringify(e.expected)}`);
+        newAssertionErrorProps.operator = binexp;
+        newAssertionErrorProps.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
+        newAssertionErrorProps.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
+        const { expected, actual, operator } = newAssertionErrorProps;
+        newMessageFragments.push(`${stringify(actual)} ${operator} ${stringify(expected)}`);
         newMessageFragments.push('');
       } else {
-        if (isMultiline(assertionLine)) {
-          newMessageFragments.push(originalMessage);
-        }
+        newMessageFragments.push(originalMessage);
+        newMessageFragments.push('');
       }
 
-      e.message = newMessageFragments.join('\n');
-      e.generatedMessage = false;
-      throw e;
+      newAssertionErrorProps.message = newMessageFragments.join('\n');
+
+      throw new AssertionError(newAssertionErrorProps);
     }
   }
 }

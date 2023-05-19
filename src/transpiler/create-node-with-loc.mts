@@ -78,85 +78,92 @@ export function isScoped (node: Node): node is Scoped {
   return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
 
-export class NodeCreator {
-  readonly baseNode: Node | undefined;
+function withLoc (sourceNode: Node) {
+  return function<T extends Node> (destNode: T): T {
+    destNode.loc = sourceNode.loc;
+    destNode.range = sourceNode.range;
+    return destNode;
+  };
+}
 
-  constructor (baseNode?: Node) {
-    // base node of node location
-    this.baseNode = baseNode;
+export class NodeCreator {
+  readonly newNode: <T extends Node>(destNode: T) => T;
+
+  constructor (sourceNode: Node) {
+    this.newNode = withLoc(sourceNode);
   }
 
   identifier (name: string): Identifier {
-    return {
+    return this.newNode<Identifier>({
       type: 'Identifier',
       name
-    };
+    });
   }
 
   stringLiteral (value: string): SimpleLiteral {
-    return {
+    return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
-    };
+    });
   }
 
   numericLiteral (value: number): SimpleLiteral {
-    return {
+    return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
-    };
+    });
   }
 
   booleanLiteral (value: boolean): SimpleLiteral {
-    return {
+    return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
-    };
+    });
   }
 
   nullLiteral (): SimpleLiteral {
-    return {
+    return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value: null
-    };
+    });
   }
 
   callExpression (callee: Expression, args: Array<Expression | SpreadElement>): CallExpression {
-    return {
+    return this.newNode<CallExpression>({
       type: 'CallExpression',
       callee,
       arguments: args,
       optional: false
-    };
+    });
   }
 
   newExpression (callee: Expression, args: Array<Expression | SpreadElement>): NewExpression {
-    return {
+    return this.newNode<NewExpression>({
       type: 'NewExpression',
       callee,
       arguments: args
-    };
+    });
   }
 
   memberExpression (object: Expression, property: Expression, computed = false, optional = false): MemberExpression {
-    return {
+    return this.newNode<MemberExpression>({
       type: 'MemberExpression',
       object,
       property,
       computed,
       optional
-    };
+    });
   }
 
   objectExpression (properties: Array<Property | SpreadElement>): ObjectExpression {
-    return {
+    return this.newNode<ObjectExpression>({
       type: 'ObjectExpression',
       properties
-    };
+    });
   }
 
   objectProperty (key: Expression, value: Expression | Pattern, computed = false, shorthand = false): Property {
-    return {
+    return this.newNode<Property>({
       type: 'Property',
       key,
       value,
@@ -164,71 +171,71 @@ export class NodeCreator {
       shorthand,
       computed,
       kind: 'init'
-    };
+    });
   }
 
   arrowFunctionExpression (params: Pattern[], body: BlockStatement | Expression, expression = false): ArrowFunctionExpression {
-    return {
+    return this.newNode<ArrowFunctionExpression>({
       type: 'ArrowFunctionExpression',
       params,
       body,
       expression
-    };
+    });
   }
 
   unaryExpression (operator: UnaryOperator, argument: Expression): UnaryExpression {
-    return {
+    return this.newNode<UnaryExpression>({
       type: 'UnaryExpression',
       operator,
       argument,
       prefix: true
-    };
+    });
   }
 
   blockStatement (body: Statement[]): BlockStatement {
-    return {
+    return this.newNode<BlockStatement>({
       type: 'BlockStatement',
       body
-    };
+    });
   }
 
   returnStatement (argument: Expression | null | undefined): ReturnStatement {
-    return {
+    return this.newNode<ReturnStatement>({
       type: 'ReturnStatement',
       argument
-    };
+    });
   }
 
   importDeclaration (specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal): ImportDeclaration {
-    return {
+    return this.newNode<ImportDeclaration>({
       type: 'ImportDeclaration',
       specifiers,
       source
-    };
+    });
   }
 
   importSpecifier (imported: Identifier, local = null): ImportSpecifier {
-    return {
+    return this.newNode<ImportSpecifier>({
       type: 'ImportSpecifier',
       imported,
       local: local || imported
-    };
+    });
   }
 
   variableDeclaration (kind: 'var' | 'let' | 'const', declarations: VariableDeclarator[]): VariableDeclaration {
-    return {
+    return this.newNode<VariableDeclaration>({
       type: 'VariableDeclaration',
       declarations,
       kind
-    };
+    });
   }
 
   variableDeclarator (id: Pattern, init?: Expression | null): VariableDeclarator {
-    return {
+    return this.newNode<VariableDeclarator>({
       type: 'VariableDeclarator',
       id,
       init
-    };
+    });
   }
 
   valueToNode (value: unknown): Expression | Pattern {

@@ -291,7 +291,8 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 }
 
 function createPowerAssertImports ({ transformation, controller, runtime }: { transformation: Transformation, controller: Controller, runtime: string }): Identifier {
-  const types = new NodeCreator();
+  const currentNode = controller.current();
+  const types = new NodeCreator(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
   // TODO: CJS support?
   const decl = types.importDeclaration([
