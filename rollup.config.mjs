@@ -28,7 +28,7 @@ export default {
     // https://github.com/vladshcherbin/rollup-plugin-copy
     copy({
       targets: [
-        // copy from .d.mts to .d.ts while removing the "node:" protocol
+        // copy from .d.mts to .d.ts while removing the "node:" protocol and sourcemap
         {
           src: 'dist/**/*.d.mts',
           dest: 'dist/',
@@ -36,7 +36,13 @@ export default {
             // name => 'index.d', extension => 'mts', fullPath => 'dist/transpiler/index.d.mts' here
             return fullPath.replace(/^dist\//, '').replace(/\.d\.mts/, '.d.ts');
           },
-          transform: (contents, filename) => contents.toString().replace('node:', '')
+          transform: (contents, filename) => {
+            // contents => Buffer, filename => 'index.d.mts' here
+            return contents.toString()
+                .replace('node:', '')
+                .replace(`//# sourceMappingURL=${filename}.map`, '')
+            ;
+          }
         }
       ]
     })

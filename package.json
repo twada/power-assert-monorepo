@@ -61,6 +61,7 @@
   },
   "scripts": {
     "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
+    "multi-sm": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/test/spike/spike_test.mjs",
     "preversion": "npm run build && npm test",
     "build": "npm run build:clean && npm run build:mjs && npm run build:cjs",
     "build:clean": "rimraf dist",
