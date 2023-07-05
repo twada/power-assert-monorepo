@@ -1,5 +1,5 @@
 import { parse } from 'acorn';
-import { espowerAst } from './dist/transpiler/transpiler.mjs';
+import { espowerAst } from 'espower3/transpiler';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON } from 'convert-source-map';
@@ -32,7 +32,7 @@ function transpile (code, url) {
     sourceFile: url
   });
   const modifiedAst = espowerAst(ast, {
-    runtime: '../dist/runtime/runtime.mjs',
+    runtime: 'espower3/runtime',
     code: code
   });
   const smg = new SourceMapGenerator({

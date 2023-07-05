@@ -6,6 +6,34 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "files": [
+    "src",
+    "dist/src",
+    "package.json"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./runtime": {
+      "import": {
+        "types": "./dist/src/runtime/runtime.d.mts",
+        "default": "./dist/src/runtime/runtime.mjs"
+      },
+      "default": "./dist/src/runtime/runtime.mjs"
+    },
+    "./transpiler": {
+      "import": {
+        "types": "./dist/src/transpiler/transpiler.d.mts",
+        "default": "./dist/src/transpiler/transpiler.mjs"
+      },
+      "default": "./dist/src/transpiler/transpiler.mjs"
+    },
+    "./esm": {
+      "import": {
+        "default": "./power-assert.mjs"
+      },
+      "default": "./power-assert.mjs"
+    }
+  },
   "dependencies": {
     "estraverse": "^5.3.0",
     "esutils": "^2.0.0"
@@ -32,7 +60,7 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "example": "node --enable-source-maps --no-warnings --experimental-loader ./power-assert.mjs --test examples/bowling_test.mjs",
+    "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
     "preversion": "npm run build && npm test",
     "build": "npm run build:clean && npm run build:mjs && npm run build:cjs",
     "build:clean": "rimraf dist",
