@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { traverseAny } from '../../../dist/runtime/stringifier/traverse.mjs';
+import { traverseAny } from '../../../dist/src/runtime/stringifier/traverse.mjs';
 
 describe('traverse', () => {
   it('traverse flat array', () => {
