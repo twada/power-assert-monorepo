@@ -24,7 +24,7 @@ interface LoadHookContext {
   /**
    *  An object whose key-value pairs represent the assertions for the module to import
    */
-  importAssertions: Object;
+  importAssertions?: { type?: 'json' };
 }
 interface LoadFnOutput {
   format: ModuleFormat;
@@ -40,8 +40,9 @@ interface LoadFnOutput {
 }
 // end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
 
-type NextLoadFn =  (url: string, context?: LoadHookContext) => LoadFnOutput;
+type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
+// eslint-disable-next-line no-useless-escape
 const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js$/;
 
 /**
@@ -52,7 +53,7 @@ const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js
  * @param context Metadata about the module
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
-export async function load(url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
+export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
   const { format } = context;
   if (format !== 'module') {
     return nextLoad(url);
@@ -69,7 +70,7 @@ export async function load(url: string, context: LoadHookContext, nextLoad: Next
     // console.log(transpiledCode);
     return {
       format,
-      source: transpiledCode,
+      source: transpiledCode
     };
   }
   return nextLoad(url);
@@ -85,13 +86,13 @@ function transpile (code: string, url: string): string {
   }) as Node;
   const modifiedAst = espowerAst(ast, {
     runtime: 'espower3/runtime',
-    code: code
+    code
   });
   const smg = new SourceMapGenerator({
-    file: url,
+    file: url
   });
   const transpiledCode = generate(modifiedAst, {
-    sourceMap: smg,
+    sourceMap: smg
   });
   const outMap = fromJSON(smg.toString());
   return transpiledCode + '\n' + outMap.toComment() + '\n';
@@ -104,13 +105,13 @@ async function handleIncomingSourceMap (originalCode: string, url: string): Prom
   // relative file sourceMap
   // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
   if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
-      commented = await fromMapFileSource(originalCode, (filename: string) => {  
-        // resolve relative path
-        return readFile(resolve(nativePath, '..', filename), 'utf8');
-      });
+    commented = await fromMapFileSource(originalCode, (filename: string) => {
+      // resolve relative path
+      return readFile(resolve(nativePath, '..', filename), 'utf8');
+    });
   } else {
-      // inline sourceMap or no sourceMap
-      commented = fromSource(originalCode);
+    // inline sourceMap or no sourceMap
+    commented = fromSource(originalCode);
   }
 
   if (commented) {
@@ -123,15 +124,17 @@ async function handleIncomingSourceMap (originalCode: string, url: string): Prom
 // copy from https://github.com/evanw/node-source-map-support/blob/master/source-map-support.js#L99
 function retrieveSourceMapURL (source: string): string | null {
   //        //# sourceMappingURL=foo.js.map                       /*# sourceMappingURL=foo.js.map */
-  var re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/)[ \t]*$)/mg;
+  // eslint-disable-next-line no-useless-escape
+  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/)[ \t]*$)/mg;
   // Keep executing the search to find the *last* sourceMappingURL to avoid
   // picking up sourceMappingURLs from comments, strings, etc.
-  var lastMatch, match;
+  let lastMatch, match;
+  // eslint-disable-next-line no-cond-assign
   while (match = re.exec(source)) {
-      lastMatch = match;
+    lastMatch = match;
   }
   if (!lastMatch) {
-      return null;
+    return null;
   }
   return lastMatch[1];
 }
