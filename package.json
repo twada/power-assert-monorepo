@@ -29,9 +29,9 @@
     },
     "./esm": {
       "import": {
-        "default": "./power-assert.mjs"
+        "default": "./dist/src/esm/power-assert.mjs"
       },
-      "default": "./power-assert.mjs"
+      "default": "./dist/src/esm/power-assert.mjs"
     }
   },
   "dependencies": {
