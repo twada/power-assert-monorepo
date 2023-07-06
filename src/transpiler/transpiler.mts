@@ -18,7 +18,7 @@ import type { Scoped } from './create-node-with-loc.mjs';
 
 type EspowerOptions = {
   runtime: string,
-  modules: string[],
+  modules?: string[],
   code: string,
   variables?: string[]
 };
