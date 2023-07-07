@@ -2,7 +2,8 @@ import { parse } from 'acorn';
 import { espowerAst } from '../transpiler/transpiler.mjs';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
-import { SourceMapConverter, fromJSON, fromMapFileSource, fromSource } from 'convert-source-map';
+import { SourceMapConverter, fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
+import { transfer } from 'multi-stage-sourcemap';
 import { strict as assert } from 'node:assert';
 import type { Node } from 'estree';
 import { fileURLToPath } from 'node:url';
@@ -61,12 +62,7 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   if (targetPattern.test(url)) {
     const { source: rawSource } = await nextLoad(url, { ...context, format });
     assert(rawSource !== undefined, 'rawSource should not be undefined');
-    const incomingCode = rawSource.toString();
-    const incomingSourceMap = await handleIncomingSourceMap(incomingCode, url);
-    if (incomingSourceMap) {
-      console.log(incomingSourceMap);
-    }
-    const transpiledCode = transpile(incomingCode, url);
+    const transpiledCode = await transpile(rawSource.toString(), url);
     // console.log(transpiledCode);
     return {
       format,
@@ -76,7 +72,7 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   return nextLoad(url);
 }
 
-function transpile (code: string, url: string): string {
+async function transpile (code: string, url: string): Promise<string> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -94,30 +90,31 @@ function transpile (code: string, url: string): string {
   const transpiledCode = generate(modifiedAst, {
     sourceMap: smg
   });
-  const outMap = fromJSON(smg.toString());
-  return transpiledCode + '\n' + outMap.toComment() + '\n';
+
+  let outMapConv = fromObject(smg.toJSON());
+  const inMapConv = await findIncomingSourceMap(code, url);
+  if (inMapConv) {
+    console.log(inMapConv.toObject());
+    outMapConv = reconnectSourceMap(inMapConv, outMapConv);
+    console.log('######### reconnected @@@@@@@@@@@@@');
+  }
+
+  return transpiledCode + '\n' + outMapConv.toComment() + '\n';
 }
 
-async function handleIncomingSourceMap (originalCode: string, url: string): Promise<object | null> {
+async function findIncomingSourceMap (originalCode: string, url: string): Promise<SourceMapConverter | null> {
   const sourceMappingURL = retrieveSourceMapURL(originalCode);
   const nativePath = fileURLToPath(url);
-  let commented: SourceMapConverter | null;
-  // relative file sourceMap
   // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
   if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
-    commented = await fromMapFileSource(originalCode, (filename: string) => {
+    // relative file sourceMap
+    return await fromMapFileSource(originalCode, (filename: string) => {
       // resolve relative path
       return readFile(resolve(nativePath, '..', filename), 'utf8');
     });
   } else {
     // inline sourceMap or no sourceMap
-    commented = fromSource(originalCode);
-  }
-
-  if (commented) {
-    return commented.toObject();
-  } else {
-    return null;
+    return fromSource(originalCode);
   }
 }
 
@@ -137,4 +134,22 @@ function retrieveSourceMapURL (source: string): string | null {
     return null;
   }
   return lastMatch[1];
+}
+
+function mergeSourceMap (incomingSourceMapConv: SourceMapConverter, outgoingSourceMapConv: SourceMapConverter): SourceMapConverter {
+  return fromJSON(transfer({ fromSourceMap: outgoingSourceMapConv.toObject(), toSourceMap: incomingSourceMapConv.toObject() }));
+}
+
+function copyPropertyIfExists (name: string, from: SourceMapConverter, to: SourceMapConverter): void {
+  if (from.getProperty(name)) {
+    to.setProperty(name, from.getProperty(name));
+  }
+}
+
+function reconnectSourceMap (inMap: SourceMapConverter, outMap: SourceMapConverter): SourceMapConverter {
+  const reMap = mergeSourceMap(inMap, outMap);
+  copyPropertyIfExists('sources', inMap, reMap);
+  copyPropertyIfExists('sourceRoot', inMap, reMap);
+  copyPropertyIfExists('sourcesContent', inMap, reMap);
+  return reMap;
 }
