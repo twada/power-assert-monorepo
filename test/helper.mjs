@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { espowerAst } from '../dist/transpiler/transpiler.mjs';
+import { espowerAst } from '../dist/src/transpiler/transpiler.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
@@ -18,7 +18,7 @@ function transpile (code) {
       // set variable name explicitly for testing
       'assert'
     ],
-    // runtime: '../dist/runtime/runtime.mjs',
+    // runtime: 'espower3/runtime',
     code
   });
   const smg = new SourceMapGenerator({

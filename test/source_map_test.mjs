@@ -3,8 +3,8 @@
 /* eslint no-eval: 0 */
 import { test } from 'node:test';
 import assert from 'node:assert/strict'; // variable 'assert' is referenced in eval
-import { _power_ } from '../dist/runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { espowerAst } from '../dist/transpiler/transpiler.mjs';
+import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
+import { espowerAst } from '../dist/src/transpiler/transpiler.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
@@ -22,7 +22,7 @@ function transpile (code) {
     // set variable name explicitly for testing
       'assert'
     ],
-    // runtime: '../dist/runtime/runtime.mjs',
+    // runtime: 'espower3/runtime',
     code
   });
   const smg = new SourceMapGenerator({
@@ -50,7 +50,7 @@ test('SourceMap support', async () => {
   const lines = transpiledCode.split('\n');
   lines[0] = "//port { _power_ } from '@power-assert/runtime';";
   const evalTargetCode = lines.join('\n');
-  console.log(evalTargetCode);
+  // console.log(evalTargetCode);
   // ############# evalTargetCode start #############
   // //port { _power_ } from '@power-assert/runtime';
   // const _pasrt1 = _power_(assert, null, "assert(truthy === falsy)", {

@@ -2,11 +2,13 @@
   "compilerOptions": {
     "target": "es2022",
     "declaration": true,
-    // "declarationMap": true,
-    // "sourceMap": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    // "inlineSourceMap": true,
     "outDir": "./dist",
     "moduleResolution": "node16",
     "strict": true
   },
-  "include": ["./src/**/*.ts", "./src/**/*.mts"]
+  // "include": ["./src/**/*.ts", "./src/**/*.mts"]
+  "include": ["./src/**/*.ts", "./src/**/*.mts", "./test/**/*.ts", "./test/**/*.mts"]
 }

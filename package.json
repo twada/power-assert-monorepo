@@ -6,20 +6,52 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "estraverse": "^5.3.0",
-    "esutils": "^2.0.0"
+  "files": [
+    "src",
+    "dist/src",
+    "package.json"
+  ],
+  "exports": {
+    "./package.json": "./package.json",
+    "./runtime": {
+      "import": {
+        "types": "./dist/src/runtime/runtime.d.mts",
+        "default": "./dist/src/runtime/runtime.mjs"
+      },
+      "default": "./dist/src/runtime/runtime.mjs"
+    },
+    "./transpiler": {
+      "import": {
+        "types": "./dist/src/transpiler/transpiler.d.mts",
+        "default": "./dist/src/transpiler/transpiler.mjs"
+      },
+      "default": "./dist/src/transpiler/transpiler.mjs"
+    },
+    "./esm": {
+      "import": {
+        "default": "./dist/src/esm/power-assert.mjs"
+      },
+      "default": "./dist/src/esm/power-assert.mjs"
+    }
   },
-  "devDependencies": {
-    "@types/estraverse": "^5.1.2",
-    "@types/estree": "^1.0.1",
-    "@types/esutils": "^2.0.0",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.0",
-    "@typescript-eslint/parser": "^5.59.0",
+  "dependencies": {
     "acorn": "^8.8.0",
     "astring": "^1.8.4",
     "convert-source-map": "^2.0.0",
+    "estraverse": "^5.3.0",
+    "esutils": "^2.0.0",
+    "multi-stage-sourcemap": "^0.3.1",
+    "source-map": "^0.7.4"
+  },
+  "devDependencies": {
+    "@types/convert-source-map": "^2.0.0",
+    "@types/estraverse": "^5.1.2",
+    "@types/estree": "^1.0.1",
+    "@types/esutils": "^2.0.0",
+    "@types/multi-stage-sourcemap": "^0.3.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
     "escodegen": "^2.0.0",
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
@@ -28,11 +60,11 @@
     "rollup": "^3.0.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-externals": "^6.0.0",
-    "source-map": "^0.7.4",
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "example": "node --enable-source-maps --no-warnings --experimental-loader ./power-assert.mjs --test examples/bowling_test.mjs",
+    "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
+    "multi-sm": "npm run build && node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/test/spike/spike_test.mjs",
     "preversion": "npm run build && npm test",
     "build": "npm run build:clean && npm run build:mjs && npm run build:cjs",
     "build:clean": "rimraf dist",
