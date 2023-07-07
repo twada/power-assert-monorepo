@@ -44,7 +44,12 @@ interface LoadFnOutput {
 type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
 // eslint-disable-next-line no-useless-escape
-const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js$/;
+const targetPattern = /.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
+// const targetPattern = /^test\.(:?m)[jt]s$|^test-.+\.(:?m)[jt]s|.+[\.\-\_]test\.(:?m)[jt]s$/;
+// const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js$/;
+
+const moduleExtPattern = /.+[\.\-\_]test\.m[jt]{1}s$/;
+// const modulePattern = /.+[\.\-\_]test\.m[jt]s$/;
 
 /**
  * The `load` hook provides a way to define a custom method of determining how a URL should be interpreted, retrieved, and parsed.
@@ -55,19 +60,40 @@ const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  const { format } = context;
-  if (format !== 'module') {
-    return nextLoad(url);
-  }
+  console.log(`######### called ${url}`);
+  // const { format } = context;
+  // if (format !== 'module') {
+  //   console.log(context);
+  //   console.log(`######### format !== 'module' => ${format}`);
+  //   return nextLoad(url);
+  // }
   if (targetPattern.test(url)) {
+    console.log(`######### MATCH ${url}`);
+    let format: ModuleFormat;
+    if (moduleExtPattern.test(url)) {
+      format = 'module';
+    } else {
+
+
+      // TODO: detect format
+
+
+      console.log(`######### cannot detect format(commonjs/module) from ${url}`);
+      return nextLoad(url);
+    }
     const { source: rawSource } = await nextLoad(url, { ...context, format });
     assert(rawSource !== undefined, 'rawSource should not be undefined');
-    const transpiledCode = await transpile(rawSource.toString(), url);
+    const incomingCode = rawSource.toString();
+    console.log(`######### incomingCode: ${incomingCode}`);
+    const transpiledCode = await transpile(incomingCode, url);
+    console.log(`######### transpiledCode: ${transpiledCode}`);
     // console.log(transpiledCode);
     return {
       format,
       source: transpiledCode
     };
+  } else {
+    console.log(`######### does not match ${url}`);
   }
   return nextLoad(url);
 }
