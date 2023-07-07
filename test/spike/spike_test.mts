@@ -1,9 +1,9 @@
 import { test } from 'node:test';
-import { strict as assert } from 'node:assert';
+import { ok as assume } from 'node:assert/strict';
 
 
 test('spike', () => {
   const falsy: number = 0;
   const truthy: number = falsy + 1;
-  assert(falsy === truthy);
+  assume(falsy === truthy);
 });
