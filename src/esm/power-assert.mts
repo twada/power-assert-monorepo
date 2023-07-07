@@ -44,11 +44,13 @@ interface LoadFnOutput {
 type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
 // eslint-disable-next-line no-useless-escape
-const targetPattern = /.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
-// const targetPattern = /^test\.(:?m)[jt]s$|^test-.+\.(:?m)[jt]s|.+[\.\-\_]test\.(:?m)[jt]s$/;
+const targetPattern = /\/test\.(:?m)?[jt]{1}s$|\/test[\.\-\_].+\.(:?m)?[jt]{1}s$|\/.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
+// const targetPattern = /.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
+// const targetPattern = /test\.(:?m)?[jt]{1}s$|test-.+\.(:?m)?[jt]{1}s$|.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
 // const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js$/;
 
-const moduleExtPattern = /.+[\.\-\_]test\.m[jt]{1}s$/;
+const moduleExtPattern = /\.m[jt]{1}s$/;
+// const moduleExtPattern = /.+[\.\-\_]test\.m[jt]{1}s$/;
 // const modulePattern = /.+[\.\-\_]test\.m[jt]s$/;
 
 /**
@@ -73,11 +75,7 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
     if (moduleExtPattern.test(url)) {
       format = 'module';
     } else {
-
-
       // TODO: detect format
-
-
       console.log(`######### cannot detect format(commonjs/module) from ${url}`);
       return nextLoad(url);
     }
