@@ -73,10 +73,16 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
     console.log(`######### MATCH ${url}`);
     let format: ModuleFormat;
     if (moduleExtPattern.test(url)) {
+      // url ends with .mjs or .mts
       format = 'module';
     } else {
-      // TODO: detect format
-      console.log(`######### cannot detect format(commonjs/module) from ${url}`);
+
+
+      // url ends with .js or .ts
+      // TODO: detect format from package.json
+
+
+      console.log(`######### cannot detect format('commonjs' or 'module') from ${url}`);
       return nextLoad(url);
     }
     const { source: rawSource } = await nextLoad(url, { ...context, format });
