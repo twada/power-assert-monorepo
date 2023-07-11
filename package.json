@@ -6,6 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "type": "module",
   "files": [
     "src",
     "dist/src",
