@@ -1,39 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { transpile } from './transpile-with-sourcemap.mjs';
-
-// start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
-type ModuleFormat = 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
-type ModuleSource = string | ArrayBuffer | NodeJS.TypedArray;
-interface LoadHookContext {
-  /**
-   * Export conditions of the relevant `package.json`
-   */
-  conditions: string[];
-  /**
-   * The format optionally supplied by the `resolve` hook chain
-   */
-  format: ModuleFormat;
-  /**
-   *  An object whose key-value pairs represent the assertions for the module to import
-   */
-  importAssertions?: { type?: 'json' };
-}
-interface LoadFnOutput {
-  format: ModuleFormat;
-  /**
-   * A signal that this hook intends to terminate the chain of `resolve` hooks.
-   * @default false
-   */
-  shortCircuit?: boolean | undefined;
-  /**
-   * The source for Node.js to evaluate
-   */
-  source?: ModuleSource;
-}
-// end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
-
-type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
-type ModuleMatchResult = readonly [boolean, boolean];
+import type { ModuleFormat, LoadHookContext, ModuleMatchResult, NextLoadFn, LoadFnOutput } from './types.mjs';
 
 // eslint-disable-next-line no-useless-escape
 const targetPattern = /\/test\.(m)?[jt]{1}s$|\/test-.+\.(m)?[jt]{1}s$|\/.+[\.\-\_]test\.(m)?[jt]{1}s$/;
