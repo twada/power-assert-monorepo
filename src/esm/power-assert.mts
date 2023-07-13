@@ -42,16 +42,19 @@ interface LoadFnOutput {
 // end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
 
 type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
+type ModuleMatchResult = readonly [boolean, boolean];
 
 // eslint-disable-next-line no-useless-escape
-const targetPattern = /\/test\.(:?m)?[jt]{1}s$|\/test[\.\-\_].+\.(:?m)?[jt]{1}s$|\/.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
-// const targetPattern = /.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
-// const targetPattern = /test\.(:?m)?[jt]{1}s$|test-.+\.(:?m)?[jt]{1}s$|.+[\.\-\_]test\.(:?m)?[jt]{1}s$/;
-// const targetPattern = /^test\.(:?m)js$|^test-.+\.(:?m)js|.+[\.\-\_]test\.(:?m)js$/;
+const targetPattern = /\/test\.(m)?[jt]{1}s$|\/test-.+\.(m)?[jt]{1}s$|\/.+[\.\-\_]test\.(m)?[jt]{1}s$/;
+// const targetPattern = /\/test\.(m)?[jt]{1}s$|\/test[\.\-\_].+\.(m)?[jt]{1}s$|\/.+[\.\-\_]test\.(m)?[jt]{1}s$/;
 
-const moduleExtPattern = /\.m[jt]{1}s$/;
-// const moduleExtPattern = /.+[\.\-\_]test\.m[jt]{1}s$/;
-// const modulePattern = /.+[\.\-\_]test\.m[jt]s$/;
+export function matchUrl (url: string): ModuleMatchResult {
+  const m = targetPattern.exec(url);
+  if (m === null) {
+    return [false, false];
+  }
+  return [true, (m[1] === 'm' || m[2] === 'm' || m[3] === 'm')];
+}
 
 /**
  * The `load` hook provides a way to define a custom method of determining how a URL should be interpreted, retrieved, and parsed.
@@ -69,10 +72,11 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   //   console.log(`######### format !== 'module' => ${format}`);
   //   return nextLoad(url);
   // }
-  if (targetPattern.test(url)) {
+  const [isTarget, hasModuleExt] = matchUrl(url);
+  if (isTarget) {
     console.log(`######### MATCH ${url}`);
     let format: ModuleFormat;
-    if (moduleExtPattern.test(url)) {
+    if (hasModuleExt) {
       // url ends with .mjs or .mts
       format = 'module';
     } else {
