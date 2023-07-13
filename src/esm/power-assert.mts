@@ -1,14 +1,5 @@
-import { parse } from 'acorn';
-import { espowerAst } from '../transpiler/transpiler.mjs';
-import { generate } from 'astring';
-import { SourceMapGenerator } from 'source-map';
-import { SourceMapConverter, fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
-import { transfer } from 'multi-stage-sourcemap';
 import { strict as assert } from 'node:assert';
-import type { Node } from 'estree';
-import { fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { transpile } from './transpile-with-sourcemap.mjs';
 
 // start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
 type ModuleFormat = 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
@@ -73,6 +64,15 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   //   return nextLoad(url);
   // }
   const [isTarget, hasModuleExt] = matchUrl(url);
+
+
+  // TODO: Any files explicitly provided by the user are executed.
+
+  // node_modules directories are skipped unless explicitly provided by the user.
+
+  // TODO: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
+
+
   if (isTarget) {
     console.log(`######### MATCH ${url}`);
     let format: ModuleFormat;
@@ -104,86 +104,4 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
     console.log(`######### does not match ${url}`);
   }
   return nextLoad(url);
-}
-
-async function transpile (code: string, url: string): Promise<string> {
-  const ast: Node = parse(code, {
-    sourceType: 'module',
-    ecmaVersion: 2022,
-    locations: true,
-    ranges: true,
-    sourceFile: url
-  }) as Node;
-  const modifiedAst = espowerAst(ast, {
-    runtime: 'espower3/runtime',
-    code
-  });
-  const smg = new SourceMapGenerator({
-    file: url
-  });
-  const transpiledCode = generate(modifiedAst, {
-    sourceMap: smg
-  });
-
-  let outMapConv = fromObject(smg.toJSON());
-  const inMapConv = await findIncomingSourceMap(code, url);
-  if (inMapConv) {
-    console.log(inMapConv.toObject());
-    outMapConv = reconnectSourceMap(inMapConv, outMapConv);
-    console.log('######### reconnected @@@@@@@@@@@@@');
-  }
-
-  return transpiledCode + '\n' + outMapConv.toComment() + '\n';
-}
-
-async function findIncomingSourceMap (originalCode: string, url: string): Promise<SourceMapConverter | null> {
-  const sourceMappingURL = retrieveSourceMapURL(originalCode);
-  const nativePath = fileURLToPath(url);
-  // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
-  if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
-    // relative file sourceMap
-    return await fromMapFileSource(originalCode, (filename: string) => {
-      // resolve relative path
-      return readFile(resolve(nativePath, '..', filename), 'utf8');
-    });
-  } else {
-    // inline sourceMap or no sourceMap
-    return fromSource(originalCode);
-  }
-}
-
-// copy from https://github.com/evanw/node-source-map-support/blob/master/source-map-support.js#L99
-function retrieveSourceMapURL (source: string): string | null {
-  //        //# sourceMappingURL=foo.js.map                       /*# sourceMappingURL=foo.js.map */
-  // eslint-disable-next-line no-useless-escape
-  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/)[ \t]*$)/mg;
-  // Keep executing the search to find the *last* sourceMappingURL to avoid
-  // picking up sourceMappingURLs from comments, strings, etc.
-  let lastMatch, match;
-  // eslint-disable-next-line no-cond-assign
-  while (match = re.exec(source)) {
-    lastMatch = match;
-  }
-  if (!lastMatch) {
-    return null;
-  }
-  return lastMatch[1];
-}
-
-function mergeSourceMap (incomingSourceMapConv: SourceMapConverter, outgoingSourceMapConv: SourceMapConverter): SourceMapConverter {
-  return fromJSON(transfer({ fromSourceMap: outgoingSourceMapConv.toObject(), toSourceMap: incomingSourceMapConv.toObject() }));
-}
-
-function copyPropertyIfExists (name: string, from: SourceMapConverter, to: SourceMapConverter): void {
-  if (from.getProperty(name)) {
-    to.setProperty(name, from.getProperty(name));
-  }
-}
-
-function reconnectSourceMap (inMap: SourceMapConverter, outMap: SourceMapConverter): SourceMapConverter {
-  const reMap = mergeSourceMap(inMap, outMap);
-  copyPropertyIfExists('sources', inMap, reMap);
-  copyPropertyIfExists('sourceRoot', inMap, reMap);
-  copyPropertyIfExists('sourcesContent', inMap, reMap);
-  return reMap;
 }
