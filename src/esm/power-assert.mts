@@ -4,26 +4,13 @@ import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
-  ModuleFormat,
   LoadHookContext,
   LoadFnOutput,
   NextLoadFn,
   ResolveHookContext,
   ResolveFnOutput,
-  NextResolveFn,
-  ModuleMatchResult
+  NextResolveFn
 } from './types.mjs';
-
-// eslint-disable-next-line no-useless-escape
-const targetPattern = /\/test\.(m)?[jt]{1}s$|\/test-.+\.(m)?[jt]{1}s$|\/.+[\.\-\_]test\.(m)?[jt]{1}s$/;
-// const targetPattern = /\/test\.(m)?[jt]{1}s$|\/test[\.\-\_].+\.(m)?[jt]{1}s$|\/.+[\.\-\_]test\.(m)?[jt]{1}s$/;
-export function matchUrl (url: string): ModuleMatchResult {
-  const m = targetPattern.exec(url);
-  if (m === null) {
-    return [false, false];
-  }
-  return [true, (m[1] === 'm' || m[2] === 'm' || m[3] === 'm')];
-}
 
 // eslint-disable-next-line no-useless-escape
 const extPattern = /\/.+\.(m)?[jt]{1}s$/;
@@ -32,55 +19,66 @@ export function hasModuleExt (url: string): boolean {
   return m !== null && m[1] === 'm';
 }
 
+const supportedExts = new Set([
+  '.js',
+  '.mjs',
+  '.cjs',
+  '.jsx',
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+]);
+
+/**
+* The `resolve` hook chain is responsible for resolving file URL for a given module specifier and parent URL, and optionally its format (such as `'module'`) as a hint to the `load` hook.
+* If a format is specified, the load hook is ultimately responsible for providing the final `format` value (and it is free to ignore the hint provided by `resolve`);
+* if `resolve` provides a format, a custom `load` hook is required even if only to pass the value to the Node.js default `load` hook.
+*
+* @param specifier The specified URL path of the module to be resolved
+* @param context
+* @param nextResolve The subsequent `resolve` hook in the chain, or the Node.js default `resolve` hook after the last user-supplied resolve hook
+*/
 export async function resolve(specifier: string, context: ResolveHookContext, nextResolve: NextResolveFn): Promise<ResolveFnOutput> {
-  console.log(`######### resolve called ${specifier}`);
+  // 1: Any files explicitly provided by the user are executed.
+  // 2: node_modules directories are skipped unless explicitly provided by the user.
+  // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
+  console.log(`######### resolve ${specifier}`);
   // console.log(context);
-  // assert.deepEqual({}, context);
-  const { parentURL = null } = context;
-  if (parentURL === null) {
-    // 1: Any files explicitly provided by the user are executed.
-    console.log(context);
-    const url = new URL(specifier).href;
-    const isModuleExt = hasModuleExt(url);
-    const format = isModuleExt ? 'module' : await detectPackageType(url);
-    return {
-      format,
-      shortCircuit: true,
-      importAssertions: {
-        ...context.importAssertions,
-        'power-assert': true,
-      },
-      url: new URL(specifier).href,
-    };
-    // return nextResolve(specifier, {
-    //   ...context,
-    //   importAssertions: {
-    //     ...context.importAssertions,
-    //     'power-assert': true,
-    //   },
-    //   conditions: [...context.conditions, 'another-condition'],
-    // });
-  } else {
+  const importedByOthers = (!!context.parentURL);
+  if (importedByOthers) {
+    // modules that are imported by other modules are not transpiled
     return nextResolve(specifier, context);
   }
-}
 
-
-const supportedModuleFormats = ['builtin', 'commonjs', 'json', 'module', 'wasm'];
-
-function assertModuleFormat (format: string): asserts format is ModuleFormat {
-  // 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
-  assert(supportedModuleFormats.includes(format), `Expected format to be one of ${supportedModuleFormats.join(', ')}, but got ${format}`);
-}
-
-async function detectPackageType (url: string): Promise<ModuleFormat | null> {
-  const maybeType = await getPackageType(url);
-  if (maybeType === false) {
-    return null;
-  } else {
-    assertModuleFormat(maybeType);
-    return maybeType;
+  const ext = extname(specifier);
+  if (!supportedExts.has(ext)) {
+    return nextResolve(specifier, context);
   }
+
+  const { url: nextUrl } = nextResolve(specifier, context);
+  const url = nextUrl ?? new URL(specifier, 'file://').href;
+  // const url = nextUrl ?? new URL(specifier).href;
+  // const url = new URL(specifier).href;
+
+  assert(url !== null, 'url should not be null');
+  assert.equal(typeof url, 'string', 'url should be a string');
+
+  // url ends with .mjs or .mts => module
+  // url ends with .js or .ts => detect format from package.json
+  const isModule = hasModuleExt(url) || (await getPackageType(url)) === 'module';
+  if (!isModule) {
+    return nextResolve(specifier, context);
+  }
+
+  const ret = {
+    format: 'power-assert', // Provide a signal to `load`
+    shortCircuit: true,
+    url,
+  };
+  console.log(`######### resolve ${specifier} => format:${ret.format}, url:${ret.url}`);
+  // console.log(ret);
+  return ret;
 }
 
 // start borrowing from https://nodejs.org/api/esm.html#transpiler-loader
@@ -123,55 +121,23 @@ async function getPackageType (url: string): Promise<string | false> {
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  console.log(`######### called ${url}`);
-  const { format, importAssertions } = context;
-  if (format !== 'module') {
-    // console.log(context);
-    // console.log(`######### format !== 'module' => ${format}`);
+  console.log(`######### load ${url}`);
+  // console.log(context);
+  const { format } = context;
+  if (format !== 'power-assert') {
+    // console.log(`######### format !== 'power-assert' => ${format}`);
     return nextLoad(url);
   }
-  // const [isTarget, hasModuleExt] = matchUrl(url);
 
-
-  // TODO: Any files explicitly provided by the user are executed.
-
-  // node_modules directories are skipped unless explicitly provided by the user.
-
-  // TODO: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
-
-
-  if (importAssertions !== undefined && importAssertions['power-assert'] === true) {
-  // if (isTarget) {
-    console.log(`######### MATCH ${url}`);
-    console.log(context);
-
-    // let format: ModuleFormat;
-    // if (hasModuleExt) {
-    //   // url ends with .mjs or .mts
-    //   format = 'module';
-    // } else {
-
-
-    //   // url ends with .js or .ts
-    //   // TODO: detect format from package.json
-
-
-    //   console.log(`######### cannot detect format('commonjs' or 'module') from ${url}`);
-    //   return nextLoad(url);
-    // }
-    const { source: rawSource } = await nextLoad(url, { ...context, format });
-    assert(rawSource !== undefined, 'rawSource should not be undefined');
-    const incomingCode = rawSource.toString();
-    console.log(`######### incomingCode: ${incomingCode}`);
-    const transpiledCode = await transpile(incomingCode, url);
-    console.log(`######### transpiledCode: ${transpiledCode}`);
-    // console.log(transpiledCode);
-    return {
-      format,
-      source: transpiledCode
-    };
-  } else {
-    console.log(`######### does not match ${url}`);
-  }
-  return nextLoad(url);
+  const { source: rawSource } = await nextLoad(url, { ...context, format });
+  assert(rawSource !== undefined, 'rawSource should not be undefined');
+  const incomingCode = rawSource.toString();
+  console.log(`######### incomingCode: ${incomingCode}`);
+  const transpiledCode = await transpile(incomingCode, url);
+  console.log(`######### transpiledCode: ${transpiledCode}`);
+  // console.log(transpiledCode);
+  return {
+    format: 'module',
+    source: transpiledCode
+  };
 }
