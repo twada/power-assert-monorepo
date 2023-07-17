@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../../dist/src/transpiler/transpiler.mjs';
+import { espowerAst } from '../../dist/src/transpiler/transpiler-core.mjs';
 import assert from 'node:assert/strict';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';

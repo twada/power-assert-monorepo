@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { espowerAst } from '../dist/src/transpiler/transpiler.mjs';
+import { espowerAst } from '../dist/src/transpiler/transpiler-core.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';

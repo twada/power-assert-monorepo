@@ -6,6 +6,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
+  "type": "module",
   "files": [
     "src",
     "dist/src",
@@ -22,10 +23,10 @@
     },
     "./transpiler": {
       "import": {
-        "types": "./dist/src/transpiler/transpiler.d.mts",
-        "default": "./dist/src/transpiler/transpiler.mjs"
+        "types": "./dist/src/transpiler/transpile-with-sourcemap.d.mts",
+        "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
       },
-      "default": "./dist/src/transpiler/transpiler.mjs"
+      "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
     },
     "./esm": {
       "import": {
@@ -60,9 +61,14 @@
     "rollup": "^3.0.0",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-node-externals": "^6.0.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "power": "npm run build && node --enable-source-maps --no-warnings --loader espower3/esm --test --",
+    "ts-node:power": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
+    "ts-node:power:nomap": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
+    "ts-node": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --test test/spike/spike_test.mts",
     "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
     "multi-sm": "npm run build && node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/test/spike/spike_test.mjs",
     "preversion": "npm run build && npm test",
