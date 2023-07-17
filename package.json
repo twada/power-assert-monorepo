@@ -65,8 +65,9 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "ts-node:power": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test test/spike/spike_test.mts",
-    "ts-node:power:nomap": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --loader ts-node/esm --loader espower3/esm --test test/spike/spike_test.mts",
+    "power": "npm run build && node --enable-source-maps --no-warnings --loader espower3/esm --test --",
+    "ts-node:power": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
+    "ts-node:power:nomap": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
     "ts-node": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --test test/spike/spike_test.mts",
     "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
     "multi-sm": "npm run build && node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/test/spike/spike_test.mjs",
