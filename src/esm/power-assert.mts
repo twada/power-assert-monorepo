@@ -3,14 +3,80 @@ import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type {
-  LoadHookContext,
-  LoadFnOutput,
-  NextLoadFn,
-  ResolveHookContext,
-  ResolveFnOutput,
-  NextResolveFn
-} from './types.mjs';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type KeyValuePairs = { [key: string]: any };
+
+// start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
+type ModuleFormat = 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
+type ModuleSource = string | ArrayBuffer | NodeJS.TypedArray;
+
+interface ResolveHookContext {
+    /**
+     * Export conditions of the relevant `package.json`
+     */
+    conditions: string[];
+    /**
+     *  An object whose key-value pairs represent the assertions for the module to import
+     */
+    importAssertions: KeyValuePairs;
+    /**
+     * The module importing this one, or undefined if this is the Node.js entry point
+     */
+    parentURL: string | undefined;
+}
+
+interface ResolveFnOutput {
+    /**
+     * A hint to the load hook (it might be ignored)
+     */
+    format?: string | null | undefined;
+    /**
+     * The import assertions to use when caching the module (optional; if excluded the input will be used)
+     */
+    importAssertions?: KeyValuePairs | undefined;
+    /**
+     * A signal that this hook intends to terminate the chain of `resolve` hooks.
+     * @default false
+     */
+    shortCircuit?: boolean | undefined;
+    /**
+     * The absolute URL to which this input resolves
+     */
+    url: string;
+}
+
+interface LoadHookContext {
+  /**
+   * Export conditions of the relevant `package.json`
+   */
+  conditions: string[];
+  /**
+   * The format optionally supplied by the `resolve` hook chain
+   */
+  format: string;
+  /**
+   *  An object whose key-value pairs represent the assertions for the module to import
+   */
+  importAssertions?: KeyValuePairs;
+}
+
+interface LoadFnOutput {
+  format: ModuleFormat;
+  /**
+   * A signal that this hook intends to terminate the chain of `resolve` hooks.
+   * @default false
+   */
+  shortCircuit?: boolean | undefined;
+  /**
+   * The source for Node.js to evaluate
+   */
+  source?: ModuleSource;
+}
+// end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
+
+type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
+type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
 const supportedExts = new Set([
   '.js',
@@ -69,6 +135,36 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   return ret;
 }
 
+/**
+ * The `load` hook provides a way to define a custom method of determining how a URL should be interpreted, retrieved, and parsed.
+ * It is also in charge of validating the import assertion.
+ *
+ * @param url The URL/path of the module to be loaded
+ * @param context Metadata about the module
+ * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
+ */
+export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
+  console.log(`######### load ${url}`);
+  // console.log(context);
+  const { format: resolvedFormat } = context;
+  if (resolvedFormat !== 'power-assert') {
+    return nextLoad(url);
+  }
+  const realFormat = 'module';
+
+  const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
+  assert(rawSource !== undefined, 'rawSource should not be undefined');
+  const incomingCode = rawSource.toString();
+  console.log(`######### incomingCode: ${incomingCode}`);
+  const transpiledCode = await transpile(incomingCode, url);
+  console.log(`######### outgoingCode: ${transpiledCode}`);
+  // console.log(transpiledCode);
+  return {
+    format: realFormat,
+    source: transpiledCode
+  };
+}
+
 // start borrowing from https://nodejs.org/api/esm.html#transpiler-loader
 async function getPackageType (url: string): Promise<string | false> {
   // `url` is only a file path during the first iteration when passed the
@@ -99,33 +195,3 @@ async function getPackageType (url: string): Promise<string | false> {
   return dir.length > 1 && getPackageType(resolvePath(dir, '..'));
 }
 // end borrowing from https://nodejs.org/api/esm.html#transpiler-loader
-
-/**
- * The `load` hook provides a way to define a custom method of determining how a URL should be interpreted, retrieved, and parsed.
- * It is also in charge of validating the import assertion.
- *
- * @param url The URL/path of the module to be loaded
- * @param context Metadata about the module
- * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
- */
-export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  console.log(`######### load ${url}`);
-  // console.log(context);
-  const { format: resolvedFormat } = context;
-  if (resolvedFormat !== 'power-assert') {
-    return nextLoad(url);
-  }
-  const realFormat = 'module';
-
-  const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
-  assert(rawSource !== undefined, 'rawSource should not be undefined');
-  const incomingCode = rawSource.toString();
-  console.log(`######### incomingCode: ${incomingCode}`);
-  const transpiledCode = await transpile(incomingCode, url);
-  console.log(`######### outgoingCode: ${transpiledCode}`);
-  // console.log(transpiledCode);
-  return {
-    format: realFormat,
-    source: transpiledCode
-  };
-}
