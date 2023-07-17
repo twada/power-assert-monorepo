@@ -12,22 +12,11 @@ import type {
   NextResolveFn
 } from './types.mjs';
 
-// eslint-disable-next-line no-useless-escape
-const extPattern = /\/.+\.(m)?[jt]{1}s$/;
-export function hasModuleExt (url: string): boolean {
-  const m = extPattern.exec(url);
-  return m !== null && m[1] === 'm';
-}
-
 const supportedExts = new Set([
   '.js',
   '.mjs',
-  '.cjs',
-  '.jsx',
   '.ts',
   '.mts',
-  '.cts',
-  '.tsx',
 ]);
 
 /**
@@ -60,13 +49,12 @@ export async function resolve(specifier: string, context: ResolveHookContext, ne
   const url = nextUrl ?? new URL(specifier, 'file://').href;
   // const url = nextUrl ?? new URL(specifier).href;
   // const url = new URL(specifier).href;
-
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
 
   // url ends with .mjs or .mts => module
   // url ends with .js or .ts => detect format from package.json
-  const isModule = hasModuleExt(url) || (await getPackageType(url)) === 'module';
+  const isModule = ext.startsWith('.m') || (await getPackageType(url)) === 'module';
   if (!isModule) {
     return nextResolve(specifier, context);
   }
@@ -123,21 +111,21 @@ async function getPackageType (url: string): Promise<string | false> {
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
   console.log(`######### load ${url}`);
   // console.log(context);
-  const { format } = context;
-  if (format !== 'power-assert') {
-    // console.log(`######### format !== 'power-assert' => ${format}`);
+  const { format: resolvedFormat } = context;
+  if (resolvedFormat !== 'power-assert') {
     return nextLoad(url);
   }
+  const realFormat = 'module';
 
-  const { source: rawSource } = await nextLoad(url, { ...context, format });
+  const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
   console.log(`######### incomingCode: ${incomingCode}`);
   const transpiledCode = await transpile(incomingCode, url);
-  console.log(`######### transpiledCode: ${transpiledCode}`);
+  console.log(`######### outgoingCode: ${transpiledCode}`);
   // console.log(transpiledCode);
   return {
-    format: 'module',
+    format: realFormat,
     source: transpiledCode
   };
 }
