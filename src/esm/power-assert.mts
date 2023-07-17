@@ -16,19 +16,19 @@ const supportedExts = new Set([
   '.js',
   '.mjs',
   '.ts',
-  '.mts',
+  '.mts'
 ]);
 
 /**
-* The `resolve` hook chain is responsible for resolving file URL for a given module specifier and parent URL, and optionally its format (such as `'module'`) as a hint to the `load` hook.
-* If a format is specified, the load hook is ultimately responsible for providing the final `format` value (and it is free to ignore the hint provided by `resolve`);
-* if `resolve` provides a format, a custom `load` hook is required even if only to pass the value to the Node.js default `load` hook.
-*
-* @param specifier The specified URL path of the module to be resolved
-* @param context
-* @param nextResolve The subsequent `resolve` hook in the chain, or the Node.js default `resolve` hook after the last user-supplied resolve hook
-*/
-export async function resolve(specifier: string, context: ResolveHookContext, nextResolve: NextResolveFn): Promise<ResolveFnOutput> {
+ * The `resolve` hook chain is responsible for resolving file URL for a given module specifier and parent URL, and optionally its format (such as `'module'`) as a hint to the `load` hook.
+ * If a format is specified, the load hook is ultimately responsible for providing the final `format` value (and it is free to ignore the hint provided by `resolve`);
+ * if `resolve` provides a format, a custom `load` hook is required even if only to pass the value to the Node.js default `load` hook.
+ *
+ * @param specifier The specified URL path of the module to be resolved
+ * @param context
+ * @param nextResolve The subsequent `resolve` hook in the chain, or the Node.js default `resolve` hook after the last user-supplied resolve hook
+ */
+export async function resolve (specifier: string, context: ResolveHookContext, nextResolve: NextResolveFn): Promise<ResolveFnOutput> {
   // 1: Any files explicitly provided by the user are executed.
   // 2: node_modules directories are skipped unless explicitly provided by the user.
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
@@ -62,7 +62,7 @@ export async function resolve(specifier: string, context: ResolveHookContext, ne
   const ret = {
     format: 'power-assert', // Provide a signal to `load`
     shortCircuit: true,
-    url,
+    url
   };
   console.log(`######### resolve ${specifier} => format:${ret.format}, url:${ret.url}`);
   // console.log(ret);
@@ -80,9 +80,9 @@ async function getPackageType (url: string): Promise<string | false> {
   // extensionless files or a url ending in a trailing space)
   const isFilePath = !!extname(url);
   // If it is a file path, get the directory it's in
-  const dir = isFilePath ?
-    dirname(fileURLToPath(url)) :
-    url;
+  const dir = isFilePath
+    ? dirname(fileURLToPath(url))
+    : url;
   // Compose a file path to a package.json in the same directory,
   // which may or may not exist
   const packagePath = resolvePath(dir, 'package.json');
@@ -97,7 +97,7 @@ async function getPackageType (url: string): Promise<string | false> {
   // Otherwise, (if not at the root) continue checking the next directory up
   // If at the root, stop and return false
   return dir.length > 1 && getPackageType(resolvePath(dir, '..'));
-} 
+}
 // end borrowing from https://nodejs.org/api/esm.html#transpiler-loader
 
 /**

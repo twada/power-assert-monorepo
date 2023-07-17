@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValuePairs = { [key: string]: any };
 
 // start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
@@ -68,5 +69,5 @@ export interface LoadFnOutput {
 }
 // end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
 
-export type NextResolveFn =  (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
+export type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
 export type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
