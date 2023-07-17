@@ -112,8 +112,8 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   }
 
   const { url: nextUrl } = nextResolve(specifier, context);
-  const url = nextUrl ?? new URL(specifier, 'file://').href;
-  // const url = nextUrl ?? new URL(specifier).href;
+  // const url = nextUrl ?? new URL(specifier, 'file://').href;
+  const url = nextUrl ?? new URL(specifier).href;
   // const url = new URL(specifier).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
@@ -125,14 +125,13 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     return nextResolve(specifier, context);
   }
 
-  const ret = {
+  const resolved = {
     format: 'power-assert', // Provide a signal to `load`
     shortCircuit: true,
     url
   };
-  console.log(`######### resolve ${specifier} => format:${ret.format}, url:${ret.url}`);
-  // console.log(ret);
-  return ret;
+  console.log(`######### resolve ${specifier} => format:${resolved.format}, url:${resolved.url}`);
+  return resolved;
 }
 
 /**
