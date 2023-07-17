@@ -23,10 +23,10 @@
     },
     "./transpiler": {
       "import": {
-        "types": "./dist/src/transpiler/transpiler.d.mts",
-        "default": "./dist/src/transpiler/transpiler.mjs"
+        "types": "./dist/src/transpiler/transpile-with-sourcemap.d.mts",
+        "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
       },
-      "default": "./dist/src/transpiler/transpiler.mjs"
+      "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
     },
     "./esm": {
       "import": {

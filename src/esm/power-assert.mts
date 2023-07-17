@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { transpile } from './transpile-with-sourcemap.mjs';
+import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
