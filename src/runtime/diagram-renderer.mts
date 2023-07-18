@@ -1,4 +1,5 @@
 import { stringifier } from './stringifier/stringifier.mjs';
+import { widthOf } from './width.mjs';
 
 type LogWithLeftIndex = {
   value: unknown,
@@ -85,8 +86,7 @@ export class DiagramRenderer {
   }
 
   #widthOf (str: string): number {
-    // TODO AmbiguousEastAsianCharWidth
-    return str.length;
+    return widthOf(str);
   }
 
   #stringify (input: unknown): string {

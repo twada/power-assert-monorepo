@@ -39,6 +39,7 @@
     "acorn": "^8.8.0",
     "astring": "^1.8.4",
     "convert-source-map": "^2.0.0",
+    "easta": "^7.0.0",
     "estraverse": "^5.3.0",
     "esutils": "^2.0.0",
     "multi-stage-sourcemap": "^0.3.1",
