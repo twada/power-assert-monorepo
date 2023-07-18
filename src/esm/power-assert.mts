@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValuePairs = { [key: string]: any };
