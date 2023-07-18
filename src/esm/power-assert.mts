@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValuePairs = { [key: string]: any };
@@ -112,9 +112,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   }
 
   const { url: nextUrl } = nextResolve(specifier, context);
-  // const url = nextUrl ?? new URL(specifier, 'file://').href;
-  const url = nextUrl ?? new URL(specifier).href;
-  // const url = new URL(specifier).href;
+  const url = nextUrl ?? new URL(specifier, context.parentURL).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
 
