@@ -100,8 +100,8 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
   console.log(`######### resolve ${specifier}`);
   // console.log(context);
-  const importedByOthers = (!!context.parentURL);
-  if (importedByOthers) {
+  const isEntryPoint = (context.parentURL === undefined);
+  if (!isEntryPoint) {
     // modules that are imported by other modules are not transpiled
     return nextResolve(specifier, context);
   }
