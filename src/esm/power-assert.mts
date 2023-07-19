@@ -98,7 +98,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   // 1: Any files explicitly provided by the user are executed.
   // 2: node_modules directories are skipped unless explicitly provided by the user.
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
-  console.log(`######### resolve ${specifier}`);
+  // console.log(`######### resolve ${specifier}`);
   // console.log(context);
   const isEntryPoint = (context.parentURL === undefined);
   if (!isEntryPoint) {
@@ -128,7 +128,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     shortCircuit: true,
     url
   };
-  console.log(`######### resolve ${specifier} => format:${resolved.format}, url:${resolved.url}`);
+  // console.log(`######### resolve ${specifier} => format:${resolved.format}, url:${resolved.url}`);
   return resolved;
 }
 
@@ -141,7 +141,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  console.log(`######### load ${url}`);
+  // console.log(`######### load ${url}`);
   // console.log(context);
   const { format: resolvedFormat } = context;
   if (resolvedFormat !== 'power-assert') {
@@ -152,9 +152,9 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
-  console.log(`######### incomingCode: ${incomingCode}`);
+  // console.log(`######### incomingCode: ${incomingCode}`);
   const transpiledCode = await transpile(incomingCode, url);
-  console.log(`######### outgoingCode: ${transpiledCode}`);
+  // console.log(`######### outgoingCode: ${transpiledCode}`);
   // console.log(transpiledCode);
   return {
     format: realFormat,

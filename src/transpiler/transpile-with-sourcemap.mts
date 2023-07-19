@@ -31,9 +31,9 @@ export async function transpile (code: string, url: string): Promise<string> {
   let outMapConv = fromObject(smg.toJSON());
   const inMapConv = await findIncomingSourceMap(code, url);
   if (inMapConv) {
-    console.log(inMapConv.toObject());
+    // console.log(inMapConv.toObject());
     outMapConv = reconnectSourceMap(inMapConv, outMapConv);
-    console.log('######### reconnected @@@@@@@@@@@@@');
+    // console.log('######### reconnected @@@@@@@@@@@@@');
   }
 
   return transpiledCode + '\n' + outMapConv.toComment() + '\n';
