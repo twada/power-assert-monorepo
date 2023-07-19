@@ -5,5 +5,5 @@ import { ok as assume } from 'node:assert/strict';
 test('spike', () => {
   const falsy: string = '偽';
   // const truthy: number = falsy + 1;
-  assume('真理' === falsy);
+  assume('𠮷野家a\u0300で𩸽' === falsy);
 });
