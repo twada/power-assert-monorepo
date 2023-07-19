@@ -215,6 +215,7 @@ class PowerAssertImpl implements PowerAssert {
       const assertionLine = this.#assertionMetadata.content;
 
       newMessageFragments.push('');
+      newMessageFragments.push('');
       if (isMultiline(assertionLine)) {
         newMessageFragments.push(assertionLine);
       } else {

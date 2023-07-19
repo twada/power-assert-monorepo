@@ -11,6 +11,7 @@ describe('Integration of transpiler and runtime', () => {
     const truthy = '';
     eval(transpiledCode);
   }, `
+
 assert(truthy)
        |      
        ""     
@@ -23,6 +24,7 @@ assert(truthy)
     const falsy = 0;
     eval(transpiledCode);
   }, `
+
 assert(truthy === falsy)
        |      |   |     
        |      |   0     
@@ -36,6 +38,7 @@ assert(truthy === falsy)
     const falsy = 0;
     eval(transpiledCode);
   }, `
+
 assert.equal(truthy,
              falsy)
 
@@ -50,6 +53,7 @@ Expected values to be strictly equal:
     const falsy = 0;
     eval(transpiledCode);
   }, `
+
 assert(truthy
        ===
        falsy)
