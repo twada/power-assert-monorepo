@@ -18,4 +18,21 @@ assert.ok(truthy === falsy)
 `;
     assert.equal('\n' + diagram.render(logs) + '\n', expected);
   });
+
+  it('rendering combining character', () => {
+    const diagram = new DiagramRenderer('assert(a === b)');
+    const logs = [
+      { value: 'a\u0300b', leftIndex: 7 },
+      { value: 'ab', leftIndex: 13 },
+      { value: false, leftIndex: 9 }
+    ];
+    const expected = `
+assert(a === b)
+       | |   | 
+       | |   "ab"
+       | false 
+       "àb"    
+`;
+    assert.equal('\n' + diagram.render(logs) + '\n', expected);
+  });
 });
