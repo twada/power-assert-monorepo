@@ -21,4 +21,7 @@ describe('widthOf string', () => {
   it('ascii with combining character and surrogate pair', () => {
     assert.equal(widthOf('a\u0300𠮷b'), 4);
   });
+  it('emoji', () => {
+    assert.equal(widthOf('👨‍👩‍👧‍👦'), 2);
+  });
 });
