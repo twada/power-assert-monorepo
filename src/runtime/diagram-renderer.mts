@@ -74,7 +74,7 @@ export class DiagramRenderer {
   }
 
   #isOverlapped (prevCapturing: LogWithLeftIndex | undefined, nextCaputuring: LogWithLeftIndex, dumpedValue: string): boolean {
-    return (typeof prevCapturing !== 'undefined') && this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + this.#widthOf(dumpedValue));
+    return (typeof prevCapturing !== 'undefined') && (this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + this.#widthOf(dumpedValue)));
   }
 
   #constructRows (capturedEvents: LogWithLeftIndex[]): void {
