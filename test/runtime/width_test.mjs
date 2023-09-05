@@ -1,7 +1,37 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { widthOf } from '../../dist/src/runtime/width.mjs';
+import { width, widthOf } from '../../dist/src/runtime/width.mjs';
 import easta from 'easta';
+
+describe('width', () => {
+  it('ascii', () => {
+    assert.deepEqual(width('abc'), { type: 'KnownWidth', width: 3 });
+  });
+  it('kanji', () => {
+    assert.deepEqual(width('真理'), { type: 'KnownWidth', width: 4 });
+  });
+  it('surrogate pairs', () => {
+    assert.deepEqual(width('𠮷野家で𩸽'), { type: 'KnownWidth', width: 10 });
+  });
+  it('zenkaku eisu (FULLWIDTH)', () => {
+    assert.deepEqual(width('ＡＢＣ'), { type: 'KnownWidth', width: 6 });
+  });
+  it('hankaku kan (HALFWIDTH)', () => {
+    assert.deepEqual(width('ｱｲｳｴｵ'), { type: 'KnownWidth', width: 5 });
+  });
+  it('ambiguous', () => {
+    assert.deepEqual(width('◎■'), { type: 'KnownWidth', width: 4 });
+  });
+  it('U+A9C5', () => {
+    assert.deepEqual(width('꧅'), { type: 'UnknownWidth', hint: 1 });
+  });
+  it('ascii with combining character', () => {
+    assert.deepEqual(width('a\u0300b'), { type: 'KnownWidth', width: 2 });
+  });
+  it('emoji', () => {
+    assert.deepEqual(width('👨‍👩‍👧‍👦'), { type: 'UnknownWidth', hint: 2 });
+  });
+});
 
 describe('learning easta', () => {
   it('narrow', () => {
