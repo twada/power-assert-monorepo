@@ -1,5 +1,5 @@
 import { stringifier } from './stringifier/stringifier.mjs';
-import { widthOf } from './width.mjs';
+import { widthOf, width } from './width.mjs';
 
 type LogWithLeftIndex = {
   value: unknown,
@@ -74,7 +74,14 @@ export class DiagramRenderer {
   }
 
   #isOverlapped (prevCapturing: LogWithLeftIndex | undefined, nextCaputuring: LogWithLeftIndex, dumpedValue: string): boolean {
-    return (typeof prevCapturing !== 'undefined') && (this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + this.#widthOf(dumpedValue)));
+    if (typeof prevCapturing === 'undefined') {
+      return false;
+    }
+    const nextWidth = width(dumpedValue);
+    if (nextWidth.type === 'UnknownWidth') {
+      return true;
+    }
+    return this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + nextWidth.width);
   }
 
   #constructRows (capturedEvents: LogWithLeftIndex[]): void {

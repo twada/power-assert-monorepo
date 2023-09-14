@@ -60,4 +60,19 @@ assert(truthy
 
 "1" === 0
 `, 3);
+
+  ptest('move to next line if width of string is unknown', (transpiledCode) => {
+    const loooooooooongVarName = '𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽';
+    const falsy = 0;
+    eval(transpiledCode);
+  }, `
+
+assert(loooooooooongVarName === falsy)
+       |                    |   |     
+       |                    |   0     
+       |                    false     
+       "𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽"             
+
+"𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽" === 0
+`);
 });
