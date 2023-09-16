@@ -28,6 +28,9 @@ describe('width', () => {
   it('ascii with combining character', () => {
     assert.deepEqual(width('a\u0300b'), { type: 'KnownWidth', width: 2 });
   });
+  it('ascii with combining character with surrogate pair', () => {
+    assert.deepEqual(width('a\u0300𠮷b'), { type: 'KnownWidth', width: 4 });
+  });
   it('emoji', () => {
     assert.deepEqual(width('👨‍👩‍👧‍👦'), { type: 'UnknownWidth', hint: 2 });
   });
