@@ -1,5 +1,5 @@
 import { stringifier } from './stringifier/stringifier.mjs';
-import { widthOf, width } from './width.mjs';
+import { widthOf } from './width.mjs';
 
 type LogWithLeftIndex = {
   value: unknown,
@@ -77,7 +77,7 @@ export class DiagramRenderer {
     if (typeof prevCapturing === 'undefined') {
       return false;
     }
-    const nextWidth = width(dumpedValue);
+    const nextWidth = widthOf(dumpedValue);
     if (nextWidth.type === 'UnknownWidth') {
       return true;
     }
@@ -102,7 +102,12 @@ export class DiagramRenderer {
   }
 
   #widthOf (str: string): number {
-    return widthOf(str);
+    const w = widthOf(str);
+    if (w.type === 'KnownWidth') {
+      return w.width;
+    } else {
+      return w.hint;
+    }
   }
 
   #stringify (input: unknown): string {
