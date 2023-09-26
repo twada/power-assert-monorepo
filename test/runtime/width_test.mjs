@@ -20,10 +20,10 @@ describe('widthOf', () => {
     assert.deepEqual(widthOf('ｱｲｳｴｵ'), { type: 'KnownWidth', width: 5 });
   });
   it('ambiguous', () => {
-    assert.deepEqual(widthOf('◎■'), { type: 'KnownWidth', width: 4 });
+    assert.deepEqual(widthOf('◎■'), { type: 'UnknownWidth', emoji: 0, ambiguous: 2, neutral: 0, hint: 4 });
   });
   it('U+A9C5', () => {
-    assert.deepEqual(widthOf('꧅'), { type: 'UnknownWidth', hint: 1 });
+    assert.deepEqual(widthOf('꧅'), { type: 'UnknownWidth', emoji: 0, ambiguous: 0, neutral: 1, hint: 1 });
   });
   it('ascii with combining character', () => {
     assert.deepEqual(widthOf('a\u0300b'), { type: 'KnownWidth', width: 2 });
@@ -31,8 +31,22 @@ describe('widthOf', () => {
   it('ascii with combining character with surrogate pair', () => {
     assert.deepEqual(widthOf('a\u0300𠮷b'), { type: 'KnownWidth', width: 4 });
   });
-  it('emoji', () => {
-    assert.deepEqual(widthOf('👨‍👩‍👧‍👦'), { type: 'UnknownWidth', hint: 2 });
+  describe('emoji characterization', () => {
+    it('emoji sequence example', () => {
+      assert.deepEqual(widthOf('👨‍👩‍👧‍👦'), { type: 'UnknownWidth', emoji: 1, ambiguous: 0, neutral: 0, hint: 2 });
+    });
+    it('the dark side of emoji 1', () => {
+      assert.deepEqual(widthOf('👨👨‍👩👨‍👩‍👧'), { type: 'UnknownWidth', emoji: 3, ambiguous: 0, neutral: 0, hint: 6 });
+    });
+    it('the dark side of emoji 2', () => {
+      assert.deepEqual(widthOf('👧‍👦👨‍👩‍👧‍👦'), { type: 'UnknownWidth', emoji: 2, ambiguous: 0, neutral: 0, hint: 4 });
+    });
+    it('the dark side of emoji 3', () => {
+      assert.deepEqual(widthOf('‍👩‍👧‍👦👩‍👧‍👦‍👧‍👦'), { type: 'UnknownWidth', emoji: 2, ambiguous: 0, neutral: 1, hint: 5 });
+    });
+    it('the dark side of emoji 4', () => {
+      assert.deepEqual(widthOf('‍👩‍👧‍👦‍👧‍👦👧‍👦'), { type: 'UnknownWidth', emoji: 1, ambiguous: 0, neutral: 1, hint: 5 });
+    });
   });
 });
 

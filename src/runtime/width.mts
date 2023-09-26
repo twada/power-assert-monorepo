@@ -7,14 +7,20 @@ type KnownWidth = {
 };
 type UnknownWidth = {
   type: 'UnknownWidth';
+  emoji: number;
+  ambiguous: number;
+  neutral: number;
   hint: number;
 };
 
 export function widthOf (str: string): KnownWidth | UnknownWidth {
   const segmenter = new Intl.Segmenter();
-  const emoji = emojiRegex();
+  const emojiRe = emojiRegex();
   let width = 0;
   let unknown = false;
+  let emoji = 0;
+  let ambiguous = 0;
+  let neutral = 0;
   for (const { segment: seg } of segmenter.segment(str)) {
     const code = easta(seg);
     switch (code) {
@@ -25,11 +31,14 @@ export function widthOf (str: string): KnownWidth | UnknownWidth {
         width += 1;
         break;
       case 'A':
+        unknown = true;
+        ambiguous += 1;
         width += 2;
         break;
       case 'W':
-        if (!unknown && emoji.test(seg)) {
+        if (emojiRe.test(seg)) {
           unknown = true;
+          emoji += 1;
         }
         width += 2;
         break;
@@ -38,6 +47,7 @@ export function widthOf (str: string): KnownWidth | UnknownWidth {
         break;
       case 'N':
         unknown = true;
+        neutral += 1;
         width += 1;
         break;
     }
@@ -45,6 +55,9 @@ export function widthOf (str: string): KnownWidth | UnknownWidth {
   if (unknown) {
     return {
       type: 'UnknownWidth',
+      emoji,
+      ambiguous,
+      neutral,
       hint: width
     };
   } else {
