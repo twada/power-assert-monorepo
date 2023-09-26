@@ -13,6 +13,7 @@ const rightToLeft = (a: LogWithLeftIndex, b: LogWithLeftIndex) => b.leftIndex - 
 export class DiagramRenderer {
   readonly #assertionLine: string;
   readonly #rows: string[][];
+  readonly #segmenter: Intl.Segmenter;
 
   get assertionLine () {
     return this.#assertionLine;
@@ -21,6 +22,7 @@ export class DiagramRenderer {
   constructor (assertionLine: string) {
     this.#assertionLine = assertionLine;
     this.#rows = [];
+    this.#segmenter = new Intl.Segmenter();
   }
 
   render (logs: LogWithLeftIndex[]): string {
@@ -57,15 +59,29 @@ export class DiagramRenderer {
     }
   }
 
+  #splitIntoSegments (str: string): string[] {
+    const segments = this.#segmenter.segment(str);
+    const wrote: string[] = [];
+    for (const { segment: seg } of segments) {
+      wrote.push(seg);
+    }
+    return wrote;
+  }
+
   #renderValueAt (columnIndex: number, dumpedValue: string): void {
     const width = this.#widthOf(dumpedValue);
-    for (let i = 0; i < width; i += 1) {
-      this.#lastRow().splice(columnIndex + i, 1, dumpedValue.charAt(i));
-    }
+    this.#lastRow().splice(columnIndex, width, ...this.#splitIntoSegments(dumpedValue));
   }
 
   #isOverlapped (prevCapturing: LogWithLeftIndex | undefined, nextCaputuring: LogWithLeftIndex, dumpedValue: string): boolean {
-    return (typeof prevCapturing !== 'undefined') && this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + this.#widthOf(dumpedValue));
+    if (typeof prevCapturing === 'undefined') {
+      return false;
+    }
+    const nextWidth = widthOf(dumpedValue);
+    if (nextWidth.type === 'UnknownWidth') {
+      return true;
+    }
+    return this.#startColumnFor(prevCapturing) <= (this.#startColumnFor(nextCaputuring) + nextWidth.width);
   }
 
   #constructRows (capturedEvents: LogWithLeftIndex[]): void {
@@ -86,7 +102,12 @@ export class DiagramRenderer {
   }
 
   #widthOf (str: string): number {
-    return widthOf(str);
+    const w = widthOf(str);
+    if (w.type === 'KnownWidth') {
+      return w.width;
+    } else {
+      return w.hint;
+    }
   }
 
   #stringify (input: unknown): string {
