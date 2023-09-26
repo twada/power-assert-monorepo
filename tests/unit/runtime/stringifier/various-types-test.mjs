@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { stringify } from '../../../dist/src/runtime/stringifier/stringifier.mjs';
-import { typeName } from '../../../dist/src/runtime/stringifier/type-name.mjs';
+import { stringify } from '../../../../dist/src/runtime/stringifier/stringifier.mjs';
+import { typeName } from '../../../../dist/src/runtime/stringifier/type-name.mjs';
 
 function Person (name, age) {
   this.name = name;

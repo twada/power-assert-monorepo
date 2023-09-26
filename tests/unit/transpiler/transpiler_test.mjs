@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../../dist/src/transpiler/transpiler-core.mjs';
+import { espowerAst } from '../../../dist/src/transpiler/transpiler-core.mjs';
 import assert from 'node:assert/strict';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -27,8 +27,8 @@ describe('espowerAst', () => {
   ];
   for (const fixtureName of fixtures) {
     it(fixtureName, () => {
-      const fixtureFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, 'fixture.mjs');
-      const expectedFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, 'expected.mjs');
+      const fixtureFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'fixture.mjs');
+      const expectedFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'expected.mjs');
       const expected = readFileSync(expectedFilepath).toString();
 
       const ast = parseFixture(fixtureFilepath);
