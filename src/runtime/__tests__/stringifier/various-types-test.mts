@@ -139,7 +139,7 @@ const fixtures = {
     pruned: '#function#'
   },
   'arguments object': {
-    input: (function () { return arguments; })(),
+    input: (function () { return arguments; })(), // eslint-disable-line prefer-rest-params
     expected: 'Arguments{}',
     pruned: '#Arguments#'
   },
@@ -221,7 +221,7 @@ describe('stringify and type-name', () => {
         assert.equal(stringify(input), expected);
       });
       it('Array containing ' + fixtureName, () => {
-        const ary: any[] = [];
+        const ary: unknown[] = [];
         ary.push(input);
         assert.equal(stringify(ary), '[' + expected + ']');
       });
@@ -234,7 +234,7 @@ describe('stringify and type-name', () => {
         assert.equal(stringify(input, { maxDepth: 1 }), expected);
       });
       it('with maxDepth = 1: Array containing ' + fixtureName, () => {
-        const ary: any[] = [];
+        const ary: unknown[] = [];
         ary.push(input);
         assert.equal(stringify(ary, { maxDepth: 1 }), '[' + pruned + ']');
       });

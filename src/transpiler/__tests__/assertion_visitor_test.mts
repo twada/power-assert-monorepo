@@ -5,7 +5,7 @@ import { parseExpressionAt } from 'acorn';
 import type { Options as AcornOptions } from 'acorn';
 
 import type { Controller } from 'estraverse';
-import type { CallExpression, Identifier, Node } from 'estree';
+import type { Node, CallExpression, Identifier, ImportDeclaration, VariableDeclaration } from 'estree';
 import type { Transformation } from '../transformation.mjs';
 
 describe('AssertionVisitor', () => {
@@ -28,10 +28,10 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
     const stubTransformation: Transformation = {
-      insertDeclIntoCurrentBlock: (controller: any, decl: any) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      insertDeclIntoCurrentBlock: (controller: Controller, decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
-      generateUniqueName: (str: any) => `_p${str}1`
+      generateUniqueName: (name: string) => `_p${name}1`
     } as Transformation;
     const decoratorFunctionIdent: Identifier = {
       type: 'Identifier',

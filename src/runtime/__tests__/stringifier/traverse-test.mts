@@ -4,7 +4,7 @@ import { traverseAny } from '../../stringifier/traverse.mjs';
 
 describe('traverse', () => {
   it('traverse flat array', () => {
-    const acc: any[] = [];
+    const acc: unknown[] = [];
     traverseAny(['a', 'b'], (item, state) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       acc.push(item);
     });
@@ -15,7 +15,7 @@ describe('traverse', () => {
     const map = new Map();
     map.set('key1', 'a');
     map.set('key2', 'b');
-    const acc: any[] = [];
+    const acc: unknown[] = [];
     traverseAny(map, (item, state) => { // eslint-disable-line @typescript-eslint/no-unused-vars
       acc.push(item);
     });
@@ -23,7 +23,7 @@ describe('traverse', () => {
   });
 
   it('state.bailOut', () => {
-    const acc: any[] = [];
+    const acc: unknown[] = [];
     traverseAny(['a', 'b', 'c'], (item, state) => {
       // console.log(item);
       if (acc.length === 2) {

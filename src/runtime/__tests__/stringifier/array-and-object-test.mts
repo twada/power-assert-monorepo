@@ -23,7 +23,7 @@ describe('stringify Array', () => {
       assert.equal(stringify(input), '[,,"foo",,,"bar"]');
     });
     it('nested', () => {
-      const input: any[] = [];
+      const input: unknown[] = [];
       input[1] = 'foo';
       input[3] = Array(4);
       input[5] = 'bar';
@@ -34,7 +34,7 @@ describe('stringify Array', () => {
 
 describe('stringify Array with indentation', () => {
   it('empty array', () => {
-    const input: any[] = [];
+    const input: unknown[] = [];
     assert.equal(stringify(input, { indent: '  ' }), '[]');
   });
   it('3 items array', () => {
@@ -154,7 +154,7 @@ describe('stringify Object with indentation', () => {
 
 describe('circular references', () => {
   it('circular object', () => {
-    const circularObj: { circularRef?: any, list?: any } = {};
+    const circularObj: { circularRef?: unknown, list?: unknown[] } = {};
     circularObj.circularRef = circularObj;
     circularObj.list = [circularObj, circularObj];
     const expected = [
@@ -169,7 +169,7 @@ describe('circular references', () => {
     assert.equal(stringify(circularObj, { indent: '  ' }), expected);
   });
   it('circular array', () => {
-    const circularArray: any[] = [3, 5];
+    const circularArray: unknown[] = [3, 5];
     circularArray.push(circularArray);
     const expected = [
       '[',
