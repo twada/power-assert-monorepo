@@ -68,12 +68,11 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "power": "npm run build && node --enable-source-maps --no-warnings --loader espower3/esm --test --",
-    "ts-node:power": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
-    "ts-node:power:nomap": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
-    "ts-node": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --test tests/spike/spike_test.mts",
-    "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
-    "multi-sm": "npm run build && node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/tests/spike/spike_test.mjs",
+    "example": "npm run build && npm run power:example",
+    "power": "node --enable-source-maps --no-warnings --loader espower3/esm --test --",
+    "power:example": "node --enable-source-maps --no-warnings --loader espower3/esm --test examples/bowling_test.mjs",
+    "ts-node:power": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test --",
+    "ts-node:power:example": "npm run build && TS_NODE_PROJECT='./tsconfig.tsnode.json' node --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm --test examples/spike/spike_test.mts",
     "preversion": "npm run build && npm test",
     "build": "npm run build:clean && npm run build:mjs",
     "build:clean": "rimraf dist",
