@@ -83,11 +83,10 @@
     "lint:src": "eslint src --ext .mts",
     "fix": "npm run fix:src",
     "fix:src": "npm run lint:src -- --fix",
-    "test:default": "node --no-warnings --test dist/**/*test.mjs",
-    "test:dot": "node --no-warnings --test --test-reporter=dot dist/**/*test.mjs",
-    "test:spec": "node --no-warnings --test --test-reporter=spec dist/**/*test.mjs",
+    "test:dot": "node --no-warnings --test --test-reporter=dot",
+    "test:spec": "node --no-warnings --test --test-reporter=spec",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
     "test:unit": "npm run test:dot",
-    "test": "npm run lint && npm run build && npm run test:default"
+    "test": "npm run lint && npm run build && npm run test:prove"
   }
 }
