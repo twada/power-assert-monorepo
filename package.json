@@ -75,18 +75,16 @@
     "example": "node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test examples/bowling_test.mjs",
     "multi-sm": "npm run build && node --enable-source-maps --no-warnings --experimental-loader espower3/esm --test dist/tests/spike/spike_test.mjs",
     "preversion": "npm run build && npm test",
-    "build": "npm run build:clean && npm run build:mjs && npm run build:cjs",
+    "build": "npm run build:clean && npm run build:mjs",
     "build:clean": "rimraf dist",
     "build:mjs": "tsc",
+    "dist": "npm run build:cjs",
     "build:cjs": "rollup -c",
-    "lint": "npm run lint:src",
-    "lint:src": "eslint src --ext .mts",
-    "fix": "npm run fix:src",
-    "fix:src": "npm run lint:src -- --fix",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix",
     "test:dot": "node --no-warnings --test --test-reporter=dot",
     "test:spec": "node --no-warnings --test --test-reporter=spec",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
-    "test:unit": "npm run test:dot",
     "test": "npm run lint && npm run build && npm run test:prove"
   }
 }
