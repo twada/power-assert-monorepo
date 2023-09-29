@@ -1,13 +1,13 @@
 import { test } from 'node:test';
-import { strict as assert } from 'node:assert';
-import { espowerAst } from '../../dist/transpiler/transpiler-core.mjs';
+import { AssertionError, strict as assert } from 'node:assert';
+import { espowerAst } from '../../transpiler/transpiler-core.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON } from 'convert-source-map';
 import type { Node } from 'estree';
 
-function transpile (code) {
+function transpile (code: string): string {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -23,20 +23,21 @@ function transpile (code) {
     code
   });
   const smg = new SourceMapGenerator({
-    file: 'source.mjs',
+    file: 'source.mjs'
   });
   const transpiledCode = generate(poweredAst, {
-    sourceMap: smg,
+    sourceMap: smg
   });
   const outMap = fromJSON(smg.toString());
   return transpiledCode + '\n' + outMap.toComment() + '\n';
 }
 
-function isAssertionError (e) {
+function isAssertionError (e: unknown): e is AssertionError {
   return e instanceof Error && /^AssertionError/.test(e.name);
 }
 
-export function ptest (title, testFunc, expected, howManyLines = 1) {
+type TestFunc = (transpiledCode: string) => void;
+export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
   // chop first line then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
   test(title + ': ' + expression, () => {

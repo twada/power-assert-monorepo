@@ -1,16 +1,15 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../../../dist/transpiler/transpiler-core.mjs';
-import assert from 'node:assert/strict';
+import { espowerAst } from '../transpiler-core.mjs';
+import { strict as assert } from 'node:assert';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { parse } from 'acorn';
 import { generate } from 'escodegen';
 import { fileURLToPath } from 'node:url';
+import type { Node } from 'estree';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-import type { Node } from 'estree';
-
-function parseFixture (filepath): Node {
+function parseFixture (filepath: string): Node {
   return parse(readFileSync(filepath).toString(), {
     sourceType: 'module',
     ecmaVersion: 2022,

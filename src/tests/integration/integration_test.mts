@@ -2,9 +2,9 @@
 /* eslint no-unused-vars: 0 */
 /* eslint no-eval: 0 */
 import { describe } from 'node:test';
-import assert from 'node:assert/strict'; // variable 'assert' is referenced in eval
+import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
 // import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
-import { _power_ } from '../../dist/runtime/runtime.mjs'; // variable '_power_' is referenced in eval
+import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
 import { ptest } from './helper.mjs';
 
 describe('Integration of transpiler and runtime', () => {

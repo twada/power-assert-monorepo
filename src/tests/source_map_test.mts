@@ -2,21 +2,23 @@
 /* eslint no-unused-vars: 0 */
 /* eslint no-eval: 0 */
 import { test } from 'node:test';
-import assert from 'node:assert/strict'; // variable 'assert' is referenced in eval
-import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
-import { espowerAst } from '../dist/transpiler/transpiler-core.mjs';
+import { AssertionError, strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
+// import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
+import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
+import { espowerAst } from '../transpiler/transpiler-core.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
 import { fromJSON, fromSource } from 'convert-source-map';
+import type { Node } from 'estree';
 
-function transpile (code) {
+function transpile (code: string): string {
   const ast = parse(code, {
     sourceType: 'module',
-    ecmaVersion: '2022',
+    ecmaVersion: 2022,
     locations: true,
     ranges: true
-  });
+  }) as Node;
   const poweredAst = espowerAst(ast, {
     variables: [
     // set variable name explicitly for testing
@@ -35,7 +37,7 @@ function transpile (code) {
   return transpiledCode + '\n' + outMap.toComment() + '\n';
 }
 
-function isAssertionError (e) {
+function isAssertionError (e: unknown): e is AssertionError {
   return e instanceof Error && /^AssertionError/.test(e.name);
 }
 
@@ -46,7 +48,7 @@ test('SourceMap support', async () => {
     assert(truthy === falsy);
 `;
   const transpiledCode = transpile(code);
-  const map = fromSource(transpiledCode).toObject();
+  const map = fromSource(transpiledCode)?.toObject();
   const lines = transpiledCode.split('\n');
   lines[0] = "//port { _power_ } from '@power-assert/runtime';";
   const evalTargetCode = lines.join('\n');
@@ -68,8 +70,11 @@ test('SourceMap support', async () => {
     if (!isAssertionError(e)) {
       throw e;
     } else {
-      const theLine = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
+      assert(e.stack !== undefined);
+      const theLine = e.stack.split('\n').find((line: string) => line.startsWith('    at eval'));
+      assert(theLine !== undefined);
       const result = theLine.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
+      assert(result !== null);
       result.shift();
       const [_file, line, column] = result;
       assert.equal(line, '8');

@@ -9,30 +9,30 @@
   "type": "module",
   "files": [
     "src",
-    "dist/src",
+    "dist",
     "package.json"
   ],
   "exports": {
     "./package.json": "./package.json",
     "./runtime": {
       "import": {
-        "types": "./dist/src/runtime/runtime.d.mts",
-        "default": "./dist/src/runtime/runtime.mjs"
+        "types": "./dist/runtime/runtime.d.mts",
+        "default": "./dist/runtime/runtime.mjs"
       },
-      "default": "./dist/src/runtime/runtime.mjs"
+      "default": "./dist/runtime/runtime.mjs"
     },
     "./transpiler": {
       "import": {
-        "types": "./dist/src/transpiler/transpile-with-sourcemap.d.mts",
-        "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
+        "types": "./dist/transpiler/transpile-with-sourcemap.d.mts",
+        "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
       },
-      "default": "./dist/src/transpiler/transpile-with-sourcemap.mjs"
+      "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
     },
     "./esm": {
       "import": {
-        "default": "./dist/src/esm/power-assert.mjs"
+        "default": "./dist/esm/power-assert.mjs"
       },
-      "default": "./dist/src/esm/power-assert.mjs"
+      "default": "./dist/esm/power-assert.mjs"
     }
   },
   "dependencies": {
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@types/convert-source-map": "^2.0.0",
+    "@types/escodegen": "^0.0.8",
     "@types/estraverse": "^5.1.2",
     "@types/estree": "^1.0.1",
     "@types/esutils": "^2.0.0",
@@ -78,16 +79,14 @@
     "build:clean": "rimraf dist",
     "build:mjs": "tsc",
     "build:cjs": "rollup -c",
-    "lint": "npm run lint:src && npm run lint:test",
+    "lint": "npm run lint:src",
     "lint:src": "eslint src --ext .mts",
-    "lint:test": "eslint tests/*test.mjs tests/**/*test.mjs --ext .mjs",
-    "fix": "npm run fix:src && npm run fix:test",
+    "fix": "npm run fix:src",
     "fix:src": "npm run lint:src -- --fix",
-    "fix:test": "npm run lint:test -- --fix",
-    "test:default": "node --no-warnings --test tests",
-    "test:dot": "node --no-warnings --test --test-reporter=dot tests",
-    "test:spec": "node --no-warnings --test --test-reporter=spec tests",
-    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r tests --ext=test.mjs",
+    "test:default": "node --no-warnings --test dist/**/*test.mjs",
+    "test:dot": "node --no-warnings --test --test-reporter=dot dist/**/*test.mjs",
+    "test:spec": "node --no-warnings --test --test-reporter=spec dist/**/*test.mjs",
+    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
     "test:unit": "npm run test:dot",
     "test": "npm run lint && npm run build && npm run test:default"
   }

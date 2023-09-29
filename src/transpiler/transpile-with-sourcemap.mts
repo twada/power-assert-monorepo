@@ -2,12 +2,13 @@ import { parse } from 'acorn';
 import { espowerAst } from './transpiler-core.mjs';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
-import { SourceMapConverter, fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
+import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
 import { transfer } from 'multi-stage-sourcemap';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Node } from 'estree';
+import type { SourceMapConverter } from 'convert-source-map';
 
 export async function transpile (code: string, url: string): Promise<string> {
   const ast: Node = parse(code, {
