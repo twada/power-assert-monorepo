@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../../../dist/src/transpiler/transpiler-core.mjs';
+import { espowerAst } from '../../../dist/transpiler/transpiler-core.mjs';
 import assert from 'node:assert/strict';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
@@ -8,14 +8,16 @@ import { generate } from 'escodegen';
 import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-function parseFixture (filepath) {
-  return parse(readFileSync(filepath), {
+import type { Node } from 'estree';
+
+function parseFixture (filepath): Node {
+  return parse(readFileSync(filepath).toString(), {
     sourceType: 'module',
-    ecmaVersion: '2022',
+    ecmaVersion: 2022,
     locations: true,
     ranges: true,
     sourceFile: filepath
-  });
+  }) as Node;
 }
 
 describe('espowerAst', () => {

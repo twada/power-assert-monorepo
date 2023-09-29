@@ -1,11 +1,16 @@
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { AssertionVisitor } from '../../../dist/src/transpiler/assertion-visitor.mjs';
+import { AssertionVisitor } from '../../../dist/transpiler/assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
+import type { Options as AcornOptions } from 'acorn';
+
+import type { Controller } from 'estraverse';
+import type { CallExpression, Identifier, Node } from 'estree';
+import type { Transformation } from '../../../dist/transpiler/transformation.mjs';
 
 describe('AssertionVisitor', () => {
-  let assertionVisitor;
-  let callexp;
+  let assertionVisitor: AssertionVisitor;
+  let callexp: CallExpression;
   const code = `
 import assert from 'node:assert/strict';
 const truthy = 1;
@@ -13,30 +18,30 @@ assert.ok(truthy);
 `;
 
   beforeEach(() => {
-    const options = {
+    const options: AcornOptions = {
       sourceType: 'module',
-      ecmaVersion: '2022',
+      ecmaVersion: 13,
       locations: true,
       ranges: true,
       sourceFile: '/path/to/source.mjs'
     };
-    callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
+    callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
-    const stubTransformation = {
-      insertDeclIntoCurrentBlock: (controller, decl) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    const stubTransformation: Transformation = {
+      insertDeclIntoCurrentBlock: (controller: any, decl: any) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
-      generateUniqueName: (str) => `_p${str}1`
-    };
-    const decoratorFunctionIdent = {
+      generateUniqueName: (str: any) => `_p${str}1`
+    } as Transformation;
+    const decoratorFunctionIdent: Identifier = {
       type: 'Identifier',
       name: '_power_'
     };
 
-    const firstController = {
+    const firstController: Controller = {
       path: () => ['body', 2, 'expression'],
       current: () => callexp
-    };
+    } as Controller;
     assertionVisitor = new AssertionVisitor(
       firstController,
       stubTransformation,

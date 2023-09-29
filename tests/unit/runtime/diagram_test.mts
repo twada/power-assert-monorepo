@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { DiagramRenderer } from '../../../dist/src/runtime/diagram-renderer.mjs';
+import { strict as assert } from 'node:assert/strict';
+import { DiagramRenderer } from '../../../dist/runtime/diagram-renderer.mjs';
 
 describe('DiagramRenderer', () => {
   it('BinaryExpression', () => {

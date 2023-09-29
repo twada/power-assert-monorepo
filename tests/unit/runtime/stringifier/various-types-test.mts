@@ -1,17 +1,40 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { stringify } from '../../../../dist/src/runtime/stringifier/stringifier.mjs';
-import { typeName } from '../../../../dist/src/runtime/stringifier/type-name.mjs';
+import { stringify } from '../../../../dist/runtime/stringifier/stringifier.mjs';
+import { typeName } from '../../../../dist/runtime/stringifier/type-name.mjs';
 
-function Person (name, age) {
-  this.name = name;
-  this.age = age;
+// type Person = {
+//   readonly name: string;
+//   age: number;
+// };
+
+// function Person (this: Person, name: string, age: number) {
+//   Object.defineProperty(this, 'name', { value: name, writable: false });
+//   this.age = age;
+// }
+
+class Person {
+  readonly name: string;
+  readonly age: number;
+  constructor (name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
 }
 
-const AnonPerson = function (name, age) {
-  this.name = name;
-  this.age = age;
+const AnonPerson = class {
+  readonly name: string;
+  readonly age: number;
+  constructor (name: string, age: number) {
+    this.name = name;
+    this.age = age;
+  }
 };
+// const AnonPerson = function (name: string, age: number) {
+//   this.name = name;
+//   this.age = age;
+// };
+const anonymous = new AnonPerson('bob', 4);
 
 const fixtures = {
   'string primitive': {
@@ -169,22 +192,26 @@ const fixtures = {
     input: JSON,
     expected: 'JSON{}',
     pruned: '#JSON#'
+  },
+  'anonymous constructor': {
+    input: anonymous,
+    expected: '@Anonymous{name:"bob",age:4}',
+    pruned: '#@Anonymous#'
   }
 };
 
-const anonymous = new AnonPerson('bob', 4);
 if (typeName(anonymous) === 'AnonPerson') {
   fixtures['anonymous constructor'] = {
     input: anonymous,
     expected: 'AnonPerson{name:"bob",age:4}',
     pruned: '#AnonPerson#'
   };
-} else {
-  fixtures['anonymous constructor'] = {
-    input: anonymous,
-    expected: '@Anonymous{name:"bob",age:4}',
-    pruned: '#@Anonymous#'
-  };
+// } else {
+//   fixtures['anonymous constructor'] = {
+//     input: anonymous,
+//     expected: '@Anonymous{name:"bob",age:4}',
+//     pruned: '#@Anonymous#'
+//   };
 }
 
 describe('stringify and type-name', () => {
@@ -194,31 +221,31 @@ describe('stringify and type-name', () => {
         assert.equal(stringify(input), expected);
       });
       it('Array containing ' + fixtureName, () => {
-        const ary = [];
+        const ary: any[] = [];
         ary.push(input);
         assert.equal(stringify(ary), '[' + expected + ']');
       });
       it('Object containing ' + fixtureName, () => {
-        const obj = {};
-        obj.val = input;
+        const obj = { val: input };
+        // obj.val = input;
         assert.equal(stringify(obj), 'Object{val:' + expected + '}');
       });
       it('with maxDepth = 1: single ' + fixtureName, () => {
         assert.equal(stringify(input, { maxDepth: 1 }), expected);
       });
       it('with maxDepth = 1: Array containing ' + fixtureName, () => {
-        const ary = [];
+        const ary: any[] = [];
         ary.push(input);
         assert.equal(stringify(ary, { maxDepth: 1 }), '[' + pruned + ']');
       });
       it('with maxDepth = 1: Object containing ' + fixtureName, () => {
-        const obj = {};
-        obj.val = input;
+        const obj = { val: input };
+        // obj.val = input;
         assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{val:' + pruned + '}');
       });
       it('non-regular prop name ' + fixtureName, () => {
-        const obj = {};
-        obj['^pr"op-na:me'] = input;
+        const obj = { '^pr"op-na:me': input };
+        // obj['^pr"op-na:me'] = input;
         assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{"^pr\\"op-na:me":' + pruned + '}');
       });
     });

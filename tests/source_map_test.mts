@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict'; // variable 'assert' is referenced in eval
 import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
-import { espowerAst } from '../dist/src/transpiler/transpiler-core.mjs';
+import { espowerAst } from '../dist/transpiler/transpiler-core.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';

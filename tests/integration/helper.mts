@@ -1,18 +1,19 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { espowerAst } from '../../dist/src/transpiler/transpiler-core.mjs';
+import { espowerAst } from '../../dist/transpiler/transpiler-core.mjs';
 import { parse } from 'acorn';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON } from 'convert-source-map';
+import type { Node } from 'estree';
 
 function transpile (code) {
-  const ast = parse(code, {
+  const ast: Node = parse(code, {
     sourceType: 'module',
-    ecmaVersion: '2022',
+    ecmaVersion: 2022,
     locations: true,
     ranges: true
-  });
+  }) as Node;
   const poweredAst = espowerAst(ast, {
     variables: [
       // set variable name explicitly for testing
