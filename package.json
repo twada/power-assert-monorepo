@@ -81,8 +81,9 @@
     "build:cjs": "rollup -c",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix",
-    "test:dot": "node --no-warnings --test --test-reporter=dot",
-    "test:spec": "node --no-warnings --test --test-reporter=spec",
+    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --",
+    "test:dot": "npm run test:ts --test-reporter=dot --",
+    "test:spec": "npm run test:ts --test-reporter=spec --",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
     "test": "npm run lint && npm run build && npm run test:prove"
   }
