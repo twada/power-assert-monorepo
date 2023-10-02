@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2022",
+    "module": "Node16",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     // "inlineSourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "moduleResolution": "node16",
+    "verbatimModuleSyntax": true,
     "strict": true
   },
-  // "include": ["./src/**/*.ts", "./src/**/*.mts"]
-  "include": ["./src/**/*.ts", "./src/**/*.mts", "./tests/**/*.ts", "./tests/**/*.mts"]
+  "include": ["./src/**/*.mts"]
 }

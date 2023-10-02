@@ -7,7 +7,5 @@
     // "outDir": "./dist",
     "moduleResolution": "node16",
     "strict": true
-  },
-  // "include": ["./src/**/*.ts", "./src/**/*.mts"]
-  "include": ["./src/**/*.ts", "./src/**/*.mts", "./tests/**/*.ts", "./tests/**/*.mts"]
+  }
 }

@@ -1,11 +1,16 @@
 import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert/strict';
-import { AssertionVisitor } from '../../../dist/src/transpiler/assertion-visitor.mjs';
+import { strict as assert } from 'node:assert';
+import { AssertionVisitor } from '../assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
+import type { Options as AcornOptions } from 'acorn';
+
+import type { Controller } from 'estraverse';
+import type { Node, CallExpression, Identifier, ImportDeclaration, VariableDeclaration } from 'estree';
+import type { Transformation } from '../transformation.mjs';
 
 describe('AssertionVisitor', () => {
-  let assertionVisitor;
-  let callexp;
+  let assertionVisitor: AssertionVisitor;
+  let callexp: CallExpression;
   const code = `
 import assert from 'node:assert/strict';
 const truthy = 1;
@@ -13,30 +18,30 @@ assert.ok(truthy);
 `;
 
   beforeEach(() => {
-    const options = {
+    const options: AcornOptions = {
       sourceType: 'module',
-      ecmaVersion: '2022',
+      ecmaVersion: 13,
       locations: true,
       ranges: true,
       sourceFile: '/path/to/source.mjs'
     };
-    callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options);
+    callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
-    const stubTransformation = {
-      insertDeclIntoCurrentBlock: (controller, decl) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+    const stubTransformation: Transformation = {
+      insertDeclIntoCurrentBlock: (controller: Controller, decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
-      generateUniqueName: (str) => `_p${str}1`
-    };
-    const decoratorFunctionIdent = {
+      generateUniqueName: (name: string) => `_p${name}1`
+    } as Transformation;
+    const decoratorFunctionIdent: Identifier = {
       type: 'Identifier',
       name: '_power_'
     };
 
-    const firstController = {
+    const firstController: Controller = {
       path: () => ['body', 2, 'expression'],
       current: () => callexp
-    };
+    } as Controller;
     assertionVisitor = new AssertionVisitor(
       firstController,
       stubTransformation,
@@ -63,13 +68,13 @@ assert.ok(truthy);
   });
 
   describe('after #enterArgument', () => {
-    let controller;
+    let controller: Controller;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.enterArgument(controller);
     });
 
@@ -88,20 +93,20 @@ assert.ok(truthy);
   });
 
   describe('after #leaveArgument', () => {
-    let controller;
-    let resultNode;
+    let controller: Controller;
+    let resultNode: CallExpression;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.enterArgument(controller);
 
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
@@ -109,8 +114,8 @@ assert.ok(truthy);
         parents: () => [callexp],
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
-      resultNode = assertionVisitor.leaveArgument(controller);
+      } as Controller;
+      resultNode = assertionVisitor.leaveArgument(controller) as CallExpression;
     });
 
     it('#isCapturingArgument returns false', () => {
@@ -154,20 +159,20 @@ assert.ok(truthy);
   });
 
   describe('after #leave', () => {
-    let controller;
-    let resultNode;
+    let controller: Controller;
+    let resultNode: CallExpression;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.enterArgument(controller);
 
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.enterNodeToBeCaptured(controller);
 
       controller = {
@@ -175,14 +180,14 @@ assert.ok(truthy);
         parents: () => [callexp],
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
-      };
+      } as Controller;
       assertionVisitor.leaveArgument(controller);
 
       controller = {
         path: () => ['body', 2, 'expression'],
         current: () => callexp
-      };
-      resultNode = assertionVisitor.leave(controller);
+      } as Controller;
+      resultNode = assertionVisitor.leave(controller) as CallExpression;
     });
 
     it('reset argumentModifications', () => {

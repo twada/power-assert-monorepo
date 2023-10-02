@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { widthOf } from '../../../dist/src/runtime/width.mjs';
+import { strict as assert } from 'node:assert/strict';
+import { widthOf } from '../width.mjs';
 import easta from 'easta';
 
 describe('widthOf', () => {
