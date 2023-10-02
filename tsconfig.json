@@ -9,6 +9,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "moduleResolution": "node16",
+    // any imports or exports without a type modifier are left around
     "verbatimModuleSyntax": true,
     "strict": true
   },
