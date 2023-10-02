@@ -48,7 +48,6 @@
   },
   "devDependencies": {
     "@types/convert-source-map": "^2.0.0",
-    "@types/escodegen": "^0.0.8",
     "@types/estraverse": "^5.1.2",
     "@types/estree": "^1.0.1",
     "@types/esutils": "^2.0.0",
@@ -56,10 +55,8 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "escodegen": "^2.0.0",
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
-    "espurify": "^3.0.0",
     "rimraf": "^5.0.0",
     "rollup": "^3.0.0",
     "rollup-plugin-copy": "^3.4.0",

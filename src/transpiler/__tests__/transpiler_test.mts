@@ -4,7 +4,7 @@ import { strict as assert } from 'node:assert';
 import { resolve, dirname } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { parse } from 'acorn';
-import { generate } from 'escodegen';
+import { generate } from 'astring';
 import { fileURLToPath } from 'node:url';
 import type { Node } from 'estree';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -38,12 +38,8 @@ describe('espowerAst', () => {
         code: readFileSync(fixtureFilepath).toString()
       });
       const actual = generate(modifiedAst);
-
       // console.log(actual);
-
-      assert.equal(actual + '\n', expected);
-      // console.log(expected);
-      // assert(false);
+      assert.equal(actual, expected);
     });
   }
 });
