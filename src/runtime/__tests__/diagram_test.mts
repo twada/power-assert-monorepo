@@ -12,9 +12,10 @@ describe('DiagramRenderer', () => {
     ];
     const expected = `
 assert.ok(truthy === falsy)
-          |      |   |     
-          |      |   0     
-          "1"    false     
+          |      |   |
+          |      |   0
+          |      false
+          "1"
 `;
     assert.equal('\n' + diagram.render(logs) + '\n', expected);
   });
@@ -28,10 +29,10 @@ assert.ok(truthy === falsy)
     ];
     const expected = `
 assert(a === b)
-       | |   | 
+       | |   |
        | |   "ab"
-       | false 
-       "𠮷"    
+       | false
+       "𠮷"
 `;
     assert.equal('\n' + diagram.render(logs) + '\n', expected);
   });
@@ -45,10 +46,10 @@ assert(a === b)
     ];
     const expected = `
 assert(a === b)
-       | |   | 
+       | |   |
        | |   "ab"
-       | false 
-       "àb"    
+       | false
+       "àb"
 `;
     assert.equal('\n' + diagram.render(logs) + '\n', expected);
   });
