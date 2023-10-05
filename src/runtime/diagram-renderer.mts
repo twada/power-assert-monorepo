@@ -9,52 +9,33 @@ const stringify = stringifier();
 const rightToLeft = (a: LogWithLeftIndex, b: LogWithLeftIndex) => b.leftIndex - a.leftIndex;
 
 export function renderDiagram (assertionLine: string, logs: LogWithLeftIndex[]): string {
-  return new DiagramRenderer().render(assertionLine, logs);
+  const capturedEvents: LogWithLeftIndex[] = ([] as LogWithLeftIndex[]).concat(logs);
+  capturedEvents.sort(rightToLeft);
+  return [assertionLine].concat(constructRows(capturedEvents)).join('\n');
 }
 
-class DiagramRenderer {
-  readonly #rows: string[];
+function constructRows (capturedEvents: LogWithLeftIndex[]): string[] {
+  const rows: string[] = [];
+  rows.push('');
+  capturedEvents.forEach((captured) => {
+    const dumpedValue = stringify(captured.value);
+    rows.push('');
+    renderVerticalBarAt(captured.leftIndex, rows);
+    renderValueAt(captured.leftIndex, dumpedValue, rows);
+  });
+  return rows;
+}
 
-  constructor () {
-    this.#rows = [];
-  }
-
-  render (assertionLine: string, logs: LogWithLeftIndex[]): string {
-    const events: LogWithLeftIndex[] = ([] as LogWithLeftIndex[]).concat(logs);
-    events.sort(rightToLeft);
-    this.#addOneMoreRow();
-    this.#constructRows(events);
-    const wrote = [assertionLine];
-    this.#rows.forEach((row) => {
-      wrote.push(row);
-    });
-    return wrote.join('\n');
-  }
-
-  #constructRows (capturedEvents: LogWithLeftIndex[]): void {
-    capturedEvents.forEach((captured) => {
-      const dumpedValue = stringify(captured.value);
-      this.#addOneMoreRow();
-      this.#renderVerticalBarAt(captured.leftIndex);
-      this.#renderValueAt(captured.leftIndex, dumpedValue);
-    });
-  }
-
-  #addOneMoreRow (): void {
-    this.#rows.push('');
-  }
-
-  #renderVerticalBarAt (columnIndex: number): void {
-    const lastRowIndex = this.#rows.length - 1;
-    for (let i = 0; i < lastRowIndex; i += 1) {
-      if (this.#rows[i].length < columnIndex) {
-        this.#rows[i] = ' '.repeat(columnIndex);
-      }
-      this.#rows[i] = this.#rows[i].slice(0, columnIndex) + '|' + this.#rows[i].slice(columnIndex + 1);
+function renderVerticalBarAt (columnIndex: number, rows: string[]): void {
+  const lastRowIndex = rows.length - 1;
+  for (let i = 0; i < lastRowIndex; i += 1) {
+    if (rows[i].length < columnIndex) {
+      rows[i] = ' '.repeat(columnIndex);
     }
+    rows[i] = rows[i].slice(0, columnIndex) + '|' + rows[i].slice(columnIndex + 1);
   }
+}
 
-  #renderValueAt (columnIndex: number, dumpedValue: string): void {
-    this.#rows[this.#rows.length - 1] = ' '.repeat(columnIndex) + dumpedValue;
-  }
+function renderValueAt (columnIndex: number, dumpedValue: string, rows: string[]): void {
+  rows[rows.length - 1] = ' '.repeat(columnIndex) + dumpedValue;
 }
