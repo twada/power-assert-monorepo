@@ -8,7 +8,12 @@ type LogWithLeftIndex = {
 const stringify = stringifier();
 const rightToLeft = (a: LogWithLeftIndex, b: LogWithLeftIndex) => b.leftIndex - a.leftIndex;
 
-export class DiagramRenderer {
+export function renderDiagram (assertionLine: string, logs: LogWithLeftIndex[]): string {
+  const renderer = new DiagramRenderer(assertionLine);
+  return renderer.render(logs);
+}
+
+class DiagramRenderer {
   readonly #assertionLine: string;
   readonly #rows: string[];
 
