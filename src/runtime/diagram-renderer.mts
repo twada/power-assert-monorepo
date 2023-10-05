@@ -17,12 +17,12 @@ export function renderDiagram (assertionLine: string, logs: LogWithLeftIndex[]):
 function constructRows (capturedEvents: LogWithLeftIndex[]): string[] {
   const rows: string[] = [];
   rows.push('');
-  capturedEvents.forEach((captured) => {
+  for (const captured of capturedEvents) {
     const dumpedValue = stringify(captured.value);
     rows.push('');
     renderVerticalBarAt(captured.leftIndex, rows);
     renderValueAt(captured.leftIndex, dumpedValue, rows);
-  });
+  }
   return rows;
 }
 
