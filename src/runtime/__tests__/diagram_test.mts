@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert/strict';
 import { renderDiagram } from '../diagram-renderer.mjs';
 
-describe('DiagramRenderer', () => {
+describe('renderDiagram', () => {
   it('BinaryExpression', () => {
     const diagram = renderDiagram('assert.ok(truthy === falsy)', [
       { value: '1', leftIndex: 10 },
