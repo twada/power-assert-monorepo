@@ -1,4 +1,4 @@
-import { renderDiagram } from './diagram-renderer.mjs';
+import { renderDiagram } from './diagram.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert, AssertionError } from 'node:assert';
 
