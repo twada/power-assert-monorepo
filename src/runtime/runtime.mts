@@ -1,4 +1,4 @@
-import { DiagramRenderer } from './diagram-renderer.mjs';
+import { renderDiagram } from './diagram.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert, AssertionError } from 'node:assert';
 
@@ -220,8 +220,7 @@ class PowerAssertImpl implements PowerAssert {
         newMessageFragments.push(assertionLine);
       } else {
         // rethrow AssertionError with diagram message
-        const renderer = new DiagramRenderer(assertionLine);
-        const diagram = renderer.render(logs);
+        const diagram = renderDiagram(assertionLine, logs);
         newMessageFragments.push(diagram);
       }
       newMessageFragments.push('');
