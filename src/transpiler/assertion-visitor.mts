@@ -18,6 +18,12 @@ import type {
   Position
 } from 'estree';
 
+type ControllerLike = {
+  currentNode: Node,
+  parentNode: Node | null,
+  currentKey: string | number | null,
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // type KeyValue = { [key: string]: any };
 
@@ -363,10 +369,8 @@ export class AssertionVisitor {
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  isNodeToBeCaptured (controller: Controller): boolean {
-    const currentNode = controller.current();
-    const parentNode = getParentNode(controller);
-    const currentKey = getCurrentKey(controller);
+  isNodeToBeCaptured (controller: ControllerLike): boolean {
+    const { currentNode, parentNode, currentKey } = controller;
     return toBeCaptured(currentNode, parentNode, currentKey);
   }
 
@@ -375,8 +379,8 @@ export class AssertionVisitor {
     return this.#currentModification.captureNode(controller);
   }
 
-  enterNodeToBeCaptured (controller: Controller): void {
+  enterNodeToBeCaptured (node: Node): void {
     assert(this.#currentModification, 'currentModification must exist');
-    this.#currentModification.saveAddress(controller.current());
+    this.#currentModification.saveAddress(node);
   }
 }

@@ -138,11 +138,11 @@ assert.ok(truthy);
       } as Controller;
       assertionVisitor.enterArgument(controller);
 
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterNodeToBeCaptured(controller);
+      // controller = {
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
       controller = {
         // parents: () => [callexp, expstmt, program],
@@ -204,11 +204,11 @@ assert.ok(truthy);
       } as Controller;
       assertionVisitor.enterArgument(controller);
 
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterNodeToBeCaptured(controller);
+      // controller = {
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
       controller = {
         // parents: () => [callexp, expstmt, program],

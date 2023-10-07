@@ -167,6 +167,12 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   return {
     enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
+      const currentKey = getCurrentKey(controller);
+      const controllerLike = {
+        currentNode,
+        parentNode,
+        currentKey
+      };
 
       if (isScoped(currentNode)) {
         blockStack.push(currentNode);
@@ -185,9 +191,9 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         }
 
         if (assertionVisitor.isCapturingArgument()) {
-          if (assertionVisitor.isNodeToBeCaptured(controller)) {
+          if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
             // calculate location then save it
-            assertionVisitor.enterNodeToBeCaptured(controller);
+            assertionVisitor.enterNodeToBeCaptured(currentNode);
           }
         }
       } else {
@@ -243,10 +249,16 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
       return undefined;
     },
-    leave: function (this: Controller, currentNode: Node, _parentNode: Node | null): VisitorOption | Node | void {
+    leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-        // const path = controller.path();
+        const currentKey = getCurrentKey(controller);
+        const controllerLike = {
+          currentNode,
+          parentNode,
+          currentKey
+        };
+          // const path = controller.path();
         // const espath = path ? path.join('/') : '';
         // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
@@ -275,7 +287,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         if (assertionVisitor.isLeavingArgument(controller)) {
           // capturing whole argument on leaving argument
           return assertionVisitor.leaveArgument(controller);
-        } else if (assertionVisitor.isNodeToBeCaptured(controller)) {
+        } else if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
           // capturing intermediate Node
           // console.log(`##### capture value ${this.path().join('/')} #####`);
           return assertionVisitor.leaveNodeToBeCaptured(controller);
