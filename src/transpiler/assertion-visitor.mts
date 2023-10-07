@@ -140,8 +140,8 @@ class ArgumentModification {
     return !!this.#argumentModified;
   }
 
-  isLeaving (controller: Controller): boolean {
-    return this.#argNode === controller.current();
+  isLeaving (node: Node): boolean {
+    return this.#argNode === node;
   }
 
   captureNode (controller: Controller): CallExpression {
@@ -342,8 +342,8 @@ export class AssertionVisitor {
     return undefined;
   }
 
-  isLeavingArgument (controller: Controller): boolean {
-    return !!this.#currentModification?.isLeaving(controller);
+  isLeavingArgument (node: Node): boolean {
+    return !!this.#currentModification?.isLeaving(node);
   }
 
   leaveArgument (controller: Controller): Node {

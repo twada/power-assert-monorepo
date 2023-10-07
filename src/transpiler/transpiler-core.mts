@@ -284,7 +284,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         if (!assertionVisitor.isCapturingArgument()) {
           return undefined;
         }
-        if (assertionVisitor.isLeavingArgument(controller)) {
+        if (assertionVisitor.isLeavingArgument(currentNode)) {
           // capturing whole argument on leaving argument
           return assertionVisitor.leaveArgument(controller);
         } else if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {

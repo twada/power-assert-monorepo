@@ -104,12 +104,14 @@ assert.ok(truthy);
 
   describe('after #enterArgument', () => {
     let controller: Controller;
+    let currentNode: Node;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
+      currentNode = callexp.arguments[0];
       assertionVisitor.enterArgument(controller);
     });
 
@@ -120,7 +122,7 @@ assert.ok(truthy);
       assert(assertionVisitor.currentModification !== undefined);
     });
     it('#isLeavingArgument returns true', () => {
-      assert.equal(assertionVisitor.isLeavingArgument(controller), true);
+      assert.equal(assertionVisitor.isLeavingArgument(currentNode), true);
     });
     it('#isModified returns false', () => {
       assert.equal(assertionVisitor.isModified(), false);
@@ -130,6 +132,7 @@ assert.ok(truthy);
   describe('after #leaveArgument', () => {
     let controller: Controller;
     let resultNode: CallExpression;
+    let currentNode: Node;
 
     beforeEach(() => {
       controller = {
@@ -150,6 +153,7 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
+      currentNode = callexp.arguments[0];
       resultNode = assertionVisitor.leaveArgument(controller) as CallExpression;
     });
 
@@ -160,7 +164,7 @@ assert.ok(truthy);
       assert(assertionVisitor.currentModification === null);
     });
     it('#isLeavingArgument returns undefined', () => {
-      assert.equal(assertionVisitor.isLeavingArgument(controller), false);
+      assert.equal(assertionVisitor.isLeavingArgument(currentNode), false);
     });
     it('#isModified returns true', () => {
       assert.equal(assertionVisitor.isModified(), true);
