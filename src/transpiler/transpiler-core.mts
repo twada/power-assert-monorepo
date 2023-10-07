@@ -246,12 +246,12 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
     leave: function (this: Controller, currentNode: Node, _parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-        const path = controller.path();
-        const espath = path ? path.join('/') : '';
-        if (transformation.isTarget(espath, currentNode)) {
-          const targetNode = currentNode;
-          transformation.apply(espath, targetNode);
-          return targetNode;
+        // const path = controller.path();
+        // const espath = path ? path.join('/') : '';
+        // if (transformation.isTarget(espath, currentNode)) {
+        if (transformation.isTarget(currentNode)) {
+          transformation.apply(currentNode);
+          return currentNode;
         }
         if (!assertionVisitor) {
           return undefined;
@@ -298,7 +298,8 @@ function createPowerAssertImports ({ transformation, controller, runtime }: { tr
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
   ], types.stringLiteral(runtime));
-  transformation.insertDeclIntoTopLevel(controller, decl);
+  // transformation.insertDeclIntoTopLevel(controller, decl);
+  transformation.insertDeclIntoTopLevel(decl);
   return decoratorFunctionIdent;
 }
 

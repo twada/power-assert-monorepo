@@ -19,7 +19,7 @@ import type {
 } from 'estree';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValue = { [key: string]: any };
+// type KeyValue = { [key: string]: any };
 
 type AcornSwcLikeNode = Node & {
   start?: number;
@@ -116,7 +116,8 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    this.#transformation.insertDeclIntoCurrentBlock(controller, decl);
+    // this.#transformation.insertDeclIntoCurrentBlock(controller, decl);
+    this.#transformation.insertDeclIntoCurrentBlock(decl);
     this.#argumentRecorderIdent = ident;
   }
 
@@ -157,10 +158,12 @@ class ArgumentModification {
   }
 
   #calculateAddress (controller: Controller): number {
-    const relativeAstPath = this.#relativeAstPath(controller);
+    // const relativeAstPath = this.#relativeAstPath(controller);
     const code = this.#assertionCode;
-    const ast = this.#callexp;
-    const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
+    // const ast = this.#callexp;
+    // const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
+    const currentNode = controller.current();
+    const targetNodeInAst = currentNode;
     if (this.#callexp.loc) {
       const offsetPosition = this.#callexp.loc.start;
       return searchAddressByPosition(targetNodeInAst, offsetPosition, code);
@@ -316,7 +319,8 @@ export class AssertionVisitor {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    transformation.insertDeclIntoCurrentBlock(controller, decl);
+    // transformation.insertDeclIntoCurrentBlock(controller, decl);
+    transformation.insertDeclIntoCurrentBlock(decl);
     return ident;
   }
 

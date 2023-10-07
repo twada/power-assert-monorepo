@@ -63,7 +63,7 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
     const stubTransformation: Transformation = {
-      insertDeclIntoCurrentBlock: (controller: Controller, decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      insertDeclIntoCurrentBlock: (decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
       generateUniqueName: (name: string) => `_p${name}1`
