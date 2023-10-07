@@ -277,7 +277,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           // leaving assertion
           // stop capturing
           // console.log(`##### leave assertion ${this.path().join('/')} #####`);
-          const resultTree = assertionVisitor.leave(controller);
+          const resultTree = assertionVisitor.leave(currentNode);
           assertionVisitor = null;
           return resultTree;
         }

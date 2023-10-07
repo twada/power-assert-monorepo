@@ -196,13 +196,14 @@ assert.ok(truthy);
   describe('after #leave', () => {
     let controller: Controller;
     let resultNode: CallExpression;
+    let currentNode: Node;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
-      const currentNode = callexp.arguments[0];
+      currentNode = callexp.arguments[0];
       assertionVisitor.enterArgument(currentNode);
 
       // controller = {
@@ -223,7 +224,8 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression'],
         current: () => callexp
       } as Controller;
-      resultNode = assertionVisitor.leave(controller) as CallExpression;
+      currentNode = callexp;
+      resultNode = assertionVisitor.leave(currentNode) as CallExpression;
     });
 
     it('reset argumentModifications', () => {

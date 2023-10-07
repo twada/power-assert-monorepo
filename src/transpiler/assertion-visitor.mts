@@ -262,9 +262,9 @@ export class AssertionVisitor {
     this.#poweredAssertIdent = this.#decorateAssert(currentNode);
   }
 
-  leave (controller: Controller): Node {
+  leave (currentNode: Node): Node {
     try {
-      return this.isModified() ? this.#replaceWithDecoratedAssert(controller) : controller.current();
+      return this.isModified() ? this.#replaceWithDecoratedAssert(currentNode) : currentNode;
     } finally {
       this.#argumentModifications.length = 0;
     }
@@ -274,8 +274,7 @@ export class AssertionVisitor {
     return this.#argumentModifications.some((am) => am.isArgumentModified());
   }
 
-  #replaceWithDecoratedAssert (controller: Controller): CallExpression {
-    const currentNode = controller.current();
+  #replaceWithDecoratedAssert (currentNode: Node): CallExpression {
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     const types = new NodeCreator(currentNode);
     const replacedNode = types.callExpression(
@@ -284,8 +283,7 @@ export class AssertionVisitor {
     return replacedNode;
   }
 
-  #decorateAssert (node: Node): Identifier {
-    const currentNode = node;
+  #decorateAssert (currentNode: Node): Identifier {
     const transformation = this.#transformation;
     const types = new NodeCreator(currentNode);
     // extra properties are not required for now
