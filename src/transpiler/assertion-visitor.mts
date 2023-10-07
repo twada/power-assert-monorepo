@@ -116,7 +116,6 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    // this.#transformation.insertDeclIntoCurrentBlock(controller, decl);
     this.#transformation.insertDeclIntoCurrentBlock(decl);
     this.#argumentRecorderIdent = ident;
   }
@@ -148,30 +147,23 @@ class ArgumentModification {
     return this.#insertRecorderNode(controller, 'rec');
   }
 
-  saveAddress (controller: Controller): void {
-    const currentNode = controller.current();
-    const targetAddr = this.#calculateAddress(controller);
+  saveAddress (currentNode: Node): void {
+    const targetAddr = this.#calculateAddress(currentNode);
     this.#addresses.set(currentNode, targetAddr);
   }
 
-  #targetAddress (controller: Controller): number | undefined {
-    const currentNode = controller.current();
+  #targetAddress (currentNode: Node): number | undefined {
     return this.#addresses.get(currentNode);
   }
 
-  #calculateAddress (controller: Controller): number {
-    // const relativeAstPath = this.#relativeAstPath(controller);
+  #calculateAddress (currentNode: Node): number {
     const code = this.#assertionCode;
-    // const ast = this.#callexp;
-    // const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
-    const currentNode = controller.current();
-    const targetNodeInAst = currentNode;
     if (this.#callexp.loc) {
       const offsetPosition = this.#callexp.loc.start;
-      return searchAddressByPosition(targetNodeInAst, offsetPosition, code);
+      return searchAddressByPosition(currentNode, offsetPosition, code);
     } else {
       const offset = getStartRangeValue(this.#callexp);
-      return searchAddressByRange(targetNodeInAst, offset, code);
+      return searchAddressByRange(currentNode, offset, code);
     }
   }
 
@@ -184,7 +176,7 @@ class ArgumentModification {
   #insertRecorderNode (controller: Controller, methodName: string): CallExpression {
     const currentNode = controller.current();
     const relativeAstPath = this.#relativeAstPath(controller);
-    const targetAddr = this.#targetAddress(controller);
+    const targetAddr = this.#targetAddress(currentNode);
     assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
 
     const types = new NodeCreator(currentNode);
@@ -321,7 +313,6 @@ export class AssertionVisitor {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    // transformation.insertDeclIntoCurrentBlock(controller, decl);
     transformation.insertDeclIntoCurrentBlock(decl);
     return ident;
   }
@@ -386,6 +377,6 @@ export class AssertionVisitor {
 
   enterNodeToBeCaptured (controller: Controller): void {
     assert(this.#currentModification, 'currentModification must exist');
-    this.#currentModification.saveAddress(controller);
+    this.#currentModification.saveAddress(controller.current());
   }
 }
