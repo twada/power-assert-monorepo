@@ -103,16 +103,11 @@ assert.ok(truthy);
   });
 
   describe('after #enterArgument', () => {
-    let controller: Controller;
     let currentNode: Node;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
       currentNode = callexp.arguments[0];
-      assertionVisitor.enterArgument(controller);
+      assertionVisitor.enterArgument(currentNode);
     });
 
     it('#isCapturingArgument returns true', () => {
@@ -139,7 +134,8 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
-      assertionVisitor.enterArgument(controller);
+      currentNode = callexp.arguments[0];
+      assertionVisitor.enterArgument(currentNode);
 
       // controller = {
       //   path: () => ['body', 2, 'expression', 'arguments', 0],
@@ -206,7 +202,8 @@ assert.ok(truthy);
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
-      assertionVisitor.enterArgument(controller);
+      const currentNode = callexp.arguments[0];
+      assertionVisitor.enterArgument(currentNode);
 
       // controller = {
       //   path: () => ['body', 2, 'expression', 'arguments', 0],

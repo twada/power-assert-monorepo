@@ -187,7 +187,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         const currentKey = getCurrentKey(controller);
         if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
           // entering argument
-          assertionVisitor.enterArgument(controller);
+          assertionVisitor.enterArgument(currentNode);
         }
 
         if (assertionVisitor.isCapturingArgument()) {

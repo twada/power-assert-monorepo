@@ -322,8 +322,8 @@ export class AssertionVisitor {
     return ident;
   }
 
-  enterArgument (controller: Controller): undefined {
-    const currentNode = controller.current();
+  enterArgument (node: Node): undefined {
+    const currentNode = node;
     // going to capture every argument
     const argNum = this.#argumentModifications.length;
     const modification = new ArgumentModification({
