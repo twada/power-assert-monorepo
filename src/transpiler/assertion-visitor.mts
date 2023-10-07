@@ -1,6 +1,7 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
 import { addressOf } from './address.mjs';
+import { positionOf } from './position.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
@@ -13,7 +14,8 @@ import type {
   Expression,
   CallExpression,
   MemberExpression,
-  SpreadElement
+  SpreadElement,
+  Position
 } from 'estree';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +62,23 @@ function getStartRangeValue (node: Node): number {
     return node.start;
   } else {
     assert(false, 'Node must have range or start/end');
+  }
+}
+
+// extract string from code between start and end position
+export function extractArea (code: string, start: Position, end: Position): string {
+  // split lines by CR/LF or LF ?
+  // const lines = code.split(/\r?\n/);
+  const lines = code.split(/\n/);
+  const startLineStr = lines[start.line - 1];
+  const endLineStr = lines[end.line - 1];
+  if (start.line === end.line) {
+    return startLineStr.slice(start.column, end.column);
+  } else if (start.line + 1 === end.line) {
+    return startLineStr.slice(start.column) + '\n' + endLineStr.slice(0, end.column);
+  } else {
+    const middleLines = lines.slice(start.line, end.line - 1);
+    return startLineStr.slice(start.column) + '\n' + middleLines.join('\n') + '\n' + endLineStr.slice(0, end.column);
   }
 }
 
@@ -142,8 +161,13 @@ class ArgumentModification {
     const code = this.#assertionCode;
     const ast = this.#callexp;
     const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
-    const offset = getStartRangeValue(this.#callexp);
-    return addressOf(targetNodeInAst, offset, code);
+    if (this.#callexp.loc) {
+      const offsetPosition = this.#callexp.loc.start;
+      return positionOf(targetNodeInAst, offsetPosition, code).column;
+    } else {
+      const offset = getStartRangeValue(this.#callexp);
+      return addressOf(targetNodeInAst, offset, code);
+    }
   }
 
   #relativeAstPath (controller: Controller): (string | number)[] {
@@ -224,15 +248,14 @@ export class AssertionVisitor {
       }
     }
     if (this.#callexp.range !== undefined) {
-      const [start, end] = this.#callexp.range;
-      this.#assertionCode = wholeCode.slice(start, end);
+      this.#assertionCode = wholeCode.slice(this.#callexp.range[0], this.#callexp.range[1]);
     } else if (this.#callexp.start !== undefined && this.#callexp.end !== undefined) {
-      // Acorn/SWC like node
-      const start = this.#callexp.start;
-      const end = this.#callexp.end;
-      this.#assertionCode = wholeCode.slice(start, end);
+      // Acorn/SWC like node (has start and end property)
+      this.#assertionCode = wholeCode.slice(this.#callexp.start, this.#callexp.end);
+    } else if (this.#callexp.loc) {
+      this.#assertionCode = extractArea(wholeCode, this.#callexp.loc.start, this.#callexp.loc.end);
     } else {
-      assert(false, 'Node must have a range or start/end');
+      assert(false, 'Node must have a loc or range or start/end');
     }
     this.#poweredAssertIdent = this.#decorateAssert(controller);
   }
