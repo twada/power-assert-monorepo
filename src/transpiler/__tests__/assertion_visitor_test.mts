@@ -21,8 +21,8 @@ assert.ok(truthy);
     const options: AcornOptions = {
       sourceType: 'module',
       ecmaVersion: 13,
-      locations: true,
-      ranges: true,
+      locations: false,
+      ranges: false,
       sourceFile: '/path/to/source.mjs'
     };
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;

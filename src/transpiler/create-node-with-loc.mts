@@ -62,6 +62,11 @@ export type ScopedFunction = ArrowFunctionExpressionWithBlock | FunctionDeclarat
 export type ScopedBlock = BlockStatement | StaticBlock
 export type Scoped = Program | ScopedFunction | ScopedBlock;
 
+type AcornSwcLikeNode = {
+  start?: number;
+  end?: number;
+};
+
 export function isScopedFunction (node: Node): node is ScopedFunction {
   return /Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
@@ -78,10 +83,20 @@ export function isScoped (node: Node): node is Scoped {
   return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
 
-function withLoc (sourceNode: Node) {
-  return function<T extends Node> (destNode: T): T {
-    destNode.loc = sourceNode.loc;
-    destNode.range = sourceNode.range;
+function withLoc (sourceNode: Node & AcornSwcLikeNode) {
+  return function<T extends (Node & AcornSwcLikeNode)> (destNode: T): T {
+    if (Object.hasOwn(sourceNode, 'loc')) {
+      destNode.loc = sourceNode.loc;
+    }
+    if (Object.hasOwn(sourceNode, 'range')) {
+      destNode.range = sourceNode.range;
+    }
+    if (Object.hasOwn(sourceNode, 'start')) {
+      destNode.start = sourceNode.start;
+    }
+    if (Object.hasOwn(sourceNode, 'end')) {
+      destNode.end = sourceNode.end;
+    }
     return destNode;
   };
 }
