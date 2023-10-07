@@ -30,10 +30,10 @@ function getRange (node: Node): Range {
 }
 
 export function addressOf (currentNode: Node, offset: number, code: string): number {
-  return applyOffset(calculateRangeOf(currentNode, offset, code), offset);
+  return pickStartAddress(calculateRangeOf(currentNode, offset, code), offset);
 }
 
-function applyOffset (start: Range, offset: number): number {
+function pickStartAddress (start: Range, offset: number): number {
   return start[0] - offset;
 }
 
