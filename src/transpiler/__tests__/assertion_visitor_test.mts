@@ -73,12 +73,11 @@ assert.ok(truthy);
       name: '_power_'
     };
 
-    const firstController: Controller = {
-      path: () => ['body', 2, 'expression'],
-      current: () => callexp
-    } as Controller;
+    const currentNode = callexp;
+    const astPath = ['body', 2, 'expression'];
     assertionVisitor = new AssertionVisitor(
-      firstController,
+      currentNode,
+      astPath,
       stubTransformation,
       decoratorFunctionIdent,
       code

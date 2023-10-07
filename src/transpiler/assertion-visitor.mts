@@ -6,7 +6,6 @@ import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
 
 import type { Transformation } from './transformation.mjs';
-import type { Controller } from 'estraverse';
 import type {
   Node,
   Identifier,
@@ -226,15 +225,12 @@ export class AssertionVisitor {
     return structuredClone(this.#poweredAssertIdent);
   }
 
-  constructor (controller: Controller, transformation: Transformation, decoratorFunctionIdent: Identifier, wholeCode: string) {
+  constructor (currentNode: Node, astPath: AstPath, transformation: Transformation, decoratorFunctionIdent: Identifier, wholeCode: string) {
     this.#transformation = transformation;
     this.#decoratorFunctionIdent = decoratorFunctionIdent;
     this.#currentModification = null;
     this.#argumentModifications = [];
-    const nodepath = controller.path();
-    assert(nodepath, 'Node path must exist');
-    this.#assertionPath = ([] as (string | number)[]).concat(nodepath);
-    const currentNode = controller.current();
+    this.#assertionPath = ([] as (string | number)[]).concat(astPath);
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     this.#callexp = currentNode;
     assert(currentNode.callee.type !== 'Super', 'Super is not supported');

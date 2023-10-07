@@ -174,6 +174,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         parentNode,
         currentKey
       };
+      const astPath = controller.path();
 
       if (isScoped(currentNode)) {
         blockStack.push(currentNode);
@@ -239,7 +240,8 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor(controller, transformation, decoratorFunctionIdent, config.code);
+              assert(astPath !== null, 'astPath should not be null');
+              assertionVisitor = new AssertionVisitor(currentNode, astPath, transformation, decoratorFunctionIdent, config.code);
               // assertionVisitor.enter(controller, config.code);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
