@@ -259,7 +259,7 @@ export class AssertionVisitor {
     } else {
       assert(false, 'Node must have a loc or range or start/end');
     }
-    this.#poweredAssertIdent = this.#decorateAssert(controller);
+    this.#poweredAssertIdent = this.#decorateAssert(currentNode);
   }
 
   leave (controller: Controller): Node {
@@ -284,8 +284,8 @@ export class AssertionVisitor {
     return replacedNode;
   }
 
-  #decorateAssert (controller: Controller): Identifier {
-    const currentNode = controller.current();
+  #decorateAssert (node: Node): Identifier {
+    const currentNode = node;
     const transformation = this.#transformation;
     const types = new NodeCreator(currentNode);
     // extra properties are not required for now
