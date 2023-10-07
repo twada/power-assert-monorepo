@@ -2,7 +2,6 @@ import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
 import { NodeCreator, isScoped } from './create-node-with-loc.mjs';
-import { getCurrentKey } from './controller-utils.mjs';
 import { strict as assert } from 'node:assert';
 import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import type {
@@ -27,6 +26,11 @@ type EspowerOptions = {
 interface StringLiteral extends SimpleLiteral {
   type: 'Literal';
   value: string;
+}
+
+function getCurrentKey (controller: Controller): string | number | null {
+  const path = controller.path();
+  return path ? path[path.length - 1] : null;
 }
 
 function isLiteral (node: Node | null | undefined): node is Literal {
