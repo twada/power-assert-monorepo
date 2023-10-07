@@ -3,6 +3,7 @@ import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
 import { NodeCreator, isScoped } from './create-node-with-loc.mjs';
 import { getCurrentKey } from './controller-utils.mjs';
+import { strict as assert } from 'node:assert';
 import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import type {
   Node,
@@ -257,7 +258,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           parentNode,
           currentKey
         };
-          // const path = controller.path();
+        const astPath = controller.path();
         // const espath = path ? path.join('/') : '';
         // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
@@ -285,11 +286,13 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         }
         if (assertionVisitor.isLeavingArgument(currentNode)) {
           // capturing whole argument on leaving argument
-          return assertionVisitor.leaveArgument(controller);
+          assert(astPath !== null, 'astPath should not be null');
+          return assertionVisitor.leaveArgument(controllerLike, astPath);
         } else if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
           // capturing intermediate Node
           // console.log(`##### capture value ${this.path().join('/')} #####`);
-          return assertionVisitor.leaveNodeToBeCaptured(controller);
+          assert(astPath !== null, 'astPath should not be null');
+          return assertionVisitor.leaveNodeToBeCaptured(currentNode, astPath);
         }
         return undefined;
       } finally {

@@ -1,4 +1,3 @@
-import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
 import { searchAddressByRange } from './range.mjs';
 import { searchAddressByPosition } from './position.mjs';
@@ -37,12 +36,14 @@ type AcornSwcNode = Node & {
   end: number;
 };
 
+type AstPath = (string | number)[];
+
 type ArgumentModificationParams = {
   currentNode: Node,
   argNum: number,
   argNode: Node,
   callexp: CallExpression & AcornSwcLikeNode,
-  assertionPath: (string | number)[],
+  assertionPath: AstPath,
   assertionCode: string,
   transformation: Transformation,
   poweredAssertIdent: Identifier
@@ -92,7 +93,7 @@ class ArgumentModification {
   readonly #argNum: number;
   readonly #argNode: Node;
   readonly #callexp: CallExpression & AcornSwcLikeNode;
-  readonly #assertionPath: (string | number)[];
+  readonly #assertionPath: AstPath;
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
@@ -125,14 +126,12 @@ class ArgumentModification {
     this.#argumentRecorderIdent = ident;
   }
 
-  leave (controller: Controller): Node {
-    const currentNode = controller.current();
-    const parentNode = getParentNode(controller);
-    const currentKey = getCurrentKey(controller);
+  leave (controllerLike: ControllerLike, astPath: AstPath): Node {
+    const { currentNode, parentNode, currentKey } = controllerLike;
     const shouldCaptureValue = toBeCaptured(currentNode, parentNode, currentKey);
     // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
     const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
-    const resultNode = shouldCaptureArgument ? this.#captureArgument(controller) : currentNode;
+    const resultNode = shouldCaptureArgument ? this.#captureArgument(currentNode, astPath) : currentNode;
     return resultNode;
   }
 
@@ -144,12 +143,12 @@ class ArgumentModification {
     return this.#argNode === node;
   }
 
-  captureNode (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, 'tap');
+  captureNode (currentNode: Node, astPath: AstPath): CallExpression {
+    return this.#insertRecorderNode(currentNode, astPath, 'tap');
   }
 
-  #captureArgument (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, 'rec');
+  #captureArgument (currentNode: Node, astPath: AstPath): CallExpression {
+    return this.#insertRecorderNode(currentNode, astPath, 'rec');
   }
 
   saveAddress (currentNode: Node): void {
@@ -172,15 +171,12 @@ class ArgumentModification {
     }
   }
 
-  #relativeAstPath (controller: Controller): (string | number)[] {
-    const astPath = controller.path();
-    assert(astPath, 'astPath must exist');
+  #relativeAstPath (astPath: AstPath): AstPath {
     return astPath.slice(this.#assertionPath.length);
   }
 
-  #insertRecorderNode (controller: Controller, methodName: string): CallExpression {
-    const currentNode = controller.current();
-    const relativeAstPath = this.#relativeAstPath(controller);
+  #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string): CallExpression {
+    const relativeAstPath = this.#relativeAstPath(astPath);
     const targetAddr = this.#targetAddress(currentNode);
     assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
 
@@ -344,9 +340,9 @@ export class AssertionVisitor {
     return !!this.#currentModification?.isLeaving(node);
   }
 
-  leaveArgument (controller: Controller): Node {
+  leaveArgument (controllerLike: ControllerLike, astPath: AstPath): Node {
     assert(this.#currentModification, 'currentModification must exist');
-    const retNode = this.#currentModification.leave(controller);
+    const retNode = this.#currentModification.leave(controllerLike, astPath);
     this.#currentModification = null;
     return retNode;
   }
@@ -369,9 +365,9 @@ export class AssertionVisitor {
     return toBeCaptured(currentNode, parentNode, currentKey);
   }
 
-  leaveNodeToBeCaptured (controller: Controller): CallExpression {
+  leaveNodeToBeCaptured (currentNode: Node, astPath: AstPath): CallExpression {
     assert(this.#currentModification, 'currentModification must exist');
-    return this.#currentModification.captureNode(controller);
+    return this.#currentModification.captureNode(currentNode, astPath);
   }
 
   enterNodeToBeCaptured (node: Node): void {
