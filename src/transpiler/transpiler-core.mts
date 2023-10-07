@@ -184,7 +184,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           // console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
         }
-        const currentKey = getCurrentKey(controller);
         if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
           // entering argument
           assertionVisitor.enterArgument(currentNode);
@@ -234,7 +233,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
               const runtime = config.runtime;
               if (!decoratorFunctionIdent) {
-                decoratorFunctionIdent = createPowerAssertImports({ transformation, controller, runtime });
+                decoratorFunctionIdent = createPowerAssertImports({ transformation, currentNode, runtime });
               }
 
               // entering target assertion
@@ -302,15 +301,13 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   };
 }
 
-function createPowerAssertImports ({ transformation, controller, runtime }: { transformation: Transformation, controller: Controller, runtime: string }): Identifier {
-  const currentNode = controller.current();
+function createPowerAssertImports ({ transformation, currentNode, runtime }: { transformation: Transformation, currentNode: Node, runtime: string }): Identifier {
   const types = new NodeCreator(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
   // TODO: CJS support?
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
   ], types.stringLiteral(runtime));
-  // transformation.insertDeclIntoTopLevel(controller, decl);
   transformation.insertDeclIntoTopLevel(decl);
   return decoratorFunctionIdent;
 }
