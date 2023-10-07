@@ -38,7 +38,7 @@ type AcornSwcNode = Node & {
 };
 
 type ArgumentModificationParams = {
-  controller: Controller,
+  currentNode: Node,
   argNum: number,
   argNode: Node,
   callexp: CallExpression & AcornSwcLikeNode,
@@ -100,7 +100,7 @@ class ArgumentModification {
   readonly #argumentRecorderIdent: Identifier;
   #argumentModified: boolean;
 
-  constructor ({ controller, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
+  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
     this.#argNum = argNum;
     this.#argNode = argNode;
     this.#callexp = callexp;
@@ -111,7 +111,6 @@ class ArgumentModification {
     this.#argumentModified = false;
     this.#addresses = new Map<Node, number>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
-    const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.callExpression(
@@ -328,7 +327,7 @@ export class AssertionVisitor {
     // going to capture every argument
     const argNum = this.#argumentModifications.length;
     const modification = new ArgumentModification({
-      controller,
+      currentNode,
       argNum,
       argNode: currentNode,
       callexp: this.#callexp,
