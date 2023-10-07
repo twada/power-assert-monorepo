@@ -28,11 +28,6 @@ interface StringLiteral extends SimpleLiteral {
   value: string;
 }
 
-function getCurrentKey (controller: Controller): string | number | null {
-  const path = controller.path();
-  return path ? path[path.length - 1] : null;
-}
-
 function isLiteral (node: Node | null | undefined): node is Literal {
   return !!node && node.type === 'Literal';
 }
@@ -172,13 +167,13 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   return {
     enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-      const currentKey = getCurrentKey(controller);
+      const astPath = controller.path();
+      const currentKey = astPath ? astPath[astPath.length - 1] : null;
       const controllerLike = {
         currentNode,
         parentNode,
         currentKey
       };
-      const astPath = controller.path();
 
       if (isScoped(currentNode)) {
         blockStack.push(currentNode);
@@ -258,13 +253,13 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
     leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-        const currentKey = getCurrentKey(controller);
+        const astPath = controller.path();
+        const currentKey = astPath ? astPath[astPath.length - 1] : null;
         const controllerLike = {
           currentNode,
           parentNode,
           currentKey
         };
-        const astPath = controller.path();
         // const espath = path ? path.join('/') : '';
         // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
