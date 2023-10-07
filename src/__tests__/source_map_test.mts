@@ -16,8 +16,8 @@ function transpile (code: string): string {
   const ast = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
-    locations: true,
-    ranges: true
+    locations: true, // true for SourceMap
+    ranges: false
   }) as Node;
   const poweredAst = espowerAst(ast, {
     variables: [

@@ -14,8 +14,8 @@ export async function transpile (code: string, url: string): Promise<string> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
-    locations: true,
-    ranges: true,
+    locations: true, // true for SourceMap
+    ranges: false,
     sourceFile: url
   }) as Node;
   const modifiedAst = espowerAst(ast, {

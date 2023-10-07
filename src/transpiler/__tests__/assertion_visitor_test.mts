@@ -1,12 +1,47 @@
 import { describe, it, beforeEach } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { AssertionVisitor } from '../assertion-visitor.mjs';
+import { AssertionVisitor, extractArea } from '../assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
 import type { Options as AcornOptions } from 'acorn';
 
 import type { Controller } from 'estraverse';
 import type { Node, CallExpression, Identifier, ImportDeclaration, VariableDeclaration } from 'estree';
 import type { Transformation } from '../transformation.mjs';
+
+describe('extractArea', () => {
+  it('single line assertion', () => {
+    const code = `
+import assert from 'node:assert/strict';
+const truthy = 1;
+assert.ok(truthy);
+`;
+    const result = extractArea(code, { line: 4, column: 0 }, { line: 4, column: 17 });
+    assert.equal(result, 'assert.ok(truthy)');
+  });
+
+  it('multi line assertion', () => {
+    const code = `
+import assert from 'node:assert/strict';
+const truthy = 1;
+assert.equal(truthy,
+             1);
+`;
+    const result = extractArea(code, { line: 4, column: 0 }, { line: 5, column: 15 });
+    assert.equal(result, 'assert.equal(truthy,\n             1)');
+  });
+
+  it('assertion more than 2 lines', () => {
+    const code = `
+import assert from 'node:assert/strict';
+const truthy = 1;
+assert.equal(truthy,
+             1,
+             'message');
+`;
+    const result = extractArea(code, { line: 4, column: 0 }, { line: 6, column: 23 });
+    assert.equal(result, 'assert.equal(truthy,\n             1,\n             \'message\')');
+  });
+});
 
 describe('AssertionVisitor', () => {
   let assertionVisitor: AssertionVisitor;
@@ -21,8 +56,8 @@ assert.ok(truthy);
     const options: AcornOptions = {
       sourceType: 'module',
       ecmaVersion: 13,
-      locations: true,
-      ranges: true,
+      locations: false,
+      ranges: false,
       sourceFile: '/path/to/source.mjs'
     };
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
