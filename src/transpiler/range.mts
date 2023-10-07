@@ -29,7 +29,7 @@ function getRange (node: Node): Range {
   }
 }
 
-export function addressOf (currentNode: Node, offset: number, code: string): number {
+export function searchAddressByRange (currentNode: Node, offset: number, code: string): number {
   return pickStartAddress(calculateRangeOf(currentNode, offset, code), offset);
 }
 

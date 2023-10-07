@@ -1,7 +1,7 @@
 import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
-import { addressOf } from './address.mjs';
-import { positionOf } from './position.mjs';
+import { searchAddressByRange } from './range.mjs';
+import { searchAddressByPosition } from './position.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
@@ -163,10 +163,10 @@ class ArgumentModification {
     const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
     if (this.#callexp.loc) {
       const offsetPosition = this.#callexp.loc.start;
-      return positionOf(targetNodeInAst, offsetPosition, code).column;
+      return searchAddressByPosition(targetNodeInAst, offsetPosition, code);
     } else {
       const offset = getStartRangeValue(this.#callexp);
-      return addressOf(targetNodeInAst, offset, code);
+      return searchAddressByRange(targetNodeInAst, offset, code);
     }
   }
 
