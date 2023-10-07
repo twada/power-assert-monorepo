@@ -358,19 +358,17 @@ export class AssertionVisitor {
     return !!this.#currentModification;
   }
 
-  isNodeToBeSkipped (controller: Controller): boolean {
-    const currentNode = controller.current();
+  isNodeToBeSkipped (controllerLike: ControllerLike): boolean {
+    const { currentNode, parentNode, currentKey } = controllerLike;
     if (currentNode === this.#calleeNode) {
       return true;
     }
-    const parentNode = getParentNode(controller);
     assert(parentNode, 'parentNode must exist');
-    const currentKey = getCurrentKey(controller);
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  isNodeToBeCaptured (controller: ControllerLike): boolean {
-    const { currentNode, parentNode, currentKey } = controller;
+  isNodeToBeCaptured (controllerLike: ControllerLike): boolean {
+    const { currentNode, parentNode, currentKey } = controllerLike;
     return toBeCaptured(currentNode, parentNode, currentKey);
   }
 

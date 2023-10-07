@@ -179,7 +179,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
 
       if (assertionVisitor) {
-        if (assertionVisitor.isNodeToBeSkipped(controller)) {
+        if (assertionVisitor.isNodeToBeSkipped(controllerLike)) {
           skipping = true;
           // console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
