@@ -123,7 +123,9 @@ class ArgumentModification {
 
   leave (controller: Controller): Node {
     const currentNode = controller.current();
-    const shouldCaptureValue = toBeCaptured(controller);
+    const parentNode = getParentNode(controller);
+    const currentKey = getCurrentKey(controller);
+    const shouldCaptureValue = toBeCaptured(currentNode, parentNode, currentKey);
     // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
     const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
     const resultNode = shouldCaptureArgument ? this.#captureArgument(controller) : currentNode;
@@ -371,7 +373,10 @@ export class AssertionVisitor {
   }
 
   isNodeToBeCaptured (controller: Controller): boolean {
-    return toBeCaptured(controller);
+    const currentNode = controller.current();
+    const parentNode = getParentNode(controller);
+    const currentKey = getCurrentKey(controller);
+    return toBeCaptured(currentNode, parentNode, currentKey);
   }
 
   leaveNodeToBeCaptured (controller: Controller): CallExpression {

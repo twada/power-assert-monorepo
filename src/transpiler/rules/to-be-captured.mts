@@ -1,6 +1,4 @@
-import { getParentNode, getCurrentKey } from '../controller-utils.mjs';
 import { strict as assert } from 'node:assert';
-import type { Controller } from 'estraverse';
 import type { Node } from 'estree';
 
 const caputuringTargetTypes = [
@@ -41,11 +39,8 @@ const isYieldOrAwaitArgument = (parentNode: Node, currentKey: string | number | 
   return (parentNode.type === 'YieldExpression' || parentNode.type === 'AwaitExpression') && currentKey === 'argument';
 };
 
-const toBeCaptured = (controller: Controller) => {
-  const currentNode = controller.current();
-  const parentNode = getParentNode(controller);
+const toBeCaptured = (currentNode: Node, parentNode: Node | null, currentKey: string | number | null) => {
   assert(parentNode, 'Parent node must exist');
-  const currentKey = getCurrentKey(controller);
   return isCaputuringTargetType(currentNode) &&
         !isYieldOrAwaitArgument(parentNode, currentKey) &&
         !isCalleeOfParent(parentNode, currentKey) &&
