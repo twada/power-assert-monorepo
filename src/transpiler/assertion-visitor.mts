@@ -16,10 +16,12 @@ import type {
   Position
 } from 'estree';
 
+type NodeKey = string | number | symbol | null | undefined;
+
 type ControllerLike = {
   currentNode: Node,
   parentNode: Node | null,
-  currentKey: string | number | null,
+  currentKey: NodeKey,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,7 +37,8 @@ type AcornSwcNode = Node & {
   end: number;
 };
 
-type AstPath = (string | number)[];
+// type AstPath = (string | number)[];
+type AstPath = NodeKey[];
 
 type ArgumentModificationParams = {
   currentNode: Node,
@@ -202,7 +205,8 @@ export class AssertionVisitor {
   #currentModification: ArgumentModification | null;
   readonly #argumentModifications: ArgumentModification[];
 
-  readonly #assertionPath: (string | number)[];
+  // readonly #assertionPath: (string | number)[];
+  readonly #assertionPath: NodeKey[];
   readonly #callexp: CallExpression & AcornSwcLikeNode;
   readonly #calleeNode: Expression;
   readonly #assertionCode: string;
@@ -230,7 +234,8 @@ export class AssertionVisitor {
     this.#decoratorFunctionIdent = decoratorFunctionIdent;
     this.#currentModification = null;
     this.#argumentModifications = [];
-    this.#assertionPath = ([] as (string | number)[]).concat(astPath);
+    // this.#assertionPath = ([] as (string | number)[]).concat(astPath);
+    this.#assertionPath = ([] as NodeKey[]).concat(astPath);
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     this.#callexp = currentNode;
     assert(currentNode.callee.type !== 'Super', 'Super is not supported');
