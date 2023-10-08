@@ -63,7 +63,7 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
     const stubTransformation: Transformation = {
-      insertDeclIntoCurrentBlock: (controller: Controller, decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
+      insertDeclIntoCurrentBlock: (decl: ImportDeclaration | VariableDeclaration) => { // eslint-disable-line @typescript-eslint/no-unused-vars
         // do nothing
       },
       generateUniqueName: (name: string) => `_p${name}1`
@@ -73,12 +73,11 @@ assert.ok(truthy);
       name: '_power_'
     };
 
-    const firstController: Controller = {
-      path: () => ['body', 2, 'expression'],
-      current: () => callexp
-    } as Controller;
+    const currentNode = callexp;
+    const astPath = ['body', 2, 'expression'];
     assertionVisitor = new AssertionVisitor(
-      firstController,
+      currentNode,
+      astPath,
       stubTransformation,
       decoratorFunctionIdent,
       code
@@ -103,14 +102,11 @@ assert.ok(truthy);
   });
 
   describe('after #enterArgument', () => {
-    let controller: Controller;
+    let currentNode: Node;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterArgument(controller);
+      currentNode = callexp.arguments[0];
+      assertionVisitor.enterArgument(currentNode);
     });
 
     it('#isCapturingArgument returns true', () => {
@@ -120,7 +116,7 @@ assert.ok(truthy);
       assert(assertionVisitor.currentModification !== undefined);
     });
     it('#isLeavingArgument returns true', () => {
-      assert.equal(assertionVisitor.isLeavingArgument(controller), true);
+      assert.equal(assertionVisitor.isLeavingArgument(currentNode), true);
     });
     it('#isModified returns false', () => {
       assert.equal(assertionVisitor.isModified(), false);
@@ -130,27 +126,36 @@ assert.ok(truthy);
   describe('after #leaveArgument', () => {
     let controller: Controller;
     let resultNode: CallExpression;
+    let currentNode: Node;
 
     beforeEach(() => {
       controller = {
         path: () => ['body', 2, 'expression', 'arguments', 0],
         current: () => callexp.arguments[0]
       } as Controller;
-      assertionVisitor.enterArgument(controller);
+      currentNode = callexp.arguments[0];
+      assertionVisitor.enterArgument(currentNode);
 
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterNodeToBeCaptured(controller);
+      // controller = {
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
-      controller = {
-        // parents: () => [callexp, expstmt, program],
-        parents: () => [callexp],
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      resultNode = assertionVisitor.leaveArgument(controller) as CallExpression;
+      // controller = {
+      //   // parents: () => [callexp, expstmt, program],
+      //   parents: () => [callexp],
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      currentNode = callexp.arguments[0];
+      const controllerLike = {
+        currentNode,
+        parentNode: callexp,
+        currentKey: 0
+      };
+      const astPath = ['body', 2, 'expression', 'arguments', 0];
+      resultNode = assertionVisitor.leaveArgument(controllerLike, astPath) as CallExpression;
     });
 
     it('#isCapturingArgument returns false', () => {
@@ -160,7 +165,7 @@ assert.ok(truthy);
       assert(assertionVisitor.currentModification === null);
     });
     it('#isLeavingArgument returns undefined', () => {
-      assert.equal(assertionVisitor.isLeavingArgument(controller), false);
+      assert.equal(assertionVisitor.isLeavingArgument(currentNode), false);
     });
     it('#isModified returns true', () => {
       assert.equal(assertionVisitor.isModified(), true);
@@ -194,35 +199,46 @@ assert.ok(truthy);
   });
 
   describe('after #leave', () => {
-    let controller: Controller;
+    // let controller: Controller;
     let resultNode: CallExpression;
+    let currentNode: Node;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterArgument(controller);
+      // controller = {
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      currentNode = callexp.arguments[0];
+      assertionVisitor.enterArgument(currentNode);
 
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.enterNodeToBeCaptured(controller);
+      // controller = {
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
-      controller = {
-        // parents: () => [callexp, expstmt, program],
-        parents: () => [callexp],
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
-      assertionVisitor.leaveArgument(controller);
+      // controller = {
+      //   // parents: () => [callexp, expstmt, program],
+      //   parents: () => [callexp],
+      //   path: () => ['body', 2, 'expression', 'arguments', 0],
+      //   current: () => callexp.arguments[0]
+      // } as Controller;
+      // assertionVisitor.leaveArgument(controller);
+      currentNode = callexp.arguments[0];
+      const controllerLike = {
+        currentNode,
+        parentNode: callexp,
+        currentKey: 0
+      };
+      const astPath = ['body', 2, 'expression', 'arguments', 0];
+      assertionVisitor.leaveArgument(controllerLike, astPath);
 
-      controller = {
-        path: () => ['body', 2, 'expression'],
-        current: () => callexp
-      } as Controller;
-      resultNode = assertionVisitor.leave(controller) as CallExpression;
+      // controller = {
+      //   path: () => ['body', 2, 'expression'],
+      //   current: () => callexp
+      // } as Controller;
+      currentNode = callexp;
+      resultNode = assertionVisitor.leave(currentNode) as CallExpression;
     });
 
     it('reset argumentModifications', () => {

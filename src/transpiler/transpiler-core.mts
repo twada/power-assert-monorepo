@@ -2,7 +2,7 @@ import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
 import { NodeCreator, isScoped } from './create-node-with-loc.mjs';
-import { getCurrentKey } from './controller-utils.mjs';
+import { strict as assert } from 'node:assert';
 import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import type {
   Node,
@@ -167,27 +167,33 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   return {
     enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
+      const astPath = controller.path();
+      const currentKey = astPath ? astPath[astPath.length - 1] : null;
+      const controllerLike = {
+        currentNode,
+        parentNode,
+        currentKey
+      };
 
       if (isScoped(currentNode)) {
         blockStack.push(currentNode);
       }
 
       if (assertionVisitor) {
-        if (assertionVisitor.isNodeToBeSkipped(controller)) {
+        if (assertionVisitor.isNodeToBeSkipped(controllerLike)) {
           skipping = true;
           // console.log(`##### skipping ${this.path().join('/')} #####`);
           return controller.skip();
         }
-        const currentKey = getCurrentKey(controller);
         if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
           // entering argument
-          assertionVisitor.enterArgument(controller);
+          assertionVisitor.enterArgument(currentNode);
         }
 
         if (assertionVisitor.isCapturingArgument()) {
-          if (assertionVisitor.isNodeToBeCaptured(controller)) {
+          if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
             // calculate location then save it
-            assertionVisitor.enterNodeToBeCaptured(controller);
+            assertionVisitor.enterNodeToBeCaptured(currentNode);
           }
         }
       } else {
@@ -228,12 +234,13 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
               const runtime = config.runtime;
               if (!decoratorFunctionIdent) {
-                decoratorFunctionIdent = createPowerAssertImports({ transformation, controller, runtime });
+                decoratorFunctionIdent = createPowerAssertImports({ transformation, currentNode, runtime });
               }
 
               // entering target assertion
               // start capturing
-              assertionVisitor = new AssertionVisitor(controller, transformation, decoratorFunctionIdent, config.code);
+              assert(astPath !== null, 'astPath should not be null');
+              assertionVisitor = new AssertionVisitor(currentNode, astPath, transformation, decoratorFunctionIdent, config.code);
               // assertionVisitor.enter(controller, config.code);
               // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
@@ -243,15 +250,21 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
       return undefined;
     },
-    leave: function (this: Controller, currentNode: Node, _parentNode: Node | null): VisitorOption | Node | void {
+    leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
       try {
         const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-        const path = controller.path();
-        const espath = path ? path.join('/') : '';
-        if (transformation.isTarget(espath, currentNode)) {
-          const targetNode = currentNode;
-          transformation.apply(espath, targetNode);
-          return targetNode;
+        const astPath = controller.path();
+        const currentKey = astPath ? astPath[astPath.length - 1] : null;
+        const controllerLike = {
+          currentNode,
+          parentNode,
+          currentKey
+        };
+        // const espath = path ? path.join('/') : '';
+        // if (transformation.isTarget(espath, currentNode)) {
+        if (transformation.isTarget(currentNode)) {
+          transformation.apply(currentNode);
+          return currentNode;
         }
         if (!assertionVisitor) {
           return undefined;
@@ -265,20 +278,22 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           // leaving assertion
           // stop capturing
           // console.log(`##### leave assertion ${this.path().join('/')} #####`);
-          const resultTree = assertionVisitor.leave(controller);
+          const resultTree = assertionVisitor.leave(currentNode);
           assertionVisitor = null;
           return resultTree;
         }
         if (!assertionVisitor.isCapturingArgument()) {
           return undefined;
         }
-        if (assertionVisitor.isLeavingArgument(controller)) {
+        if (assertionVisitor.isLeavingArgument(currentNode)) {
           // capturing whole argument on leaving argument
-          return assertionVisitor.leaveArgument(controller);
-        } else if (assertionVisitor.isNodeToBeCaptured(controller)) {
+          assert(astPath !== null, 'astPath should not be null');
+          return assertionVisitor.leaveArgument(controllerLike, astPath);
+        } else if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
           // capturing intermediate Node
           // console.log(`##### capture value ${this.path().join('/')} #####`);
-          return assertionVisitor.leaveNodeToBeCaptured(controller);
+          assert(astPath !== null, 'astPath should not be null');
+          return assertionVisitor.leaveNodeToBeCaptured(currentNode, astPath);
         }
         return undefined;
       } finally {
@@ -290,15 +305,14 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   };
 }
 
-function createPowerAssertImports ({ transformation, controller, runtime }: { transformation: Transformation, controller: Controller, runtime: string }): Identifier {
-  const currentNode = controller.current();
+function createPowerAssertImports ({ transformation, currentNode, runtime }: { transformation: Transformation, currentNode: Node, runtime: string }): Identifier {
   const types = new NodeCreator(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
   // TODO: CJS support?
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
   ], types.stringLiteral(runtime));
-  transformation.insertDeclIntoTopLevel(controller, decl);
+  transformation.insertDeclIntoTopLevel(decl);
   return decoratorFunctionIdent;
 }
 

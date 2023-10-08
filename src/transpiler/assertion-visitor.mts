@@ -1,4 +1,3 @@
-import { getParentNode, getCurrentKey } from './controller-utils.mjs';
 import { NodeCreator } from './create-node-with-loc.mjs';
 import { searchAddressByRange } from './range.mjs';
 import { searchAddressByPosition } from './position.mjs';
@@ -7,7 +6,6 @@ import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
 
 import type { Transformation } from './transformation.mjs';
-import type { Controller } from 'estraverse';
 import type {
   Node,
   Identifier,
@@ -18,8 +16,16 @@ import type {
   Position
 } from 'estree';
 
+type NodeKey = string | number | symbol | null | undefined;
+
+type ControllerLike = {
+  currentNode: Node,
+  parentNode: Node | null,
+  currentKey: NodeKey,
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValue = { [key: string]: any };
+// type KeyValue = { [key: string]: any };
 
 type AcornSwcLikeNode = Node & {
   start?: number;
@@ -31,12 +37,15 @@ type AcornSwcNode = Node & {
   end: number;
 };
 
+// type AstPath = (string | number)[];
+type AstPath = NodeKey[];
+
 type ArgumentModificationParams = {
-  controller: Controller,
+  currentNode: Node,
   argNum: number,
   argNode: Node,
   callexp: CallExpression & AcornSwcLikeNode,
-  assertionPath: (string | number)[],
+  assertionPath: AstPath,
   assertionCode: string,
   transformation: Transformation,
   poweredAssertIdent: Identifier
@@ -86,7 +95,7 @@ class ArgumentModification {
   readonly #argNum: number;
   readonly #argNode: Node;
   readonly #callexp: CallExpression & AcornSwcLikeNode;
-  readonly #assertionPath: (string | number)[];
+  readonly #assertionPath: AstPath;
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
@@ -94,7 +103,7 @@ class ArgumentModification {
   readonly #argumentRecorderIdent: Identifier;
   #argumentModified: boolean;
 
-  constructor ({ controller, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
+  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
     this.#argNum = argNum;
     this.#argNode = argNode;
     this.#callexp = callexp;
@@ -105,7 +114,6 @@ class ArgumentModification {
     this.#argumentModified = false;
     this.#addresses = new Map<Node, number>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
-    const currentNode = controller.current();
     const types = new NodeCreator(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.callExpression(
@@ -116,16 +124,16 @@ class ArgumentModification {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    this.#transformation.insertDeclIntoCurrentBlock(controller, decl);
+    this.#transformation.insertDeclIntoCurrentBlock(decl);
     this.#argumentRecorderIdent = ident;
   }
 
-  leave (controller: Controller): Node {
-    const currentNode = controller.current();
-    const shouldCaptureValue = toBeCaptured(controller);
+  leave (controllerLike: ControllerLike, astPath: AstPath): Node {
+    const { currentNode, parentNode, currentKey } = controllerLike;
+    const shouldCaptureValue = toBeCaptured(currentNode, parentNode, currentKey);
     // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
     const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
-    const resultNode = shouldCaptureArgument ? this.#captureArgument(controller) : currentNode;
+    const resultNode = shouldCaptureArgument ? this.#captureArgument(currentNode, astPath) : currentNode;
     return resultNode;
   }
 
@@ -133,53 +141,45 @@ class ArgumentModification {
     return !!this.#argumentModified;
   }
 
-  isLeaving (controller: Controller): boolean {
-    return this.#argNode === controller.current();
+  isLeaving (node: Node): boolean {
+    return this.#argNode === node;
   }
 
-  captureNode (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, 'tap');
+  captureNode (currentNode: Node, astPath: AstPath): CallExpression {
+    return this.#insertRecorderNode(currentNode, astPath, 'tap');
   }
 
-  #captureArgument (controller: Controller): CallExpression {
-    return this.#insertRecorderNode(controller, 'rec');
+  #captureArgument (currentNode: Node, astPath: AstPath): CallExpression {
+    return this.#insertRecorderNode(currentNode, astPath, 'rec');
   }
 
-  saveAddress (controller: Controller): void {
-    const currentNode = controller.current();
-    const targetAddr = this.#calculateAddress(controller);
+  saveAddress (currentNode: Node): void {
+    const targetAddr = this.#calculateAddress(currentNode);
     this.#addresses.set(currentNode, targetAddr);
   }
 
-  #targetAddress (controller: Controller): number | undefined {
-    const currentNode = controller.current();
+  #targetAddress (currentNode: Node): number | undefined {
     return this.#addresses.get(currentNode);
   }
 
-  #calculateAddress (controller: Controller): number {
-    const relativeAstPath = this.#relativeAstPath(controller);
+  #calculateAddress (currentNode: Node): number {
     const code = this.#assertionCode;
-    const ast = this.#callexp;
-    const targetNodeInAst = relativeAstPath.reduce((parent: Node&KeyValue&AcornSwcLikeNode, key: string | number) => parent[key], ast);
     if (this.#callexp.loc) {
       const offsetPosition = this.#callexp.loc.start;
-      return searchAddressByPosition(targetNodeInAst, offsetPosition, code);
+      return searchAddressByPosition(currentNode, offsetPosition, code);
     } else {
       const offset = getStartRangeValue(this.#callexp);
-      return searchAddressByRange(targetNodeInAst, offset, code);
+      return searchAddressByRange(currentNode, offset, code);
     }
   }
 
-  #relativeAstPath (controller: Controller): (string | number)[] {
-    const astPath = controller.path();
-    assert(astPath, 'astPath must exist');
+  #relativeAstPath (astPath: AstPath): AstPath {
     return astPath.slice(this.#assertionPath.length);
   }
 
-  #insertRecorderNode (controller: Controller, methodName: string): CallExpression {
-    const currentNode = controller.current();
-    const relativeAstPath = this.#relativeAstPath(controller);
-    const targetAddr = this.#targetAddress(controller);
+  #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string): CallExpression {
+    const relativeAstPath = this.#relativeAstPath(astPath);
+    const targetAddr = this.#targetAddress(currentNode);
     assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
 
     const types = new NodeCreator(currentNode);
@@ -205,7 +205,8 @@ export class AssertionVisitor {
   #currentModification: ArgumentModification | null;
   readonly #argumentModifications: ArgumentModification[];
 
-  readonly #assertionPath: (string | number)[];
+  // readonly #assertionPath: (string | number)[];
+  readonly #assertionPath: NodeKey[];
   readonly #callexp: CallExpression & AcornSwcLikeNode;
   readonly #calleeNode: Expression;
   readonly #assertionCode: string;
@@ -228,15 +229,13 @@ export class AssertionVisitor {
     return structuredClone(this.#poweredAssertIdent);
   }
 
-  constructor (controller: Controller, transformation: Transformation, decoratorFunctionIdent: Identifier, wholeCode: string) {
+  constructor (currentNode: Node, astPath: AstPath, transformation: Transformation, decoratorFunctionIdent: Identifier, wholeCode: string) {
     this.#transformation = transformation;
     this.#decoratorFunctionIdent = decoratorFunctionIdent;
     this.#currentModification = null;
     this.#argumentModifications = [];
-    const nodepath = controller.path();
-    assert(nodepath, 'Node path must exist');
-    this.#assertionPath = ([] as (string | number)[]).concat(nodepath);
-    const currentNode = controller.current();
+    // this.#assertionPath = ([] as (string | number)[]).concat(astPath);
+    this.#assertionPath = ([] as NodeKey[]).concat(astPath);
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     this.#callexp = currentNode;
     assert(currentNode.callee.type !== 'Super', 'Super is not supported');
@@ -257,12 +256,12 @@ export class AssertionVisitor {
     } else {
       assert(false, 'Node must have a loc or range or start/end');
     }
-    this.#poweredAssertIdent = this.#decorateAssert(controller);
+    this.#poweredAssertIdent = this.#decorateAssert(currentNode);
   }
 
-  leave (controller: Controller): Node {
+  leave (currentNode: Node): Node {
     try {
-      return this.isModified() ? this.#replaceWithDecoratedAssert(controller) : controller.current();
+      return this.isModified() ? this.#replaceWithDecoratedAssert(currentNode) : currentNode;
     } finally {
       this.#argumentModifications.length = 0;
     }
@@ -272,8 +271,7 @@ export class AssertionVisitor {
     return this.#argumentModifications.some((am) => am.isArgumentModified());
   }
 
-  #replaceWithDecoratedAssert (controller: Controller): CallExpression {
-    const currentNode = controller.current();
+  #replaceWithDecoratedAssert (currentNode: Node): CallExpression {
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
     const types = new NodeCreator(currentNode);
     const replacedNode = types.callExpression(
@@ -282,8 +280,7 @@ export class AssertionVisitor {
     return replacedNode;
   }
 
-  #decorateAssert (controller: Controller): Identifier {
-    const currentNode = controller.current();
+  #decorateAssert (currentNode: Node): Identifier {
     const transformation = this.#transformation;
     const types = new NodeCreator(currentNode);
     // extra properties are not required for now
@@ -316,16 +313,16 @@ export class AssertionVisitor {
     const decl = types.variableDeclaration('const', [
       types.variableDeclarator(ident, init)
     ]);
-    transformation.insertDeclIntoCurrentBlock(controller, decl);
+    transformation.insertDeclIntoCurrentBlock(decl);
     return ident;
   }
 
-  enterArgument (controller: Controller): undefined {
-    const currentNode = controller.current();
+  enterArgument (node: Node): undefined {
+    const currentNode = node;
     // going to capture every argument
     const argNum = this.#argumentModifications.length;
     const modification = new ArgumentModification({
-      controller,
+      currentNode,
       argNum,
       argNode: currentNode,
       callexp: this.#callexp,
@@ -340,13 +337,13 @@ export class AssertionVisitor {
     return undefined;
   }
 
-  isLeavingArgument (controller: Controller): boolean {
-    return !!this.#currentModification?.isLeaving(controller);
+  isLeavingArgument (node: Node): boolean {
+    return !!this.#currentModification?.isLeaving(node);
   }
 
-  leaveArgument (controller: Controller): Node {
+  leaveArgument (controllerLike: ControllerLike, astPath: AstPath): Node {
     assert(this.#currentModification, 'currentModification must exist');
-    const retNode = this.#currentModification.leave(controller);
+    const retNode = this.#currentModification.leave(controllerLike, astPath);
     this.#currentModification = null;
     return retNode;
   }
@@ -355,28 +352,27 @@ export class AssertionVisitor {
     return !!this.#currentModification;
   }
 
-  isNodeToBeSkipped (controller: Controller): boolean {
-    const currentNode = controller.current();
+  isNodeToBeSkipped (controllerLike: ControllerLike): boolean {
+    const { currentNode, parentNode, currentKey } = controllerLike;
     if (currentNode === this.#calleeNode) {
       return true;
     }
-    const parentNode = getParentNode(controller);
     assert(parentNode, 'parentNode must exist');
-    const currentKey = getCurrentKey(controller);
     return toBeSkipped({ currentNode, parentNode, currentKey });
   }
 
-  isNodeToBeCaptured (controller: Controller): boolean {
-    return toBeCaptured(controller);
+  isNodeToBeCaptured (controllerLike: ControllerLike): boolean {
+    const { currentNode, parentNode, currentKey } = controllerLike;
+    return toBeCaptured(currentNode, parentNode, currentKey);
   }
 
-  leaveNodeToBeCaptured (controller: Controller): CallExpression {
+  leaveNodeToBeCaptured (currentNode: Node, astPath: AstPath): CallExpression {
     assert(this.#currentModification, 'currentModification must exist');
-    return this.#currentModification.captureNode(controller);
+    return this.#currentModification.captureNode(currentNode, astPath);
   }
 
-  enterNodeToBeCaptured (controller: Controller): void {
+  enterNodeToBeCaptured (node: Node): void {
     assert(this.#currentModification, 'currentModification must exist');
-    this.#currentModification.saveAddress(controller);
+    this.#currentModification.saveAddress(node);
   }
 }
