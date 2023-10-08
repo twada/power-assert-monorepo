@@ -29,10 +29,32 @@ function parseFixture (filepath: string, loc: boolean, ranges: boolean): Node {
 
 describe('espowerAst', () => {
   const fixtures = [
-    'Identifier',
+    'ArrayExpression',
+    'ArrowFunctionExpression',
+    'AssignmentExpression',
+    'AwaitExpression',
     'BinaryExpression',
+    'CallExpression',
+    'ClassExpression',
+    'ClassScope',
+    // 'ConditionalExpression',
+    'FunctionExpression',
+    'Identifier',
+    'Literal',
+    'LogicalExpression',
     'MemberExpression',
-    'CallExpression'
+    'NewExpression',
+    'ObjectExpression',
+    // 'ObjectRestSpread',
+    'Property',
+    'Scopes',
+    // 'SequenceExpression',
+    // 'SpreadElement',
+    'TaggedTemplateExpression',
+    'TemplateLiteral',
+    'UnaryExpression',
+    'UpdateExpression',
+    'YieldExpression'
   ];
   for (const fixtureName of fixtures) {
     for (const loc of [true, false]) {
@@ -43,6 +65,7 @@ describe('espowerAst', () => {
         it(`${fixtureName}, locations:${loc}, ranges:${range}`, () => {
           const fixtureFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'fixture.mjs');
           const expectedFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'expected.mjs');
+          // const actualFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'actual.mjs');
           const expected = readFileSync(expectedFilepath).toString();
           const ast = parseFixture(fixtureFilepath, loc, range);
           const modifiedAst = espowerAst(ast, {
@@ -51,6 +74,10 @@ describe('espowerAst', () => {
           });
           const actual = generate(modifiedAst);
           // console.log(actual);
+          // if (actual !== expected) {
+          //   writeFileSync(actualFilepath, actual);
+          //   writeFileSync(expectedFilepath, actual);
+          // }
           assert.equal(actual, expected);
         });
       }
