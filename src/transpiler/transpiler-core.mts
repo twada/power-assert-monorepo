@@ -263,8 +263,10 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         // const espath = path ? path.join('/') : '';
         // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
+          // apply transformation to currentNode (Scope)
           transformation.apply(currentNode);
-          return undefined;
+          // replace currentNode with transformed one
+          return currentNode;
         }
         if (!assertionVisitor) {
           return undefined;
