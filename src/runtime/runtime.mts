@@ -96,6 +96,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   rec (value: unknown, espath: string, left?: number): ArgumentRecorder {
     try {
       if (typeof left === 'undefined') {
+        // node right under the assertion is not captured
         return this;
       }
       const cap = {
