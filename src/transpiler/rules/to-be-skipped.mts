@@ -1,7 +1,33 @@
-import { supportedNodeTypes } from './supported-node-types.mjs';
 import type { Node, Property } from 'estree';
 
 type NodeKey = string | number | symbol | null | undefined;
+
+const supportedNodes = new Set([
+  'Literal',
+  'Identifier',
+  'MemberExpression',
+  'CallExpression',
+  'UnaryExpression',
+  'BinaryExpression',
+  'LogicalExpression',
+  'AssignmentExpression',
+  'ObjectExpression',
+  'NewExpression',
+  'ArrayExpression',
+  'ConditionalExpression',
+  'UpdateExpression',
+  'SequenceExpression',
+  'TemplateLiteral',
+  'TaggedTemplateExpression',
+  'SpreadElement',
+  'YieldExpression',
+  'AwaitExpression',
+  'Property'
+]);
+
+function isSupportedNode (node: Node): boolean {
+  return supportedNodes.has(node.type);
+}
 
 const isLeftHandSideOfAssignment = (parentNode: Node, currentKey: NodeKey) => {
   // Do not instrument left due to 'Invalid left-hand side in assignment'
@@ -45,15 +71,8 @@ const isTypeOfOrDeleteUnaryExpression = (currentNode: Node, parentNode: Node, cu
   return currentNode.type === 'Identifier' && parentNode.type === 'UnaryExpression' && (parentNode.operator === 'typeof' || parentNode.operator === 'delete') && currentKey === 'argument';
 };
 
-const isSupportedNodeType = (() => {
-  const supported = supportedNodeTypes();
-  return (node: Node) => {
-    return supported.indexOf(node.type) !== -1;
-  };
-})();
-
 const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node, currentKey: NodeKey}) => {
-  return !isSupportedNodeType(currentNode) ||
+  return !isSupportedNode(currentNode) ||
         isLeftHandSideOfAssignment(parentNode, currentKey) ||
         isNonComputedObjectLiteralKey(parentNode, currentKey) ||
         isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
