@@ -85,34 +85,6 @@ function findBlockNode (blockStack: Scoped[]): Scoped {
   return blockNode;
 }
 
-// function findEspathOfTargetNode (targetNode: Node, controller: Controller): string {
-//   // iterate from child to root
-//   let child: Node | null = null;
-//   let parent: Node&KeyValue | null = null;
-//   const path = controller.path();
-//   assert(path !== null, 'path should not be null');
-//   const popUntilParent = (key: string | number | undefined) => {
-//     assert(parent !== null, 'parent should not be null');
-//     assert(key !== undefined, 'key should not be undefined');
-//     if (parent[key] !== undefined) {
-//       return;
-//     }
-//     popUntilParent(path.pop());
-//   };
-//   const parents = controller.parents();
-//   for (let i = parents.length - 1; i >= 0; i--) {
-//     parent = parents[i];
-//     if (child) {
-//       popUntilParent(path.pop());
-//     }
-//     if (parent === targetNode) {
-//       return path.join('/');
-//     }
-//     child = parent;
-//   }
-//   assert.fail('cannot be here');
-// }
-
 function isDirective (node: Node): node is Directive {
   return node.type === 'ExpressionStatement' && Object.hasOwn(node, 'directive');
 }
