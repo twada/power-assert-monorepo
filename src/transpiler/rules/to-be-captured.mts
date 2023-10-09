@@ -24,7 +24,7 @@ const caputuringTargetTypes = new Set([
   'TaggedTemplateExpression'
 ]);
 
-const isCaputuringTargetType = (currentNode: Node) => {
+const isCaputuringTargetNode = (currentNode: Node) => {
   return caputuringTargetTypes.has(currentNode.type);
 };
 
@@ -43,7 +43,7 @@ const isYieldOrAwaitArgument = (parentNode: Node, currentKey: NodeKey) => {
 
 const toBeCaptured = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
   assert(parentNode, 'Parent node must exist');
-  return isCaputuringTargetType(currentNode) &&
+  return isCaputuringTargetNode(currentNode) &&
         !isYieldOrAwaitArgument(parentNode, currentKey) &&
         !isCalleeOfParent(parentNode, currentKey) &&
         !isChildOfTaggedTemplateExpression(parentNode);
