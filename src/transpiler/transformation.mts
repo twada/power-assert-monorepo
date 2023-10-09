@@ -44,7 +44,7 @@ export class Transformation {
       } else {
         body = matchNode.body;
       }
-      insertAfterUseStrictDirective(decl, body);
+      insertAfterDirective(decl, body);
     });
   }
 
@@ -113,14 +113,15 @@ function findBlockNode (blockStack: Scoped[]): Scoped {
 //   assert.fail('cannot be here');
 // }
 
-function insertAfterUseStrictDirective (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
+function isDirective (node: Node): node is Directive {
+  return node.type === 'ExpressionStatement' && Object.hasOwn(node, 'directive');
+}
+
+function insertAfterDirective (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
   const firstBody = body[0];
-  if (firstBody.type === 'ExpressionStatement') {
-    const expression = firstBody.expression;
-    if (expression.type === 'Literal' && expression.value === 'use strict') {
-      body.splice(1, 0, decl);
-      return;
-    }
+  if (isDirective(firstBody)) {
+    body.splice(1, 0, decl);
+    return;
   }
   body.unshift(decl);
 }
