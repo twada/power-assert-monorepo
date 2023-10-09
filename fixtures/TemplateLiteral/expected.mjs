@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
+const _pasrt1 = _power_(assert, null, "assert(`Hello`)");
+const _parg1 = _pasrt1.recorder(0);
+const _pasrt2 = _power_(assert, null, "assert(`Hello, ${nickname}`)");
+const _parg2 = _pasrt2.recorder(0);
+const _pasrt3 = _power_(assert, null, "assert(`Hello, ${user.nickname}`)");
+const _parg3 = _pasrt3.recorder(0);
+_pasrt1.run(_parg1.rec(`Hello`, "arguments/0", 7));
+_pasrt2.run(_parg2.rec(`Hello, ${_parg2.tap(nickname, "arguments/0/expressions/0", 17)}`, "arguments/0", 7));
+_pasrt3.run(_parg3.rec(`Hello, ${_parg3.tap(_parg3.tap(user, "arguments/0/expressions/0/object", 17).nickname, "arguments/0/expressions/0", 22)}`, "arguments/0", 7));

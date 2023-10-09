@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
+const _pasrt1 = _power_(assert, null, "assert(hello(...names))");
+const _parg1 = _pasrt1.recorder(0);
+const _pasrt2 = _power_(assert, null, "assert([head, ...tail].length)");
+const _parg2 = _pasrt2.recorder(0);
+const _pasrt3 = _power_(assert, null, "assert(f(head, ...iter(), ...[foo, bar]))");
+const _parg3 = _pasrt3.recorder(0);
+const _pasrt4 = _power_(assert, null, "assert(...iter())");
+const _parg4 = _pasrt4.recorder(0);
+const _pasrt5 = _power_(assert, null, "assert(...[foo, bar])");
+const _parg5 = _pasrt5.recorder(0);
+_pasrt1.run(_parg1.rec(hello(..._parg1.tap(names, "arguments/0/arguments/0/argument", 16)), "arguments/0", 7));
+_pasrt2.run(_parg2.rec(_parg2.tap([_parg2.tap(head, "arguments/0/object/elements/0", 8), ..._parg2.tap(tail, "arguments/0/object/elements/1/argument", 17)], "arguments/0/object", 7).length, "arguments/0", 23));
+_pasrt3.run(_parg3.rec(f(_parg3.tap(head, "arguments/0/arguments/0", 9), ..._parg3.tap(iter(), "arguments/0/arguments/1/argument", 18), ..._parg3.tap([_parg3.tap(foo, "arguments/0/arguments/2/argument/elements/0", 30), _parg3.tap(bar, "arguments/0/arguments/2/argument/elements/1", 35)], "arguments/0/arguments/2/argument", 29)), "arguments/0", 7));
+_pasrt4.run(_parg4.rec(..._parg4.tap(iter(), "arguments/0/argument", 10), "arguments/0"));
+_pasrt5.run(_parg5.rec(..._parg5.tap([_parg5.tap(foo, "arguments/0/argument/elements/0", 11), _parg5.tap(bar, "arguments/0/argument/elements/1", 16)], "arguments/0/argument", 10), "arguments/0"));

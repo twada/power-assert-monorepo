@@ -1,7 +1,34 @@
-import { supportedNodeTypes } from './supported-node-types.mjs';
+import { strict as assert } from 'node:assert';
 import type { Node, Property } from 'estree';
 
 type NodeKey = string | number | symbol | null | undefined;
+
+const supportedNodes = new Set([
+  'Literal',
+  'Identifier',
+  'MemberExpression',
+  'CallExpression',
+  'UnaryExpression',
+  'BinaryExpression',
+  'LogicalExpression',
+  'AssignmentExpression',
+  'ObjectExpression',
+  'NewExpression',
+  'ArrayExpression',
+  'ConditionalExpression',
+  'UpdateExpression',
+  'SequenceExpression',
+  'TemplateLiteral',
+  'TaggedTemplateExpression',
+  'SpreadElement',
+  'YieldExpression',
+  'AwaitExpression',
+  'Property'
+]);
+
+function isSupportedNode (node: Node): boolean {
+  return supportedNodes.has(node.type);
+}
 
 const isLeftHandSideOfAssignment = (parentNode: Node, currentKey: NodeKey) => {
   // Do not instrument left due to 'Invalid left-hand side in assignment'
@@ -30,7 +57,7 @@ const isShorthandedValueOfObjectLiteral = (parentNode: Node, currentKey: NodeKey
   return isObjectLiteralValue(parentNode, currentKey) && parentNode.shorthand;
 };
 
-const isUpdateExpression = (parentNode: Node) => {
+const isChildOfUpdateExpression = (parentNode: Node) => {
   // Just wrap UpdateExpression, not digging in.
   return parentNode.type === 'UpdateExpression';
 };
@@ -45,19 +72,13 @@ const isTypeOfOrDeleteUnaryExpression = (currentNode: Node, parentNode: Node, cu
   return currentNode.type === 'Identifier' && parentNode.type === 'UnaryExpression' && (parentNode.operator === 'typeof' || parentNode.operator === 'delete') && currentKey === 'argument';
 };
 
-const isSupportedNodeType = (() => {
-  const supported = supportedNodeTypes();
-  return (node: Node) => {
-    return supported.indexOf(node.type) !== -1;
-  };
-})();
-
-const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node, currentKey: NodeKey}) => {
-  return !isSupportedNodeType(currentNode) ||
+const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
+  assert(parentNode, 'Parent node must exist');
+  return !isSupportedNode(currentNode) ||
         isLeftHandSideOfAssignment(parentNode, currentKey) ||
         isNonComputedObjectLiteralKey(parentNode, currentKey) ||
         isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
-        isUpdateExpression(parentNode) ||
+        isChildOfUpdateExpression(parentNode) ||
         isCallExpressionWithNonComputedMemberExpression(currentNode, parentNode, currentKey) ||
         isTypeOfOrDeleteUnaryExpression(currentNode, parentNode, currentKey);
 };

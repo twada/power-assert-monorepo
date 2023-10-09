@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
+const _pasrt1 = _power_(assert, null, "assert(fn`a${1}`)");
+const _parg1 = _pasrt1.recorder(0);
+const _pasrt2 = _power_(assert, null, "assert(fn`a${foo}b${bar}c${baz}`)");
+const _parg2 = _pasrt2.recorder(0);
+const _pasrt3 = _power_(assert, null, "assert(fn`driver ${bob.name}, navigator ${alice.getName()}`)");
+const _parg3 = _pasrt3.recorder(0);
+_pasrt1.run(_parg1.rec(fn`a${_parg1.tap(1, "arguments/0/quasi/expressions/0", 13)}`, "arguments/0", 7));
+_pasrt2.run(_parg2.rec(fn`a${_parg2.tap(foo, "arguments/0/quasi/expressions/0", 13)}b${_parg2.tap(bar, "arguments/0/quasi/expressions/1", 20)}c${_parg2.tap(baz, "arguments/0/quasi/expressions/2", 27)}`, "arguments/0", 7));
+_pasrt3.run(_parg3.rec(fn`driver ${_parg3.tap(_parg3.tap(bob, "arguments/0/quasi/expressions/0/object", 19).name, "arguments/0/quasi/expressions/0", 23)}, navigator ${_parg3.tap(_parg3.tap(alice, "arguments/0/quasi/expressions/1/callee/object", 42).getName(), "arguments/0/quasi/expressions/1", 48)}`, "arguments/0", 7));
