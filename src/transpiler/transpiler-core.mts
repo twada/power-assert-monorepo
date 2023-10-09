@@ -264,7 +264,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
           transformation.apply(currentNode);
-          return currentNode;
+          return undefined;
         }
         if (!assertionVisitor) {
           return undefined;
