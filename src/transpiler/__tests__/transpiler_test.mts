@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { espowerAst } from '../transpiler-core.mjs';
 import { strict as assert } from 'node:assert';
 import { resolve, dirname } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 // import { parse } from 'acorn';
 import { parseModule } from 'meriyah';
 import { generate } from 'astring';
@@ -37,7 +37,7 @@ describe('espowerAst', () => {
     'CallExpression',
     'ClassExpression',
     'ClassScope',
-    // 'ConditionalExpression',
+    'ConditionalExpression',
     'FunctionExpression',
     'Identifier',
     'Literal',
@@ -45,11 +45,11 @@ describe('espowerAst', () => {
     'MemberExpression',
     'NewExpression',
     'ObjectExpression',
-    // 'ObjectRestSpread',
+    'ObjectRestSpread',
     'Property',
     'Scopes',
-    // 'SequenceExpression',
-    // 'SpreadElement',
+    'SequenceExpression',
+    'SpreadElement',
     'TaggedTemplateExpression',
     'TemplateLiteral',
     'UnaryExpression',
@@ -65,7 +65,7 @@ describe('espowerAst', () => {
         it(`${fixtureName}, locations:${loc}, ranges:${range}`, () => {
           const fixtureFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'fixture.mjs');
           const expectedFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'expected.mjs');
-          // const actualFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'actual.mjs');
+          const actualFilepath = resolve(__dirname, '..', '..', '..', 'fixtures', fixtureName, 'actual.mjs');
           const expected = readFileSync(expectedFilepath).toString();
           const ast = parseFixture(fixtureFilepath, loc, range);
           const modifiedAst = espowerAst(ast, {
@@ -74,10 +74,9 @@ describe('espowerAst', () => {
           });
           const actual = generate(modifiedAst);
           // console.log(actual);
-          // if (actual !== expected) {
-          //   writeFileSync(actualFilepath, actual);
-          //   writeFileSync(expectedFilepath, actual);
-          // }
+          if (actual !== expected) {
+            writeFileSync(actualFilepath, actual);
+          }
           assert.equal(actual, expected);
         });
       }
