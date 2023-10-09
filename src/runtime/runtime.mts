@@ -93,8 +93,11 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  rec (value: unknown, espath: string, left: number): ArgumentRecorder {
+  rec (value: unknown, espath: string, left?: number): ArgumentRecorder {
     try {
+      if (typeof left === 'undefined') {
+        return this;
+      }
       const cap = {
         value: wrap(value),
         espath,

@@ -130,11 +130,15 @@ class ArgumentModification {
 
   leave (controllerLike: ControllerLike, astPath: AstPath): Node {
     const { currentNode, parentNode, currentKey } = controllerLike;
-    const shouldCaptureValue = toBeCaptured(currentNode, parentNode, currentKey);
-    // const pathToBeCaptured = shouldCaptureValue ? controller.path() : null;
-    const shouldCaptureArgument = this.isArgumentModified() || shouldCaptureValue;
-    const resultNode = shouldCaptureArgument ? this.#captureArgument(currentNode, astPath) : currentNode;
-    return resultNode;
+    const shouldCaptureCurrentNode = toBeCaptured(currentNode, parentNode, currentKey);
+    if (shouldCaptureCurrentNode) {
+      return this.#captureArgument(currentNode, astPath);
+    } else if (this.isArgumentModified() && !shouldCaptureCurrentNode) {
+      // argument is modified but return value is not to be captured
+      return this.#wrapArgumentOnly(currentNode, astPath);
+    } else {
+      return currentNode;
+    }
   }
 
   isArgumentModified (): boolean {
@@ -146,11 +150,15 @@ class ArgumentModification {
   }
 
   captureNode (currentNode: Node, astPath: AstPath): CallExpression {
-    return this.#insertRecorderNode(currentNode, astPath, 'tap');
+    return this.#insertRecorderNode(currentNode, astPath, 'tap', true);
   }
 
   #captureArgument (currentNode: Node, astPath: AstPath): CallExpression {
-    return this.#insertRecorderNode(currentNode, astPath, 'rec');
+    return this.#insertRecorderNode(currentNode, astPath, 'rec', true);
+  }
+
+  #wrapArgumentOnly (currentNode: Node, astPath: AstPath): CallExpression {
+    return this.#insertRecorderNode(currentNode, astPath, 'rec', false);
   }
 
   saveAddress (currentNode: Node): void {
@@ -177,18 +185,18 @@ class ArgumentModification {
     return astPath.slice(this.#assertionPath.length);
   }
 
-  #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string): CallExpression {
+  #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string, capture: boolean): CallExpression {
     const relativeAstPath = this.#relativeAstPath(astPath);
-    const targetAddr = this.#targetAddress(currentNode);
-    assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
-
     const types = new NodeCreator(currentNode);
     const args = [
       currentNode,
-      types.valueToNode(relativeAstPath.join('/')),
-      types.valueToNode(targetAddr)
+      types.valueToNode(relativeAstPath.join('/'))
     ];
-
+    if (capture) {
+      const targetAddr = this.#targetAddress(currentNode);
+      assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
+      args.push(types.numericLiteral(targetAddr));
+    }
     const receiver = this.#argumentRecorderIdent;
     const newNode = types.callExpression(
       types.memberExpression(receiver, types.identifier(methodName)),
