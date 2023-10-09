@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert({foo: bar, hoge: fuga})");
 const _parg1 = _pasrt1.recorder(0);
@@ -6,7 +7,6 @@ const _parg2 = _pasrt2.recorder(0);
 const _pasrt3 = _power_(assert.deepEqual, assert, "assert.deepEqual({foo: bar, hoge: fuga}, {hoge: fuga, foo: bar})");
 const _parg3 = _pasrt3.recorder(0);
 const _parg4 = _pasrt3.recorder(1);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec({
   foo: _parg1.tap(bar, "arguments/0/properties/0/value", 13),
   hoge: _parg1.tap(fuga, "arguments/0/properties/1/value", 24)

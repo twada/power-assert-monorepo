@@ -1,5 +1,5 @@
-import {_power_} from "@power-assert/runtime";
 import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
 async function myAsync(a) {
   const _pasrt1 = _power_(assert, null, "assert((await (a)) === 3)", {
     binexp: "==="

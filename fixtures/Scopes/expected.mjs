@@ -1,5 +1,5 @@
-import {_power_} from "@power-assert/runtime";
 import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
 for (var i = 0; i < 3; i += 1) {
   if (foo) {
     const _pasrt1 = _power_(assert, null, "assert(foo === 'FOO')", {

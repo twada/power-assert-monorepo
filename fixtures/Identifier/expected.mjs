@@ -1,6 +1,6 @@
-import {_power_} from "@power-assert/runtime";
 import {describe, it} from 'node:test';
 import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
 describe('description', () => {
   it('example', () => {
     const _pasrt1 = _power_(assert.ok, assert, "assert.ok(truthy)");

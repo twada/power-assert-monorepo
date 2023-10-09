@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(false)");
 const _parg1 = _pasrt1.recorder(0);
@@ -30,7 +31,6 @@ const _pasrt10 = _power_(assert, null, "assert(0b111110111)");
 const _parg15 = _pasrt10.recorder(0);
 const _pasrt11 = _power_(assert, null, "assert(0o767)");
 const _parg16 = _pasrt11.recorder(0);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec(false, "arguments/0", 7));
 _pasrt2.run(_parg2.rec(0, "arguments/0", 7));
 _pasrt3.run(_parg3.rec(1, "arguments/0", 13), _parg4.rec(0, "arguments/1", 16));

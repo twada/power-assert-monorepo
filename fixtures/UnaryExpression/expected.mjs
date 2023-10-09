@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(!truth)");
 const _parg1 = _pasrt1.recorder(0);
@@ -18,7 +19,6 @@ const _parg6 = _pasrt6.recorder(0);
 const _pasrt7 = _power_(assert.strictEqual, assert, "assert.strictEqual(typeof foo, typeof bar)");
 const _parg7 = _pasrt7.recorder(0);
 const _parg8 = _pasrt7.recorder(1);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec(!_parg1.tap(truth, "arguments/0/argument", 8), "arguments/0", 7));
 _pasrt2.run(_parg2.rec(!_parg2.tap(!_parg2.tap(some, "arguments/0/argument/argument", 9), "arguments/0/argument", 8), "arguments/0", 7));
 _pasrt3.run(_parg3.rec(!_parg3.tap(!_parg3.tap(_parg3.tap(foo, "arguments/0/argument/argument/object", 9).bar, "arguments/0/argument/argument", 13), "arguments/0/argument", 8), "arguments/0", 7));

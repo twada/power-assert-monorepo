@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(counter += 1)");
 const _parg1 = _pasrt1.recorder(0);
@@ -12,7 +13,6 @@ const _pasrt5 = _power_(assert, null, "assert([x] = [3])");
 const _parg6 = _pasrt5.recorder(0);
 const _pasrt6 = _power_(assert, null, "assert([x] = [foo])");
 const _parg7 = _pasrt6.recorder(0);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec(counter += _parg1.tap(1, "arguments/0/right", 18), "arguments/0", 15));
 _pasrt2.run(_parg2.rec(dog.age += _parg2.tap(1, "arguments/0/right", 18), "arguments/0", 15));
 _pasrt3.run(_parg3.rec(dog.age += _parg3.tap(1, "arguments/0/right", 22), "arguments/0", 18));

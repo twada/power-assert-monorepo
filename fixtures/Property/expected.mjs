@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert({[num]: foo})");
 const _parg1 = _pasrt1.recorder(0);
@@ -9,7 +10,6 @@ const _pasrt4 = _power_(assert, null, "assert({foo})");
 const _parg4 = _pasrt4.recorder(0);
 const _pasrt5 = _power_(assert, null, "assert({foo, bar: baz})");
 const _parg5 = _pasrt5.recorder(0);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec({
   [_parg1.tap(num, "arguments/0/properties/0/key", 9)]: _parg1.tap(foo, "arguments/0/properties/0/value", 15)
 }, "arguments/0", 7));

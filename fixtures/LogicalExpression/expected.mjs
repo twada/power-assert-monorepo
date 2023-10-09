@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(5 < actual && actual < 13)");
 const _parg1 = _pasrt1.recorder(0);
@@ -10,7 +11,6 @@ const _parg4 = _pasrt4.recorder(0);
 const _pasrt5 = _power_(assert.equal, assert, "assert.equal(5 < actual && actual < 13, falsy)");
 const _parg5 = _pasrt5.recorder(0);
 const _parg6 = _pasrt5.recorder(1);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec(_parg1.tap(_parg1.tap(5, "arguments/0/left/left", 7) < _parg1.tap(actual, "arguments/0/left/right", 11), "arguments/0/left", 9) && _parg1.tap(_parg1.tap(actual, "arguments/0/right/left", 21) < _parg1.tap(13, "arguments/0/right/right", 30), "arguments/0/right", 28), "arguments/0", 18));
 _pasrt2.run(_parg2.rec(_parg2.tap(_parg2.tap(actual, "arguments/0/left/left", 10) < _parg2.tap(5, "arguments/0/left/right", 19), "arguments/0/left", 17) || _parg2.tap(_parg2.tap(13, "arguments/0/right/left", 24) < _parg2.tap(actual, "arguments/0/right/right", 29), "arguments/0/right", 27), "arguments/0", 21));
 _pasrt3.run(_parg3.rec(_parg3.tap(_parg3.tap(2, "arguments/0/left/left", 7) > _parg3.tap(actual, "arguments/0/left/right", 11), "arguments/0/left", 9) && _parg3.tap(_parg3.tap(actual, "arguments/0/right/left", 21) < _parg3.tap(13, "arguments/0/right/right", 30), "arguments/0/right", 28), "arguments/0", 18));

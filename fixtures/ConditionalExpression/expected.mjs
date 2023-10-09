@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(foo ? bar : baz)");
 const _parg1 = _pasrt1.recorder(0);
@@ -8,7 +9,6 @@ const _parg3 = _pasrt3.recorder(0);
 const _pasrt4 = _power_(assert.equal, assert, "assert.equal((foo ? bar : baz), (falsy ? truthy : truthy ? anotherFalsy : truthy))");
 const _parg4 = _pasrt4.recorder(0);
 const _parg5 = _pasrt4.recorder(1);
-import assert from 'node:assert/strict';
 _pasrt1.run(_parg1.rec(_parg1.tap(foo, "arguments/0/test", 7) ? _parg1.tap(bar, "arguments/0/consequent", 13) : _parg1.tap(baz, "arguments/0/alternate", 19), "arguments/0"));
 _pasrt2.run(_parg2.rec(_parg2.tap(falsy, "arguments/0/test", 7) ? _parg2.tap(truthy, "arguments/0/consequent", 15) : _parg2.tap(truthy, "arguments/0/alternate/test", 24) ? _parg2.tap(anotherFalsy, "arguments/0/alternate/consequent", 33) : _parg2.tap(truthy, "arguments/0/alternate/alternate", 48), "arguments/0"));
 _pasrt3.run(_parg3.rec(_parg3.tap(foo(), "arguments/0/test", 7) ? _parg3.tap(_parg3.tap(bar, "arguments/0/consequent/object", 15).baz, "arguments/0/consequent", 19) : _parg3.tap(typeof goo, "arguments/0/alternate", 26), "arguments/0"));

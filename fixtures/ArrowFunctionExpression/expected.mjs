@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(v => v + 1)");
 const _pasrt2 = _power_(assert, null, "assert((v, i) => v + i)");
@@ -10,7 +11,6 @@ const _pasrt5 = _power_(assert, null, "assert(user.name === 'Bob')", {
   binexp: "==="
 });
 const _parg2 = _pasrt5.recorder(0);
-import assert from 'node:assert/strict';
 assert(v => v + 1);
 assert((v, i) => v + i);
 assert(v => ({

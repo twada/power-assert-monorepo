@@ -44,7 +44,7 @@ export class Transformation {
       } else {
         body = matchNode.body;
       }
-      insertAfterDirective(decl, body);
+      insertAfterDirectiveOrImportDeclaration(decl, body);
     });
   }
 
@@ -117,11 +117,18 @@ function isDirective (node: Node): node is Directive {
   return node.type === 'ExpressionStatement' && Object.hasOwn(node, 'directive');
 }
 
-function insertAfterDirective (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
-  const firstBody = body[0];
-  if (isDirective(firstBody)) {
-    body.splice(1, 0, decl);
-    return;
+function isImportDeclaration (node: Node): node is ImportDeclaration {
+  return node.type === 'ImportDeclaration';
+}
+
+function insertAfterDirectiveOrImportDeclaration (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
+  // find the first non-directive nor import declaration node then insert the decl before it
+  const len = body.length;
+  for (let i = 0; i < len; i += 1) {
+    const node = body[i];
+    if (!isDirective(node) && !isImportDeclaration(node)) {
+      body.splice(i, 0, decl);
+      return;
+    }
   }
-  body.unshift(decl);
 }

@@ -1,10 +1,10 @@
+import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert(function (a, b) { return a + b; })");
 const _pasrt2 = _power_(assert, null, "assert(baz === (function (a, b) { return a + b; })(foo, bar))", {
   binexp: "==="
 });
 const _parg1 = _pasrt2.recorder(0);
-import assert from 'node:assert/strict';
 assert(function (a, b) {
   return a + b;
 });
