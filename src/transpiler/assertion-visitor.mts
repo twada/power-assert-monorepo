@@ -129,8 +129,8 @@ class ArgumentModification {
   }
 
   leave (controllerLike: ControllerLike, astPath: AstPath): Node {
-    const { currentNode, parentNode, currentKey } = controllerLike;
-    const shouldCaptureCurrentNode = toBeCaptured(currentNode, parentNode, currentKey);
+    const { currentNode } = controllerLike;
+    const shouldCaptureCurrentNode = toBeCaptured(controllerLike);
     if (shouldCaptureCurrentNode) {
       return this.#captureArgument(currentNode, astPath);
     } else if (this.isArgumentModified() && !shouldCaptureCurrentNode) {
@@ -361,17 +361,15 @@ export class AssertionVisitor {
   }
 
   isNodeToBeSkipped (controllerLike: ControllerLike): boolean {
-    const { currentNode, parentNode, currentKey } = controllerLike;
+    const { currentNode } = controllerLike;
     if (currentNode === this.#calleeNode) {
       return true;
     }
-    assert(parentNode, 'parentNode must exist');
-    return toBeSkipped({ currentNode, parentNode, currentKey });
+    return toBeSkipped(controllerLike);
   }
 
   isNodeToBeCaptured (controllerLike: ControllerLike): boolean {
-    const { currentNode, parentNode, currentKey } = controllerLike;
-    return toBeCaptured(currentNode, parentNode, currentKey);
+    return toBeCaptured(controllerLike);
   }
 
   leaveNodeToBeCaptured (currentNode: Node, astPath: AstPath): CallExpression {

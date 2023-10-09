@@ -3,7 +3,7 @@ import type { Node } from 'estree';
 
 type NodeKey = string | number | symbol | null | undefined;
 
-const caputuringTargetTypes = [
+const caputuringTargetTypes = new Set([
   'Literal',
   // 'Property',
   'ObjectExpression',
@@ -22,10 +22,10 @@ const caputuringTargetTypes = [
   'AwaitExpression',
   'TemplateLiteral',
   'TaggedTemplateExpression'
-];
+]);
 
 const isCaputuringTargetType = (currentNode: Node) => {
-  return caputuringTargetTypes.indexOf(currentNode.type) !== -1;
+  return caputuringTargetTypes.has(currentNode.type);
 };
 
 const isCalleeOfParent = (parentNode: Node, currentKey: NodeKey) => {
@@ -41,7 +41,7 @@ const isYieldOrAwaitArgument = (parentNode: Node, currentKey: NodeKey) => {
   return (parentNode.type === 'YieldExpression' || parentNode.type === 'AwaitExpression') && currentKey === 'argument';
 };
 
-const toBeCaptured = (currentNode: Node, parentNode: Node | null, currentKey: NodeKey) => {
+const toBeCaptured = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
   assert(parentNode, 'Parent node must exist');
   return isCaputuringTargetType(currentNode) &&
         !isYieldOrAwaitArgument(parentNode, currentKey) &&

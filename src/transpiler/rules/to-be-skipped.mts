@@ -1,3 +1,4 @@
+import { strict as assert } from 'node:assert';
 import type { Node, Property } from 'estree';
 
 type NodeKey = string | number | symbol | null | undefined;
@@ -56,7 +57,7 @@ const isShorthandedValueOfObjectLiteral = (parentNode: Node, currentKey: NodeKey
   return isObjectLiteralValue(parentNode, currentKey) && parentNode.shorthand;
 };
 
-const isUpdateExpression = (parentNode: Node) => {
+const isChildOfUpdateExpression = (parentNode: Node) => {
   // Just wrap UpdateExpression, not digging in.
   return parentNode.type === 'UpdateExpression';
 };
@@ -71,12 +72,13 @@ const isTypeOfOrDeleteUnaryExpression = (currentNode: Node, parentNode: Node, cu
   return currentNode.type === 'Identifier' && parentNode.type === 'UnaryExpression' && (parentNode.operator === 'typeof' || parentNode.operator === 'delete') && currentKey === 'argument';
 };
 
-const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node, currentKey: NodeKey}) => {
+const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
+  assert(parentNode, 'Parent node must exist');
   return !isSupportedNode(currentNode) ||
         isLeftHandSideOfAssignment(parentNode, currentKey) ||
         isNonComputedObjectLiteralKey(parentNode, currentKey) ||
         isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
-        isUpdateExpression(parentNode) ||
+        isChildOfUpdateExpression(parentNode) ||
         isCallExpressionWithNonComputedMemberExpression(currentNode, parentNode, currentKey) ||
         isTypeOfOrDeleteUnaryExpression(currentNode, parentNode, currentKey);
 };
