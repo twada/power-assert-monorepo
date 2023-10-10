@@ -12,7 +12,8 @@ import type {
   MemberExpression,
   CallExpression,
   ImportDeclaration,
-  ObjectPattern
+  ObjectPattern,
+  SpreadElement
 } from 'estree';
 import type { Scoped } from './create-node-with-loc.mjs';
 
@@ -48,6 +49,10 @@ function isCallExpression (node: Node | null| undefined): node is CallExpression
 }
 function isImportDeclaration (node: Node | null | undefined): node is ImportDeclaration {
   return !!node && node.type === 'ImportDeclaration';
+}
+
+function isSpreadElement (node: Node | null | undefined): node is SpreadElement {
+  return !!node && node.type === 'SpreadElement';
 }
 
 function createVisitor (ast: Node, options: EspowerOptions): Visitor {
@@ -230,6 +235,14 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           case 'CallExpression': {
             const callee = currentNode.callee;
             if (isCaptureTargetAssertion(callee)) {
+              // skip modifying argument if SpreadElement appears immediately beneath assert
+              // assert(...args) looks like one argument syntactically, however there are two or more arguments actually.
+              // power-assert works at the syntax level so it cannot handle SpreadElement that appears immediately beneath assert.
+              if (currentNode.arguments.some(isSpreadElement)) {
+                this.skip();
+                break;
+              }
+
               nodeToCapture.add(currentNode);
 
               const runtime = config.runtime;
