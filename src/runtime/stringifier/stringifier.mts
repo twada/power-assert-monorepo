@@ -25,7 +25,7 @@ function defaultHandlers () {
     Object: s.object(),
     Set: s.set(),
     Map: s.map(),
-    Error: s.object(['message', 'code']),
+    Error: s.object(['message', 'code', 'cause']),
     '@default': s.object()
   };
 }

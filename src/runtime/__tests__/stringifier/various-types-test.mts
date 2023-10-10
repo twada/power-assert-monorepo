@@ -36,7 +36,18 @@ const AnonPerson = class {
 // };
 const anonymous = new AnonPerson('bob', 4);
 
-const fixtures = {
+type Fixture = {
+  input: unknown;
+  expected: string;
+  pruned: string;
+  depth1?: string;
+};
+
+type Suite = {
+  [fixtureName: string]: Fixture;
+};
+
+const fixtures: Suite = {
   'string primitive': {
     input: 'foo',
     expected: '"foo"',
@@ -158,6 +169,12 @@ const fixtures = {
     expected: 'RangeError{message:"range error!"}',
     pruned: '#RangeError#'
   },
+  'Error with cause': {
+    input: new Error('error!', { cause: new Error('cause!') }),
+    expected: 'Error{message:"error!",cause:Error{message:"cause!"}}',
+    pruned: '#Error#',
+    depth1: 'Error{message:"error!",cause:#Error#}'
+  },
   'Promise object': {
     input: Promise.resolve(1),
     expected: 'Promise{}',
@@ -215,7 +232,7 @@ if (typeName(anonymous) === 'AnonPerson') {
 }
 
 describe('stringify and type-name', () => {
-  for (const [fixtureName, { input, expected, pruned }] of Object.entries(fixtures)) {
+  for (const [fixtureName, { input, expected, pruned, depth1 }] of Object.entries(fixtures)) {
     describe(fixtureName, () => {
       it('single ' + fixtureName, () => {
         assert.equal(stringify(input), expected);
@@ -230,9 +247,15 @@ describe('stringify and type-name', () => {
         // obj.val = input;
         assert.equal(stringify(obj), 'Object{val:' + expected + '}');
       });
-      it('with maxDepth = 1: single ' + fixtureName, () => {
-        assert.equal(stringify(input, { maxDepth: 1 }), expected);
-      });
+      if (depth1) {
+        it('with maxDepth = 1: single ' + fixtureName, () => {
+          assert.equal(stringify(input, { maxDepth: 1 }), depth1);
+        });
+      } else {
+        it('with maxDepth = 1: single ' + fixtureName, () => {
+          assert.equal(stringify(input, { maxDepth: 1 }), expected);
+        });
+      }
       it('with maxDepth = 1: Array containing ' + fixtureName, () => {
         const ary: unknown[] = [];
         ary.push(input);
