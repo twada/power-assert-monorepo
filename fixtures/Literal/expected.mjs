@@ -37,7 +37,7 @@ _pasrt3.run(_parg3.rec(1, "arguments/0", 13), _parg4.rec(0, "arguments/1", 16));
 _pasrt4.run(_parg5.rec(false, "arguments/0", 7), _parg6.rec('message', "arguments/1", 14));
 _pasrt5.run(_parg7.rec(false, "arguments/0", 7), _parg8.rec(messageStr, "arguments/1", 14));
 _pasrt6.run(_parg9.rec(foo, "arguments/0", 13), _parg10.rec('bar', "arguments/1", 18), _parg11.rec('msg', "arguments/2", 25));
-_pasrt7.run(_parg12.rec(_parg12.tap(/^not/, "arguments/0/callee/object", 7).exec(_parg12.tap(str, "arguments/0/arguments/0", 19)), "arguments/0", 14));
+_pasrt7.run(_parg12.rec(_parg12.tap(/^not/, "arguments/0/callee/object", 7).exec(_parg12.tap(str, "arguments/0/arguments/0", 19)), "arguments/0", 18));
 _pasrt8.run(_parg13.rec(_parg13.tap(fuga, "arguments/0/left", 7) !== _parg13.tap('ふが', "arguments/0/right", 16), "arguments/0", 12));
 _pasrt9.run(_parg14.rec(_parg14.tap('ほげ', "arguments/0/left", 7) !== _parg14.tap('ふが', "arguments/0/right", 16), "arguments/0", 12));
 _pasrt10.run(_parg15.rec(0b111110111, "arguments/0", 7));

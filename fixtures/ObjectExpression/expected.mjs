@@ -16,7 +16,7 @@ _pasrt2.run(_parg2.rec(!_parg2.tap({
   name: _parg2.tap(nameOf(_parg2.tap({
     firstName: _parg2.tap(first, "arguments/0/argument/properties/1/value/arguments/0/properties/0/value", 50),
     lastName: _parg2.tap(last, "arguments/0/argument/properties/1/value/arguments/0/properties/1/value", 67)
-  }, "arguments/0/argument/properties/1/value/arguments/0", 38)), "arguments/0/argument/properties/1/value", 31)
+  }, "arguments/0/argument/properties/1/value/arguments/0", 38)), "arguments/0/argument/properties/1/value", 37)
 }, "arguments/0/argument", 9), "arguments/0", 7));
 _pasrt3.run(_parg3.rec({
   foo: _parg3.tap(bar, "arguments/0/properties/0/value", 23),
