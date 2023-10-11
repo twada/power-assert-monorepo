@@ -34,7 +34,7 @@ describe('stringify Map', () => {
     m2.set('root', root);
     m2.set('bb', 'BB');
     root.set('c', 0);
-    assert.equal(stringify(root), 'Map(3){"a"=>"A","m2"=>Map(2){"root"=>#@Circular#,"bb"=>"BB"},"c"=>0}');
+    assert.equal(stringify(root), 'Map(3){"a"=>"A","m2"=>Map(2){"root"=>#circular#,"bb"=>"BB"},"c"=>0}');
   });
 
   describe('various key type', () => {
@@ -66,7 +66,7 @@ describe('stringify Map', () => {
       const m2 = new Map();
       m1.set(m2, 1);
       m2.set(m1, 2);
-      assert.equal(stringify(m1), 'Map(1){Map(1){#@Circular#=>2}=>1}');
+      assert.equal(stringify(m1), 'Map(1){Map(1){#circular#=>2}=>1}');
     });
   });
 });

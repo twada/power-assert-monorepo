@@ -34,8 +34,8 @@ function defaultOptions () {
   return {
     maxDepth: null,
     indent: null,
-    anonymous: '@Anonymous',
-    circular: '#@Circular#',
+    anonymous: 'anonymous',
+    circular: '#circular#',
     snip: '..(snip)',
     lineSeparator: '\n'
   };
