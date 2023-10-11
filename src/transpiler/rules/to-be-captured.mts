@@ -28,8 +28,10 @@ const isCaputuringTargetNode = (currentNode: Node) => {
   return caputuringTargetTypes.has(currentNode.type);
 };
 
-const isCalleeOfParent = (parentNode: Node, currentKey: NodeKey) => {
-  return (parentNode.type === 'CallExpression' || parentNode.type === 'NewExpression') && currentKey === 'callee';
+const isCalleeOfCallExpression = (currentNode: Node, parentNode: Node, currentKey: NodeKey) => {
+  return (parentNode.type === 'CallExpression' || parentNode.type === 'NewExpression') &&
+    currentKey === 'callee' &&
+    currentNode.type !== 'CallExpression';
 };
 
 const isChildOfTaggedTemplateExpression = (parentNode: Node) => {
@@ -45,7 +47,7 @@ const toBeCaptured = ({ currentNode, parentNode, currentKey }: {currentNode: Nod
   assert(parentNode, 'Parent node must exist');
   return isCaputuringTargetNode(currentNode) &&
         !isYieldOrAwaitArgument(parentNode, currentKey) &&
-        !isCalleeOfParent(parentNode, currentKey) &&
+        !isCalleeOfCallExpression(currentNode, parentNode, currentKey) &&
         !isChildOfTaggedTemplateExpression(parentNode);
 };
 
