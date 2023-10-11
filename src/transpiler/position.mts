@@ -1,6 +1,7 @@
 import type {
   Node,
   Position,
+  CallExpression,
   MemberExpression,
   BinaryExpression,
   LogicalExpression,
@@ -24,10 +25,7 @@ function calculatePositionOf (currentNode: Node, offset: Position, code: string)
     case 'MemberExpression':
       return propertyLocationOf(currentNode, offset, code);
     case 'CallExpression':
-      if (currentNode.callee.type === 'MemberExpression') {
-        return propertyLocationOf(currentNode.callee, offset, code);
-      }
-      break;
+      return openingParenLocationOfCalleeOf(currentNode, offset, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
@@ -37,6 +35,21 @@ function calculatePositionOf (currentNode: Node, offset: Position, code: string)
   }
   assert(currentNode.loc, 'Node must have location information');
   return currentNode.loc.start;
+}
+
+function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset: Position, code: string): Position {
+  assert(callExpression.callee.loc, 'Node must have location information');
+  const baseLoc = callExpression.callee.loc.end;
+  const searchStart = baseLoc.column - offset.column - 1;
+  const found = code.indexOf('(', searchStart);
+  if (found !== -1) {
+    return {
+      column: found + offset.column,
+      line: baseLoc.line
+    };
+  } else {
+    return baseLoc;
+  }
 }
 
 function propertyLocationOf (memberExpression: MemberExpression, offset: Position, code: string): Position {

@@ -1,5 +1,6 @@
 import type {
   Node,
+  CallExpression,
   MemberExpression,
   BinaryExpression,
   LogicalExpression,
@@ -42,10 +43,7 @@ function calculateRangeOf (currentNode: Node, offset: number, code: string): Ran
     case 'MemberExpression':
       return propertyLocationOf(currentNode, offset, code);
     case 'CallExpression':
-      if (currentNode.callee.type === 'MemberExpression') {
-        return propertyLocationOf(currentNode.callee, offset, code);
-      }
-      break;
+      return openingParenLocationOfCalleeOf(currentNode, offset, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
@@ -54,6 +52,20 @@ function calculateRangeOf (currentNode: Node, offset: number, code: string): Ran
       break;
   }
   return getRange(currentNode);
+}
+
+function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset: number, code: string): Range {
+  const baseLoc = getRange(callExpression.callee);
+  const searchStart = baseLoc[1] - offset - 1;
+  const found = code.indexOf('(', searchStart);
+  if (found !== -1) {
+    return [
+      found + offset,
+      found + offset + 1
+    ];
+  } else {
+    return baseLoc;
+  }
 }
 
 function propertyLocationOf (memberExpression: MemberExpression, offset: number, code: string): Range {
