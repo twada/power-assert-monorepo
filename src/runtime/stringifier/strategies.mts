@@ -155,6 +155,29 @@ function toStr (): Composable {
   };
 }
 
+type HasName = { name: string };
+function hasName (x: unknown): x is HasName {
+  return typeof x === 'function' || (typeof x === 'object' && x !== null && Object.hasOwn(x, 'name'));
+}
+
+function itsName (): Composable {
+  return (next: Component) => {
+    return (acc: Accumulator, x: unknown) => {
+      if (hasName(x)) {
+        const name = x.name;
+        if (name === '') {
+          acc.push(acc.options.anonymous);
+        } else {
+          acc.push(name);
+        }
+      } else {
+        acc.push(acc.options.anonymous);
+      }
+      return next(acc, x);
+    };
+  };
+}
+
 function bigint (): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
@@ -332,6 +355,11 @@ const strategies = {
   json: () => compose(json(), end()),
   toStr: () => compose(toStr(), end()),
   prune: () => prune,
+  function: () => compose(
+    constructorName(),
+    always('@'),
+    itsName(),
+    end()),
   number: () => compose(
     omitNaN,
     omitPositiveInfinity,

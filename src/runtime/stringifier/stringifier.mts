@@ -10,7 +10,7 @@ function defaultHandlers () {
   return {
     null: s.always('null'),
     undefined: s.always('undefined'),
-    function: s.prune(),
+    function: s.function(),
     string: s.json(),
     boolean: s.json(),
     number: s.number(),
