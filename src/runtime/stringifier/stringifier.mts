@@ -10,7 +10,7 @@ function defaultHandlers () {
   return {
     null: s.always('null'),
     undefined: s.always('undefined'),
-    function: s.prune(),
+    function: s.function(),
     string: s.json(),
     boolean: s.json(),
     number: s.number(),
@@ -34,8 +34,8 @@ function defaultOptions () {
   return {
     maxDepth: null,
     indent: null,
-    anonymous: '@Anonymous',
-    circular: '#@Circular#',
+    anonymous: 'anonymous',
+    circular: '#circular#',
     snip: '..(snip)',
     lineSeparator: '\n'
   };

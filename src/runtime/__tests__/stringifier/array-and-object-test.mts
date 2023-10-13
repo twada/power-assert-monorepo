@@ -159,10 +159,10 @@ describe('circular references', () => {
     circularObj.list = [circularObj, circularObj];
     const expected = [
       'Object{',
-      '  circularRef: #@Circular#,',
+      '  circularRef: #circular#,',
       '  list: [',
-      '    #@Circular#,',
-      '    #@Circular#',
+      '    #circular#,',
+      '    #circular#',
       '  ]',
       '}'
     ].join('\n');
@@ -175,7 +175,7 @@ describe('circular references', () => {
       '[',
       '  3,',
       '  5,',
-      '  #@Circular#',
+      '  #circular#',
       ']'
     ].join('\n');
     assert.equal(stringify(circularArray, { indent: '  ' }), expected);

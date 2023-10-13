@@ -8,10 +8,11 @@ import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is re
 import { ptest } from './helper.mjs';
 
 describe('Integration of transpiler and runtime', () => {
-  ptest('Identifier and empty string', (transpiledCode) => {
-    const truthy = '';
-    eval(transpiledCode);
-  }, `
+  describe('Identifier', () => {
+    ptest('Identifier and empty string', (transpiledCode) => {
+      const truthy = '';
+      eval(transpiledCode);
+    }, `
 
 assert(truthy)
        |
@@ -19,12 +20,14 @@ assert(truthy)
 
 '' == true
 `);
+  });
 
-  ptest('BinaryExpression', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
+  describe('BinaryExpression', () => {
+    ptest('BinaryExpression', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
+      eval(transpiledCode);
+    }, `
 
 assert(truthy === falsy)
        |      |   |
@@ -34,12 +37,59 @@ assert(truthy === falsy)
 
 "1" === 0
 `);
+  });
 
-  ptest('assertion with multiple lines', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
+  describe('MemberExpression', () => {
+    ptest('simple CallExpression', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(inner().toString() === 'true')
+            |          |  |   |
+            |          |  |   "true"
+            |          |  false
+            |          "false"
+            false
+
+"false" === "true"
+`);
+  });
+
+  describe('CallExpression', () => {
+    ptest('simple CallExpression', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(inner())
+            |
+            false
+
+false == true
+`);
+
+    ptest('CallExpression of CallExpression of CallExpression', (transpiledCode) => {
+      const outer = () => () => () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(outer()()())
+            | | |
+            | | false
+            | function@anonymous
+            function@anonymous
+
+false == true
+`);
+  });
+
+  describe('assertion with multiple lines', () => {
+    ptest('assertion with multiple lines', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
+      eval(transpiledCode);
+    }, `
 
 assert.equal(truthy,
              falsy)
@@ -50,11 +100,11 @@ Expected values to be strictly equal:
 
 `, 2);
 
-  ptest('BinaryExpression analysis', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
+    ptest('BinaryExpression analysis', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
+      eval(transpiledCode);
+    }, `
 
 assert(truthy
        ===
@@ -62,6 +112,7 @@ assert(truthy
 
 "1" === 0
 `, 3);
+  });
 
   ptest('move to next line if width of string is unknown', (transpiledCode) => {
     const loooooooooongVarName = '𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽';

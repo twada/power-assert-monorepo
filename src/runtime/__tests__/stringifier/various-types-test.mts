@@ -102,8 +102,8 @@ const fixtures: Suite = {
     input: function () {
       // do nothing
     },
-    expected: '#function#',
-    pruned: '#function#'
+    expected: 'function@input',
+    pruned: 'function@input'
   },
   'String object': {
     input: new String('bar'), // eslint-disable-line no-new-wrappers
@@ -146,8 +146,8 @@ const fixtures: Suite = {
   },
   'Function object': {
     input: new Function('x', 'y', 'return x + y'), // eslint-disable-line no-new-func
-    expected: '#function#',
-    pruned: '#function#'
+    expected: 'function@anonymous',
+    pruned: 'function@anonymous'
   },
   'arguments object': {
     input: (function () { return arguments; })(), // eslint-disable-line prefer-rest-params
