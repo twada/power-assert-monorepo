@@ -8,6 +8,37 @@ import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is re
 import { ptest } from './helper.mjs';
 
 describe('Integration of transpiler and runtime', () => {
+  describe('Identifier', () => {
+    ptest('Identifier and empty string', (transpiledCode) => {
+      const truthy = '';
+      eval(transpiledCode);
+    }, `
+
+assert(truthy)
+       |
+       ""
+
+'' == true
+`);
+  });
+
+  describe('BinaryExpression', () => {
+    ptest('BinaryExpression', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
+      eval(transpiledCode);
+    }, `
+
+assert(truthy === falsy)
+       |      |   |
+       |      |   0
+       |      false
+       "1"
+
+"1" === 0
+`);
+  });
+
   describe('MemberExpression', () => {
     ptest('simple CallExpression', (transpiledCode) => {
       const inner = () => false;
@@ -53,40 +84,12 @@ false == true
 `);
   });
 
-  describe('Identifier', () => {
-    ptest('Identifier and empty string', (transpiledCode) => {
-      const truthy = '';
+  describe('assertion with multiple lines', () => {
+    ptest('assertion with multiple lines', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
       eval(transpiledCode);
     }, `
-
-assert(truthy)
-       |
-       ""
-
-'' == true
-`);
-  });
-
-  ptest('BinaryExpression', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
-
-assert(truthy === falsy)
-       |      |   |
-       |      |   0
-       |      false
-       "1"
-
-"1" === 0
-`);
-
-  ptest('assertion with multiple lines', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
 
 assert.equal(truthy,
              falsy)
@@ -97,11 +100,11 @@ Expected values to be strictly equal:
 
 `, 2);
 
-  ptest('BinaryExpression analysis', (transpiledCode) => {
-    const truthy = '1';
-    const falsy = 0;
-    eval(transpiledCode);
-  }, `
+    ptest('BinaryExpression analysis', (transpiledCode) => {
+      const truthy = '1';
+      const falsy = 0;
+      eval(transpiledCode);
+    }, `
 
 assert(truthy
        ===
@@ -109,6 +112,7 @@ assert(truthy
 
 "1" === 0
 `, 3);
+  });
 
   ptest('move to next line if width of string is unknown', (transpiledCode) => {
     const loooooooooongVarName = '𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽';
