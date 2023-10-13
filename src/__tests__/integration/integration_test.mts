@@ -8,10 +8,28 @@ import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is re
 import { ptest } from './helper.mjs';
 
 describe('Integration of transpiler and runtime', () => {
-  ptest('simple CallExpression', (transpiledCode) => {
-    const inner = () => false;
-    eval(transpiledCode);
-  }, `
+  describe('MemberExpression', () => {
+    ptest('simple CallExpression', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(inner().toString() === 'true')
+            |          |  |   |
+            |          |  |   "true"
+            |          |  false
+            |          "false"
+            false
+
+"false" === "true"
+`);
+  });
+
+  describe('CallExpression', () => {
+    ptest('simple CallExpression', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
 
 assert(inner())
             |
@@ -20,24 +38,10 @@ assert(inner())
 false == true
 `);
 
-  ptest('CallExpression of CallExpression', (transpiledCode) => {
-    const inner = () => false;
-    const outer = () => inner;
-    eval(transpiledCode);
-  }, `
-
-assert(outer()())
-            | |
-            | false
-            function@inner
-
-false == true
-`);
-
-  ptest('CallExpression of CallExpression of CallExpression', (transpiledCode) => {
-    const outer = () => () => () => false;
-    eval(transpiledCode);
-  }, `
+    ptest('CallExpression of CallExpression of CallExpression', (transpiledCode) => {
+      const outer = () => () => () => false;
+      eval(transpiledCode);
+    }, `
 
 assert(outer()()())
             | | |
@@ -47,11 +51,13 @@ assert(outer()()())
 
 false == true
 `);
+  });
 
-  ptest('Identifier and empty string', (transpiledCode) => {
-    const truthy = '';
-    eval(transpiledCode);
-  }, `
+  describe('Identifier', () => {
+    ptest('Identifier and empty string', (transpiledCode) => {
+      const truthy = '';
+      eval(transpiledCode);
+    }, `
 
 assert(truthy)
        |
@@ -59,6 +65,7 @@ assert(truthy)
 
 '' == true
 `);
+  });
 
   ptest('BinaryExpression', (transpiledCode) => {
     const truthy = '1';
