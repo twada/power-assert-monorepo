@@ -31,26 +31,26 @@ function getRange (node: Node): Range {
 }
 
 export function searchAddressByRange (currentNode: Node, offset: number, code: string): number {
-  return calculateRangeOf(currentNode, offset, code) - offset;
+  return calculateAddressOf(currentNode, offset, code) - offset;
 }
 
-function calculateRangeOf (currentNode: Node, offset: number, code: string): number {
+function calculateAddressOf (currentNode: Node, offset: number, code: string): number {
   switch (currentNode.type) {
     case 'MemberExpression':
-      return propertyLocationOf(currentNode, offset, code);
+      return propertyAddressOf(currentNode, offset, code);
     case 'CallExpression':
-      return openingParenLocationOfCalleeOf(currentNode, offset, code);
+      return openingParenAddressOf(currentNode, offset, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
-      return infixOperatorLocationOf(currentNode, offset, code);
+      return infixOperatorAddressOf(currentNode, offset, code);
     default:
       break;
   }
   return getRange(currentNode)[0];
 }
 
-function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset: number, code: string): number {
+function openingParenAddressOf (callExpression: CallExpression, offset: number, code: string): number {
   const baseLoc = getRange(callExpression.callee);
   const searchStart = baseLoc[1] - offset - 1;
   const found = code.indexOf('(', searchStart);
@@ -61,7 +61,7 @@ function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset:
   }
 }
 
-function propertyLocationOf (memberExpression: MemberExpression, offset: number, code: string): number {
+function propertyAddressOf (memberExpression: MemberExpression, offset: number, code: string): number {
   const baseLoc = getRange(memberExpression.property);
   if (!memberExpression.computed) {
     return baseLoc[0];
@@ -76,7 +76,7 @@ function propertyLocationOf (memberExpression: MemberExpression, offset: number,
 }
 
 // calculate location of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
-function infixOperatorLocationOf (expression: (BinaryExpression | LogicalExpression | AssignmentExpression), offset: number, code: string): number {
+function infixOperatorAddressOf (expression: (BinaryExpression | LogicalExpression | AssignmentExpression), offset: number, code: string): number {
   const baseLoc = getRange(expression.left);
   const searchStart = baseLoc[0] - offset - 1;
   const found = code.indexOf(expression.operator, searchStart);

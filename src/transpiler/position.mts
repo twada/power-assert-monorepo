@@ -10,19 +10,19 @@ import type {
 import { strict as assert } from 'node:assert';
 
 export function searchAddressByPosition (currentNode: Node, offset: Position, code: string): number {
-  return calculatePositionOf(currentNode, offset, code) - offset.column;
+  return calculateAddressOf(currentNode, offset, code) - offset.column;
 }
 
-function calculatePositionOf (currentNode: Node, offset: Position, code: string): number {
+function calculateAddressOf (currentNode: Node, offset: Position, code: string): number {
   switch (currentNode.type) {
     case 'MemberExpression':
-      return propertyLocationOf(currentNode, offset, code);
+      return propertyAddressOf(currentNode, offset, code);
     case 'CallExpression':
-      return openingParenLocationOfCalleeOf(currentNode, offset, code);
+      return openingParenAddressOf(currentNode, offset, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
-      return infixOperatorLocationOf(currentNode, offset, code);
+      return infixOperatorAddressOf(currentNode, offset, code);
     default:
       break;
   }
@@ -30,7 +30,7 @@ function calculatePositionOf (currentNode: Node, offset: Position, code: string)
   return currentNode.loc.start.column;
 }
 
-function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset: Position, code: string): number {
+function openingParenAddressOf (callExpression: CallExpression, offset: Position, code: string): number {
   assert(callExpression.callee.loc, 'Node must have location information');
   const baseLoc = callExpression.callee.loc.end;
   const searchStart = baseLoc.column - offset.column - 1;
@@ -42,7 +42,7 @@ function openingParenLocationOfCalleeOf (callExpression: CallExpression, offset:
   }
 }
 
-function propertyLocationOf (memberExpression: MemberExpression, offset: Position, code: string): number {
+function propertyAddressOf (memberExpression: MemberExpression, offset: Position, code: string): number {
   assert(memberExpression.property.loc, 'Node must have location information');
   const baseLoc = memberExpression.property.loc.start;
   if (!memberExpression.computed) {
@@ -58,7 +58,7 @@ function propertyLocationOf (memberExpression: MemberExpression, offset: Positio
 }
 
 // calculate location of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
-function infixOperatorLocationOf (expression: (BinaryExpression | LogicalExpression | AssignmentExpression), offset: Position, code: string): number {
+function infixOperatorAddressOf (expression: (BinaryExpression | LogicalExpression | AssignmentExpression), offset: Position, code: string): number {
   assert(expression.left.loc, 'Node must have location information');
   const baseLoc = expression.left.loc.start;
   const start = baseLoc.column - offset.column - 1;
