@@ -1,6 +1,5 @@
 import { NodeCreator } from './create-node-with-loc.mjs';
-import { searchAddressByRange } from './range.mjs';
-import { searchAddressByPosition } from './position.mjs';
+import { searchAddress } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
@@ -174,10 +173,10 @@ class ArgumentModification {
     const code = this.#assertionCode;
     if (this.#callexp.loc) {
       const offsetPosition = this.#callexp.loc.start;
-      return searchAddressByPosition(currentNode, offsetPosition, code);
+      return searchAddress(currentNode, offsetPosition, code);
     } else {
       const offset = getStartRangeValue(this.#callexp);
-      return searchAddressByRange(currentNode, offset, code);
+      return searchAddress(currentNode, offset, code);
     }
   }
 
