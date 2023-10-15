@@ -78,7 +78,7 @@ function openingParenAddressOf (callExpression: CallExpression, offset: Position
     if (found !== -1) {
       return found + offset.column;
     } else {
-      return baseLoc.column;
+      return callExpression.callee.loc.start.column;
     }
   }
 }
