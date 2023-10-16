@@ -40,19 +40,42 @@ assert(truthy === falsy)
   });
 
   describe('MemberExpression', () => {
-    ptest('simple CallExpression', (transpiledCode) => {
-      const inner = () => false;
+    ptest('MemberExpression computed:false', (transpiledCode) => {
+      const foo = {
+        bar: false
+      };
       eval(transpiledCode);
     }, `
 
-assert(inner().toString() === 'true')
-            |          |  |   |
-            |          |  |   "true"
-            |          |  false
-            |          "false"
-            false
+assert(foo.bar)
+       |   |
+       |   false
+       Object{bar:false}
 
-"false" === "true"
+false == true
+`);
+
+    ptest('MemberExpression computed:true', (transpiledCode) => {
+      const keys = ['b a r'];
+      const zero = 0;
+      const one = 1;
+      const foo = {
+        'b a r': [true, false]
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(foo[keys[zero]][one])
+       |  ||   ||     ||
+       |  ||   ||     |1
+       |  ||   ||     false
+       |  ||   |0
+       |  ||   "b a r"
+       |  |["b a r"]
+       |  [true,false]
+       Object{"b a r":[true,false]}
+
+false == true
 `);
   });
 
@@ -81,6 +104,21 @@ assert(outer()()())
             function@anonymous
 
 false == true
+`);
+
+    ptest('simple method call', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(inner().toString() === 'true')
+            |          |  |   |
+            |          |  |   "true"
+            |          |  false
+            |          "false"
+            false
+
+"false" === "true"
 `);
   });
 
