@@ -15,4 +15,17 @@ describe('description', () => {
     const key = 'prop';
     assert(obj[key]);
   });
+  it('more MemberExpression computed:true', () => {
+    const keys = {
+      0: 'f o o'
+    };
+    const foo = 'f o o';
+    const bar = 'b a r';
+    const zero = 0;
+    const one = 1;
+    const obj = {
+      'b a r': [true, false]
+    };
+    assert(obj[[[keys[zero], foo][zero], bar][one]][one]);
+  });
 });

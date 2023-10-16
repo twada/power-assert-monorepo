@@ -77,6 +77,41 @@ assert(foo[keys[zero]][one])
 
 false == true
 `);
+
+    ptest('more MemberExpression computed:true', (transpiledCode) => {
+      const keys = {
+        0: 'f o o'
+      };
+      const foo = 'f o o';
+      const bar = 'b a r';
+      const zero = 0;
+      const one = 1;
+      const obj = {
+        'b a r': [true, false]
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(obj[[[keys[zero], foo][zero], bar][one]][one])
+       |  ||||   ||      |   ||      |   ||    ||
+       |  ||||   ||      |   ||      |   ||    |1
+       |  ||||   ||      |   ||      |   ||    false
+       |  ||||   ||      |   ||      |   |1
+       |  ||||   ||      |   ||      |   "b a r"
+       |  ||||   ||      |   ||      "b a r"
+       |  ||||   ||      |   |0
+       |  ||||   ||      |   "f o o"
+       |  ||||   ||      "f o o"
+       |  ||||   |0
+       |  ||||   "f o o"
+       |  |||Object{"0":"f o o"}
+       |  ||["f o o","f o o"]
+       |  |["f o o","b a r"]
+       |  [true,false]
+       Object{"b a r":[true,false]}
+
+false == true
+`);
   });
 
   describe('CallExpression', () => {
