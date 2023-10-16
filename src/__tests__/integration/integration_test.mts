@@ -84,6 +84,39 @@ false == true
 `);
   });
 
+  describe('ConditionalExpression', () => {
+    ptest('ConditionalExpression', (transpiledCode) => {
+      const foo = 1;
+      const bar = null;
+      const baz = true;
+      eval(transpiledCode);
+    }, `
+
+assert(foo ? bar : baz)
+       |     |
+       |     null
+       1
+
+null == true
+`);
+
+    ptest('ConditionalExpression of ConditionalExpression', (transpiledCode) => {
+      const foo = 1;
+      const bar = null;
+      const baz = true;
+      eval(transpiledCode);
+    }, `
+
+assert((foo ? bar : baz) ? foo : bar)
+        |     |                  |
+        |     |                  null
+        |     null
+        1
+
+null == true
+`);
+  });
+
   describe('assertion with multiple lines', () => {
     ptest('assertion with multiple lines', (transpiledCode) => {
       const truthy = '1';
