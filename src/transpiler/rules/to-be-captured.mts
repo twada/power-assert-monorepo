@@ -8,7 +8,7 @@ const caputuringTargetTypes = new Set([
   // 'Property',
   'ObjectExpression',
   'ArrayExpression',
-  // 'ConditionalExpression',
+  'ConditionalExpression',
   'Identifier',
   'MemberExpression',
   'CallExpression',

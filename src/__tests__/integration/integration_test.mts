@@ -93,8 +93,9 @@ false == true
     }, `
 
 assert(foo ? bar : baz)
-       |     |
-       |     null
+       |   | |
+       |   | null
+       |   null
        1
 
 null == true
@@ -104,16 +105,20 @@ null == true
       const foo = 1;
       const bar = null;
       const baz = true;
+      const toto = 1;
+      const tata = 0;
       eval(transpiledCode);
     }, `
 
-assert((foo ? bar : baz) ? foo : bar)
-        |     |                  |
-        |     |                  null
-        |     null
+assert((foo ? bar : baz) ? toto : tata)
+        |   | |          |        |
+        |   | |          |        0
+        |   | |          0
+        |   | null
+        |   null
         1
 
-null == true
+0 == true
 `);
   });
 

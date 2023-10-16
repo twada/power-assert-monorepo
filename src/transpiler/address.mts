@@ -5,6 +5,7 @@ import type {
   MemberExpression,
   BinaryExpression,
   LogicalExpression,
+  ConditionalExpression,
   AssignmentExpression
 } from 'estree';
 import { strict as assert } from 'node:assert';
@@ -49,6 +50,8 @@ function calculateAddressOf (currentNode: Node, offset: Position | number, code:
     case 'LogicalExpression':
     case 'AssignmentExpression':
       return infixOperatorAddressOf(currentNode, offset, code);
+    case 'ConditionalExpression':
+      return questionMarkAddressOf(currentNode, offset, code);
     default:
       break;
   }
@@ -57,6 +60,29 @@ function calculateAddressOf (currentNode: Node, offset: Position | number, code:
   } else {
     assert(currentNode.loc, 'Node must have location information');
     return currentNode.loc.start.column;
+  }
+}
+
+function questionMarkAddressOf (conditionalExpression: ConditionalExpression, offset: Position | number, code: string): number {
+  if (typeof offset === 'number') {
+    const baseLoc = getRange(conditionalExpression.test);
+    const searchStart = baseLoc[1] - offset - 1;
+    const found = code.indexOf('?', searchStart);
+    if (found !== -1) {
+      return found + offset;
+    } else {
+      return baseLoc[0];
+    }
+  } else {
+    assert(conditionalExpression.test.loc, 'Node must have location information');
+    const baseLoc = conditionalExpression.test.loc.end;
+    const searchStart = baseLoc.column - offset.column - 1;
+    const found = code.indexOf('?', searchStart);
+    if (found !== -1) {
+      return found + offset.column;
+    } else {
+      return conditionalExpression.test.loc.start.column;
+    }
   }
 }
 
