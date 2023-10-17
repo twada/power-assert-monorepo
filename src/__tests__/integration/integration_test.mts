@@ -40,19 +40,77 @@ assert(truthy === falsy)
   });
 
   describe('MemberExpression', () => {
-    ptest('simple CallExpression', (transpiledCode) => {
-      const inner = () => false;
+    ptest('MemberExpression computed:false', (transpiledCode) => {
+      const foo = {
+        bar: false
+      };
       eval(transpiledCode);
     }, `
 
-assert(inner().toString() === 'true')
-            |          |  |   |
-            |          |  |   "true"
-            |          |  false
-            |          "false"
-            false
+assert(foo.bar)
+       |   |
+       |   false
+       Object{bar:false}
 
-"false" === "true"
+false == true
+`);
+
+    ptest('MemberExpression computed:true', (transpiledCode) => {
+      const keys = ['b a r'];
+      const zero = 0;
+      const one = 1;
+      const foo = {
+        'b a r': [true, false]
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(foo[keys[zero]][one])
+       |  ||   ||     ||
+       |  ||   ||     |1
+       |  ||   ||     false
+       |  ||   |0
+       |  ||   "b a r"
+       |  |["b a r"]
+       |  [true,false]
+       Object{"b a r":[true,false]}
+
+false == true
+`);
+
+    ptest('more MemberExpression computed:true', (transpiledCode) => {
+      const keys = {
+        0: 'f o o'
+      };
+      const foo = 'f o o';
+      const bar = 'b a r';
+      const zero = 0;
+      const one = 1;
+      const obj = {
+        'b a r': [true, false]
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(obj[[[keys[zero], foo][zero], bar][one]][one])
+       |  ||||   ||      |   ||      |   ||    ||
+       |  ||||   ||      |   ||      |   ||    |1
+       |  ||||   ||      |   ||      |   ||    false
+       |  ||||   ||      |   ||      |   |1
+       |  ||||   ||      |   ||      |   "b a r"
+       |  ||||   ||      |   ||      "b a r"
+       |  ||||   ||      |   |0
+       |  ||||   ||      |   "f o o"
+       |  ||||   ||      "f o o"
+       |  ||||   |0
+       |  ||||   "f o o"
+       |  |||Object{"0":"f o o"}
+       |  ||["f o o","f o o"]
+       |  |["f o o","b a r"]
+       |  [true,false]
+       Object{"b a r":[true,false]}
+
+false == true
 `);
   });
 
@@ -82,6 +140,21 @@ assert(outer()()())
 
 false == true
 `);
+
+    ptest('simple method call', (transpiledCode) => {
+      const inner = () => false;
+      eval(transpiledCode);
+    }, `
+
+assert(inner().toString() === 'true')
+            |          |  |   |
+            |          |  |   "true"
+            |          |  false
+            |          "false"
+            false
+
+"false" === "true"
+`);
   });
 
   describe('ConditionalExpression', () => {
@@ -93,8 +166,9 @@ false == true
     }, `
 
 assert(foo ? bar : baz)
-       |     |
-       |     null
+       |   | |
+       |   | null
+       |   null
        1
 
 null == true
@@ -104,16 +178,20 @@ null == true
       const foo = 1;
       const bar = null;
       const baz = true;
+      const toto = 1;
+      const tata = 0;
       eval(transpiledCode);
     }, `
 
-assert((foo ? bar : baz) ? foo : bar)
-        |     |                  |
-        |     |                  null
-        |     null
+assert((foo ? bar : baz) ? toto : tata)
+        |   | |          |        |
+        |   | |          |        0
+        |   | |          0
+        |   | null
+        |   null
         1
 
-null == true
+0 == true
 `);
   });
 
