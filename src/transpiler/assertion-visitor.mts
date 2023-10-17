@@ -189,7 +189,7 @@ class ArgumentModification {
     const types = new NodeCreator(currentNode);
     const args = [
       currentNode,
-      types.valueToNode(relativeAstPath.join('/'))
+      types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
       const targetAddr = this.#targetAddress(currentNode);

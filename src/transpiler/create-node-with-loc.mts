@@ -18,7 +18,6 @@
  *   https://github.com/lodash/lodash/blob/aa1d7d870d9cf84842ee23ff485fd24abf0ed3d1/isPlainObject.js
  */
 
-import { keyword } from 'esutils';
 import type {
   Node,
   Literal,
@@ -282,28 +281,11 @@ export class NodeCreator {
     if (isPlainObject(value)) {
       const props = [];
       for (const key in value) {
-        let nodeKey;
-        if (isValidIdentifier(key)) {
-          nodeKey = this.identifier(key);
-        } else {
-          nodeKey = this.stringLiteral(key);
-        }
-        props.push(this.objectProperty(nodeKey, this.valueToNode(value[key])));
+        props.push(this.objectProperty(this.identifier(key), this.valueToNode(value[key])));
       }
       return this.objectExpression(props);
     }
     throw new Error(`don't know how to turn this value into a node ${value}`);
-  }
-}
-
-function isValidIdentifier (name: string): boolean {
-  if (typeof name !== 'string' || keyword.isReservedWordES6(name, true)) {
-    return false;
-  } else if (name === 'await') {
-    // invalid in module, valid in script; better be safe (see #4952)
-    return false;
-  } else {
-    return keyword.isIdentifierNameES6(name);
   }
 }
 
