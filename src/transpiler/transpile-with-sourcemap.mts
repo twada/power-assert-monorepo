@@ -10,7 +10,13 @@ import { resolve } from 'node:path';
 import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
 
-export async function transpile (code: string, url: string): Promise<string> {
+export type TranspileWithSourceMapOptions = {
+  runtime?: string,
+  modules?: string[],
+  variables?: string[]
+};
+
+export async function transpile (code: string, url: string, options?: TranspileWithSourceMapOptions): Promise<string> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -18,10 +24,11 @@ export async function transpile (code: string, url: string): Promise<string> {
     ranges: false,
     sourceFile: url
   }) as Node;
-  const modifiedAst = espowerAst(ast, {
+  const mine = {
     runtime: 'espower3/runtime',
     code
-  });
+  };
+  const modifiedAst = espowerAst(ast, { ...mine, ...options });
   const smg = new SourceMapGenerator({
     file: url
   });
