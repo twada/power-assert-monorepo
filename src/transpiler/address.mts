@@ -55,40 +55,14 @@ function calculateAddressOf (currentNode: Node, offset: Position | number, code:
     default:
       break;
   }
-  if (typeof offset === 'number') {
-    return getRange(currentNode)[0];
-  } else {
-    assert(currentNode.loc, 'Node must have location information');
-    return currentNode.loc.start.column;
-  }
+  return startAddressOf(currentNode, offset);
 }
 
 function propertyAddressOf (memberExpression: MemberExpression, offset: Position | number, code: string): number {
-  if (typeof offset === 'number') {
-    const baseLoc = getRange(memberExpression.property);
-    if (!memberExpression.computed) {
-      return baseLoc[0];
-    }
-    const searchStart = baseLoc[0] - offset - 1;
-    const found = code.indexOf('[', searchStart);
-    if (found !== -1) {
-      return found + offset;
-    } else {
-      return baseLoc[0];
-    }
+  if (memberExpression.computed) {
+    return searchFor('[', memberExpression.object, offset, code);
   } else {
-    assert(memberExpression.property.loc, 'Node must have location information');
-    const baseLoc = memberExpression.property.loc.start;
-    if (!memberExpression.computed) {
-      return baseLoc.column;
-    }
-    const searchStart = baseLoc.column - offset.column - 1;
-    const found = code.indexOf('[', searchStart);
-    if (found !== -1) {
-      return found + offset.column;
-    } else {
-      return baseLoc.column;
-    }
+    return startAddressOf(memberExpression.property, offset);
   }
 }
 
@@ -103,6 +77,15 @@ function openingParenAddressOf (callExpression: CallExpression, offset: Position
 // calculate address of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
 function infixOperatorAddressOf (expression: BinaryExpression | LogicalExpression | AssignmentExpression, offset: Position | number, code: string): number {
   return searchFor(expression.operator, expression.left, offset, code);
+}
+
+function startAddressOf (node: Node, offset: Position | number): number {
+  if (typeof offset === 'number') {
+    return getRange(node)[0];
+  } else {
+    assert(node.loc, 'Node must have location information');
+    return node.loc.start.column;
+  }
 }
 
 function searchFor (searchString: string, searchStartNode: Node, offset: Position | number, code: string): number {
