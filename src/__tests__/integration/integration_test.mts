@@ -195,6 +195,43 @@ assert((foo ? bar : baz) ? toto : tata)
 `);
   });
 
+  describe('LogicalExpression', () => {
+    ptest('Logical OR', (transpiledCode) => {
+      const a = -3;
+      const b = -2;
+      eval(transpiledCode);
+    }, `
+
+assert(a > 0 || b > 0)
+       | | | |  | | |
+       | | | |  | | 0
+       | | | |  | false
+       | | | |  -2
+       | | | false
+       | | 0
+       | false
+       -3
+
+false == true
+`);
+
+    ptest('Logical AND', (transpiledCode) => {
+      const a = -3;
+      const b = -2;
+      eval(transpiledCode);
+    }, `
+
+assert(a > 0 && b > 0)
+       | | | |
+       | | | false
+       | | 0
+       | false
+       -3
+
+false == true
+`);
+  });
+
   describe('assertion with multiple lines', () => {
     ptest('assertion with multiple lines', (transpiledCode) => {
       const truthy = '1';
