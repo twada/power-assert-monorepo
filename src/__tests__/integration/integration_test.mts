@@ -1,11 +1,42 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 /* eslint no-unused-vars: 0 */
 /* eslint no-eval: 0 */
-import { describe } from 'node:test';
+import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
 // import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
 import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { ptest } from './helper.mjs';
+import { transpile } from '../../transpiler/transpile-with-sourcemap.mjs';
+import type { AssertionError } from 'node:assert';
+
+type TestFunc = (transpiledCode: string) => void;
+
+function isAssertionError (e: unknown): e is AssertionError {
+  return e instanceof Error && /^AssertionError/.test(e.name);
+}
+
+export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
+  // chop first line then extract assertion expression
+  const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
+  test(title + ': ' + expression, async () => {
+    const transpiledCode = await transpile(expression, 'source.mjs', {
+      variables: [
+        // set variable name explicitly for testing
+        'assert'
+      ]
+    });
+    try {
+      // remove first line contains import { _power_ } from '@power-assert/runtime'
+      testFunc(transpiledCode.split('\n').slice(1).join('\n'));
+      throw new Error('AssertionError should be thrown');
+    } catch (e) {
+      if (isAssertionError(e)) {
+        assert.equal(e.message, expected);
+      } else {
+        throw e;
+      }
+    }
+  });
+}
 
 describe('Integration of transpiler and runtime', () => {
   describe('Identifier', () => {
