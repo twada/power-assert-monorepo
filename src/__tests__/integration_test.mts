@@ -294,7 +294,6 @@ false == true
     ptest('assertion with multiple lines', (transpiledCode) => {
       const truthy = '1';
       const falsy = 0;
-      console.log(transpiledCode);
       eval(transpiledCode);
     }, `
 
