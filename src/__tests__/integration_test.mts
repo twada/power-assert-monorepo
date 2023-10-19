@@ -4,8 +4,8 @@
 import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
 // import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
-import { _power_ } from '../../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { transpile } from '../../transpiler/transpile-with-sourcemap.mjs';
+import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
+import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
 import type { AssertionError } from 'node:assert';
 
 type TestFunc = (transpiledCode: string) => void;
