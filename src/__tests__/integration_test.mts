@@ -6,6 +6,8 @@ import { strict as assert } from 'node:assert/strict'; // variable 'assert' is r
 // import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
 import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
 import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
+import { SourceMapConsumer } from 'source-map';
+import { fromSource } from 'convert-source-map';
 import type { AssertionError } from 'node:assert';
 
 type TestFunc = (transpiledCode: string) => void;
@@ -15,7 +17,7 @@ function isAssertionError (e: unknown): e is AssertionError {
 }
 
 export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
-  // chop first line then extract assertion expression
+  // chop empty lines then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
   test(title + ': ' + expression, async () => {
     const transpiledCode = await transpile(expression, 'source.mjs', {
@@ -24,16 +26,41 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         'assert'
       ]
     });
+    const map = fromSource(transpiledCode)?.toObject();
+    const transpiledLines = transpiledCode.split('\n');
+    // comment first line out since import statement does not work in eval
+    transpiledLines[0] = "//port { _power_ } from 'espower3/runtime';";
+    const evalTargetCode = transpiledLines.join('\n');
     try {
-      // remove first line contains import { _power_ } from '@power-assert/runtime'
-      testFunc(transpiledCode.split('\n').slice(1).join('\n'));
+      testFunc(evalTargetCode);
       throw new Error('AssertionError should be thrown');
     } catch (e) {
-      if (isAssertionError(e)) {
-        assert.equal(e.message, expected);
-      } else {
+      if (!isAssertionError(e)) {
         throw e;
       }
+      assert.equal(e.message, expected);
+
+      assert(e.stack !== undefined);
+      const theLine = e.stack.split('\n').find((line: string) => line.startsWith('    at eval'));
+      assert(theLine !== undefined);
+      const result = theLine.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
+      assert(result !== null);
+      // const [_whole, _file, lineInStacktrace, columnInStacktrace] = result;
+      const lineInStacktrace = Number(result[2]);
+      const columnInStacktrace = Number(result[3]);
+
+      const generatedAssertionLineNum = transpiledLines.findIndex((line: string) => line.startsWith('_pasrt1.run')) + 1;
+      assert.equal(lineInStacktrace, generatedAssertionLineNum);
+      assert.equal(columnInStacktrace, '_pasrt1.r'.length);
+
+      const consumer = await new SourceMapConsumer(map);
+      const originalPosition = consumer.originalPositionFor({
+        line: lineInStacktrace,
+        column: columnInStacktrace
+      });
+      assert.equal(originalPosition.source, 'source.mjs');
+      assert.equal(originalPosition.line, 1);
+      assert.equal(originalPosition.column, 0);
     }
   });
 }
@@ -267,17 +294,16 @@ false == true
     ptest('assertion with multiple lines', (transpiledCode) => {
       const truthy = '1';
       const falsy = 0;
+      console.log(transpiledCode);
       eval(transpiledCode);
     }, `
 
 assert.equal(truthy,
-             falsy)
+  falsy,
+  'falsy is not truthy')
 
-Expected values to be strictly equal:
-
-'1' !== 0
-
-`, 2);
+falsy is not truthy
+`, 3);
 
     ptest('BinaryExpression analysis', (transpiledCode) => {
       const truthy = '1';
