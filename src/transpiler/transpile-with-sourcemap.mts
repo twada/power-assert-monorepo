@@ -16,13 +16,13 @@ export type TranspileWithSourceMapOptions = {
   variables?: string[]
 };
 
-export async function transpile (code: string, url: string, options?: TranspileWithSourceMapOptions): Promise<string> {
+export async function transpile (code: string, fileUrlOrPath: string, options?: TranspileWithSourceMapOptions): Promise<string> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
     locations: true, // true for SourceMap
     ranges: false,
-    sourceFile: url
+    sourceFile: fileUrlOrPath
   }) as Node;
   const mine = {
     runtime: 'espower3/runtime',
@@ -30,14 +30,14 @@ export async function transpile (code: string, url: string, options?: TranspileW
   };
   const modifiedAst = espowerAst(ast, { ...mine, ...options });
   const smg = new SourceMapGenerator({
-    file: url
+    file: fileUrlOrPath
   });
   const transpiledCode = generate(modifiedAst, {
     sourceMap: smg
   });
 
   let outMapConv = fromObject(smg.toJSON());
-  const inMapConv = await findIncomingSourceMap(code, url);
+  const inMapConv = await findIncomingSourceMap(code, fileUrlOrPath);
   if (inMapConv) {
     // console.log(inMapConv.toObject());
     outMapConv = reconnectSourceMap(inMapConv, outMapConv);
@@ -47,14 +47,14 @@ export async function transpile (code: string, url: string, options?: TranspileW
   return transpiledCode + '\n' + outMapConv.toComment() + '\n';
 }
 
-async function findIncomingSourceMap (originalCode: string, url: string): Promise<SourceMapConverter | null> {
+async function findIncomingSourceMap (originalCode: string, fileUrlOrPath: string): Promise<SourceMapConverter | null> {
   const sourceMappingURL = retrieveSourceMapURL(originalCode);
-  const nativePath = fileURLToPath(url);
   // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
   if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
     // relative file sourceMap
     return await fromMapFileSource(originalCode, (filename: string) => {
       // resolve relative path
+      const nativePath = URL.canParse(fileUrlOrPath) ? fileURLToPath(fileUrlOrPath) : fileUrlOrPath;
       return readFile(resolve(nativePath, '..', filename), 'utf8');
     });
   } else {
