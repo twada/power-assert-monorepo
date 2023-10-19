@@ -66,6 +66,7 @@
     "example": "npm run build && npm run power:example",
     "power": "node --enable-source-maps --no-warnings --loader espower3/esm --test --",
     "power:example": "npm run power examples/bowling_test.mjs",
+    "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
     "ts-node:power": "npm run test:ts --loader espower3/esm --",
     "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm examples/spike/spike_test.mts",
     "preversion": "npm run build && npm test",
