@@ -40,15 +40,14 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
       assert.equal(e.message, expected);
 
       assert(e.stack !== undefined);
-      const theLine = e.stack.split('\n').find((line: string) => line.startsWith('    at eval'));
-      assert(theLine !== undefined);
-      const result = theLine.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
-      assert(result !== null);
-      // const [_whole, _file, lineInStacktrace, columnInStacktrace] = result;
-      const lineInStacktrace = Number(result[2]);
-      const columnInStacktrace = Number(result[3]);
+      const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
+      assert(targetLineInStacktrace !== undefined);
+      const matchResult = targetLineInStacktrace.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
+      assert(matchResult !== null);
+      const lineInStacktrace = Number(matchResult[2]);
+      const columnInStacktrace = Number(matchResult[3]);
 
-      const generatedAssertionLineNum = transpiledLines.findIndex((line: string) => line.startsWith('_pasrt1.run')) + 1;
+      const generatedAssertionLineNum = transpiledLines.findIndex((line) => line.startsWith('_pasrt1.run')) + 1;
       assert.equal(lineInStacktrace, generatedAssertionLineNum);
       assert.equal(columnInStacktrace, '_pasrt1.r'.length);
 
