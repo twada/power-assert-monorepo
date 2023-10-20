@@ -29,35 +29,7 @@ type CodeWithInlineSourceMap = {
 };
 
 export async function transpileWithSeparatedSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSeparatedSourceMap> {
-  const mine = {
-    runtime: 'espower3/runtime',
-    code
-  };
-  const config = { ...mine, ...options };
-
-  const ast: Node = parse(code, {
-    sourceType: 'module',
-    ecmaVersion: 2022,
-    locations: true, // true for SourceMap
-    ranges: false,
-    sourceFile: options?.file
-  }) as Node;
-  const modifiedAst = espowerAst(ast, config);
-  const smg = new SourceMapGenerator({
-    file: config.file
-  });
-  const transpiledCode = generate(modifiedAst, {
-    sourceMap: smg
-  });
-
-  let outMapConv = fromObject(smg.toJSON());
-  const inMapConv = await findIncomingSourceMap(code, config.file);
-  if (inMapConv) {
-    // console.log(inMapConv.toObject());
-    outMapConv = reconnectSourceMap(inMapConv, outMapConv);
-    // console.log('######### reconnected @@@@@@@@@@@@@');
-  }
-
+  const { transpiledCode, outMapConv } = await transpile(code, options);
   return {
     type: 'CodeWithSeparatedSourceMap',
     code: transpiledCode,
@@ -66,6 +38,20 @@ export async function transpileWithSeparatedSourceMap (code: string, options?: T
 }
 
 export async function transpileWithInlineSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithInlineSourceMap> {
+  const { transpiledCode, outMapConv } = await transpile(code, options);
+  return {
+    type: 'CodeWithInlineSourceMap',
+    code: transpiledCode + '\n' + outMapConv.toComment() + '\n'
+  };
+}
+
+type CodeWithSourceMapConverter = {
+  type: 'CodeWithSourceMapConverter',
+  transpiledCode: string,
+  outMapConv: SourceMapConverter
+};
+
+async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSourceMapConverter> {
   const mine = {
     runtime: 'espower3/runtime',
     code
@@ -90,14 +76,13 @@ export async function transpileWithInlineSourceMap (code: string, options?: Tran
   let outMapConv = fromObject(smg.toJSON());
   const inMapConv = await findIncomingSourceMap(code, config.file);
   if (inMapConv) {
-    // console.log(inMapConv.toObject());
     outMapConv = reconnectSourceMap(inMapConv, outMapConv);
-    // console.log('######### reconnected @@@@@@@@@@@@@');
   }
 
   return {
-    type: 'CodeWithInlineSourceMap',
-    code: transpiledCode + '\n' + outMapConv.toComment() + '\n'
+    type: 'CodeWithSourceMapConverter',
+    transpiledCode,
+    outMapConv
   };
 }
 
