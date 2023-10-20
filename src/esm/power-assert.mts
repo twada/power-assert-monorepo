@@ -153,7 +153,7 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
   // console.log(`######### incomingCode: ${incomingCode}`);
-  const transpiledCode = await transpile(incomingCode, url);
+  const transpiledCode = await transpile(incomingCode, { file: url });
   // console.log(`######### outgoingCode: ${transpiledCode}`);
   // console.log(transpiledCode);
   return {

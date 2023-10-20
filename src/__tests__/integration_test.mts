@@ -20,7 +20,8 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
   // chop empty lines then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
   test(title + ': ' + expression, async () => {
-    const transpiledCode = await transpile(expression, 'source.mjs', {
+    const transpiledCode = await transpile(expression, {
+      file: 'source.mjs',
       variables: [
         // set variable name explicitly for testing
         'assert'

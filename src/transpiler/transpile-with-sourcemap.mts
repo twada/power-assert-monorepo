@@ -11,18 +11,19 @@ import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
 
 export type TranspileWithSourceMapOptions = {
+  file?: string,
   runtime?: string,
   modules?: string[],
   variables?: string[]
 };
 
-export async function transpile (code: string, fileUrlOrPath: string, options?: TranspileWithSourceMapOptions): Promise<string> {
+export async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<string> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
     locations: true, // true for SourceMap
     ranges: false,
-    sourceFile: fileUrlOrPath
+    sourceFile: options?.file
   }) as Node;
   const mine = {
     runtime: 'espower3/runtime',
@@ -30,14 +31,14 @@ export async function transpile (code: string, fileUrlOrPath: string, options?: 
   };
   const modifiedAst = espowerAst(ast, { ...mine, ...options });
   const smg = new SourceMapGenerator({
-    file: fileUrlOrPath
+    file: options?.file
   });
   const transpiledCode = generate(modifiedAst, {
     sourceMap: smg
   });
 
   let outMapConv = fromObject(smg.toJSON());
-  const inMapConv = await findIncomingSourceMap(code, fileUrlOrPath);
+  const inMapConv = await findIncomingSourceMap(code, options?.file);
   if (inMapConv) {
     // console.log(inMapConv.toObject());
     outMapConv = reconnectSourceMap(inMapConv, outMapConv);
@@ -47,7 +48,11 @@ export async function transpile (code: string, fileUrlOrPath: string, options?: 
   return transpiledCode + '\n' + outMapConv.toComment() + '\n';
 }
 
-async function findIncomingSourceMap (originalCode: string, fileUrlOrPath: string): Promise<SourceMapConverter | null> {
+async function findIncomingSourceMap (originalCode: string, fileUrlOrPath?: string): Promise<SourceMapConverter | null> {
+  if (!fileUrlOrPath) {
+    // inline sourceMap or no sourceMap
+    return fromSource(originalCode);
+  }
   const sourceMappingURL = retrieveSourceMapURL(originalCode);
   // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
   if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
