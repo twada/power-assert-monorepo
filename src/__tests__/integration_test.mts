@@ -5,9 +5,8 @@ import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
 // import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
 import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
+import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { SourceMapConsumer } from 'source-map';
-import { fromSource } from 'convert-source-map';
 import type { AssertionError } from 'node:assert';
 
 type TestFunc = (transpiledCode: string) => void;
@@ -20,15 +19,14 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
   // chop empty lines then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
   test(title + ': ' + expression, async () => {
-    const transpiledCode = await transpile(expression, {
+    const transpiled = await transpileWithSeparatedSourceMap(expression, {
       file: 'source.mjs',
       variables: [
         // set variable name explicitly for testing
         'assert'
       ]
     });
-    const map = fromSource(transpiledCode)?.toObject();
-    const transpiledLines = transpiledCode.split('\n');
+    const transpiledLines = transpiled.code.split('\n');
     // comment first line out since import statement does not work in eval
     transpiledLines[0] = "//port { _power_ } from 'espower3/runtime';";
     const evalTargetCode = transpiledLines.join('\n');
@@ -54,7 +52,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
       assert.equal(lineInStacktrace, generatedAssertionLineNum);
       assert.equal(columnInStacktrace, '_pasrt1.r'.length);
 
-      const consumer = await new SourceMapConsumer(map);
+      const consumer = await new SourceMapConsumer(transpiled.sourceMap);
       const originalPosition = consumer.originalPositionFor({
         line: lineInStacktrace,
         column: columnInStacktrace

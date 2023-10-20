@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { transpile } from '../transpiler/transpile-with-sourcemap.mjs';
+import { transpileWithInlineSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -153,12 +153,12 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
   // console.log(`######### incomingCode: ${incomingCode}`);
-  const transpiledCode = await transpile(incomingCode, { file: url });
-  // console.log(`######### outgoingCode: ${transpiledCode}`);
-  // console.log(transpiledCode);
+  const transpiled = await transpileWithInlineSourceMap(incomingCode, { file: url });
+  // console.log(`######### outgoingCode: ${transpiled.code}`);
+  // console.log(transpiled.code);
   return {
     format: realFormat,
-    source: transpiledCode
+    source: transpiled.code
   };
 }
 
