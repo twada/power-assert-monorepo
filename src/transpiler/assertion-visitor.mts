@@ -1,4 +1,4 @@
-import { nodeFactory } from './create-node-with-loc.mjs';
+import { nodeFactory } from './node-factory.mjs';
 import { searchAddress } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';

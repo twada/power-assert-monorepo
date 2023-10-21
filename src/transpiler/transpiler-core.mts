@@ -1,7 +1,7 @@
 import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
-import { nodeFactory, isScoped } from './create-node-with-loc.mjs';
+import { nodeFactory, isScoped } from './node-factory.mjs';
 import { strict as assert } from 'node:assert';
 import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import type {
@@ -15,7 +15,7 @@ import type {
   ObjectPattern,
   SpreadElement
 } from 'estree';
-import type { Scoped } from './create-node-with-loc.mjs';
+import type { Scoped } from './node-factory.mjs';
 
 type EspowerOptions = {
   runtime?: string,
