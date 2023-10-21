@@ -100,7 +100,11 @@ function withLoc (sourceNode: Node & AcornSwcLikeNode) {
   };
 }
 
-export class NodeCreator {
+export function nodeFactory (sourceNode: Node): NodeCreator {
+  return new NodeCreator(sourceNode);
+}
+
+class NodeCreator {
   readonly newNode: <T extends Node>(destNode: T) => T;
 
   constructor (sourceNode: Node) {

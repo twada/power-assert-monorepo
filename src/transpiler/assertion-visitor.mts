@@ -1,4 +1,4 @@
-import { NodeCreator } from './create-node-with-loc.mjs';
+import { nodeFactory } from './create-node-with-loc.mjs';
 import { searchAddress } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
@@ -113,7 +113,7 @@ class ArgumentModification {
     this.#argumentModified = false;
     this.#addresses = new Map<Node, number>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
-    const types = new NodeCreator(currentNode);
+    const types = nodeFactory(currentNode);
     const ident = types.identifier(recorderVariableName);
     const init = types.callExpression(
       types.memberExpression(this.#poweredAssertIdent, types.identifier('recorder')), [
@@ -186,7 +186,7 @@ class ArgumentModification {
 
   #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string, capture: boolean): CallExpression {
     const relativeAstPath = this.#relativeAstPath(astPath);
-    const types = new NodeCreator(currentNode);
+    const types = nodeFactory(currentNode);
     const args = [
       currentNode,
       types.stringLiteral(relativeAstPath.join('/'))
@@ -280,7 +280,7 @@ export class AssertionVisitor {
 
   #replaceWithDecoratedAssert (currentNode: Node): CallExpression {
     assert(currentNode.type === 'CallExpression', 'Node must be a CallExpression');
-    const types = new NodeCreator(currentNode);
+    const types = nodeFactory(currentNode);
     const replacedNode = types.callExpression(
       types.memberExpression(this.#poweredAssertIdent, types.identifier('run')), currentNode.arguments
     );
@@ -289,7 +289,7 @@ export class AssertionVisitor {
 
   #decorateAssert (currentNode: Node): Identifier {
     const transformation = this.#transformation;
-    const types = new NodeCreator(currentNode);
+    const types = nodeFactory(currentNode);
     // extra properties are not required for now
     const extraProps: ExtraProps = {};
     if (this.#binexp) {

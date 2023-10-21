@@ -1,7 +1,7 @@
 import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
-import { NodeCreator, isScoped } from './create-node-with-loc.mjs';
+import { nodeFactory, isScoped } from './create-node-with-loc.mjs';
 import { strict as assert } from 'node:assert';
 import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import type {
@@ -321,7 +321,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 }
 
 function createPowerAssertImports ({ transformation, currentNode, runtime }: { transformation: Transformation, currentNode: Node, runtime: string }): Identifier {
-  const types = new NodeCreator(currentNode);
+  const types = nodeFactory(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
   // TODO: CJS support?
   const decl = types.importDeclaration([
