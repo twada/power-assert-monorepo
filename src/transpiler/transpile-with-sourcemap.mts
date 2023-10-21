@@ -63,7 +63,7 @@ async function transpile (code: string, options?: TranspileWithSourceMapOptions)
     ecmaVersion: 2022,
     locations: true, // true for SourceMap
     ranges: false,
-    sourceFile: options?.file
+    sourceFile: config.file
   }) as Node;
   const modifiedAst = espowerAst(ast, config);
   const smg = new SourceMapGenerator({
