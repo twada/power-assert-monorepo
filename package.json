@@ -1,5 +1,6 @@
 {
-  "name": "espower3",
+  "name": "@power-assert/monorepo",
+  "private": true,
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
@@ -82,5 +83,11 @@
     "test:spec": "npm run test:ts --test-reporter=spec --",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
     "test": "npm run lint && npm run build && npm run test:prove"
-  }
+  },
+  "workspaces": [
+    "packages/transpiler",
+    "packages/runtime",
+    "packages/esm",
+    "packages/integration-tests"
+  ]
 }

@@ -1,0 +1,16 @@
+{
+  "name": "@power-assert/integration-tests",
+  "private": true,
+  "version": "0.0.0",
+  "description": "power-assert integration tests",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "power-assert"
+  ],
+  "author": "Takuto WADA",
+  "license": "MIT"
+}
