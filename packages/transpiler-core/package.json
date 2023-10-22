@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "power-assert transpiler core",
   "main": "dist/transpiler-core.mjs",
-  "devDependencies": {},
   "scripts": {
     "test": "node --test"
   },
@@ -11,5 +10,13 @@
     "power-assert"
   ],
   "author": "Takuto WADA",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "estraverse": "^5.3.0"
+  },
+  "devDependencies": {
+    "acorn": "^8.10.0",
+    "astring": "^1.8.6",
+    "meriyah": "^4.3.7"
+  }
 }
