@@ -3,12 +3,8 @@
   "version": "0.0.0",
   "description": "power-assert transpiler",
   "main": "dist/index.mjs",
-  "devDependencies": {},
   "scripts": {
-    "preversion": "npm run build && npm test",
-    "build": "npm run build:clean && npm run build:mjs",
-    "build:clean": "rimraf dist",
-    "build:mjs": "tsc",
+    "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
   },
@@ -16,5 +12,13 @@
     "power-assert"
   ],
   "author": "Takuto WADA",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@power-assert/transpiler-core": "^0.0.0",
+    "acorn": "^8.10.0",
+    "astring": "^1.8.6",
+    "convert-source-map": "^2.0.0",
+    "multi-stage-sourcemap": "^0.3.1",
+    "source-map": "^0.7.4"
+  }
 }
