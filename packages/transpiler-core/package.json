@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "power-assert transpiler core",
   "main": "dist/transpiler-core.mjs",
-  "scripts": {
-    "test": "node --test"
-  },
   "keywords": [
     "power-assert"
   ],
@@ -18,5 +15,16 @@
     "acorn": "^8.10.0",
     "astring": "^1.8.6",
     "meriyah": "^4.3.7"
+  },
+  "scripts": {
+    "preversion": "npm run build && npm test",
+    "build": "npm run build:clean && npm run build:mjs",
+    "build:clean": "rimraf dist",
+    "build:mjs": "tsc",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix",
+    "test:node": "node --no-warnings --test --test-reporter=spec dist/__tests__/transpiler_test.mjs",
+    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
+    "test": "npm run lint && npm run build && npm run test:prove"
   }
 }

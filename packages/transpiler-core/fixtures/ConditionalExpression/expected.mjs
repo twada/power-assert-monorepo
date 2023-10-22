@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {_power_} from "@power-assert/runtime";
+const _pasrt1 = _power_(assert, null, "assert(foo ? bar : baz)");
+const _parg1 = _pasrt1.recorder(0);
+const _pasrt2 = _power_(assert, null, "assert(falsy ? truthy : truthy ? anotherFalsy : truthy)");
+const _parg2 = _pasrt2.recorder(0);
+const _pasrt3 = _power_(assert, null, "assert(foo() ? bar.baz : (typeof goo))");
+const _parg3 = _pasrt3.recorder(0);
+const _pasrt4 = _power_(assert.equal, assert, "assert.equal((foo ? bar : baz), (falsy ? truthy : truthy ? anotherFalsy : truthy))");
+const _parg4 = _pasrt4.recorder(0);
+const _parg5 = _pasrt4.recorder(1);
+_pasrt1.run(_parg1.rec(_parg1.tap(foo, "arguments/0/test", 7) ? _parg1.tap(bar, "arguments/0/consequent", 13) : _parg1.tap(baz, "arguments/0/alternate", 19), "arguments/0", 11));
+_pasrt2.run(_parg2.rec(_parg2.tap(falsy, "arguments/0/test", 7) ? _parg2.tap(truthy, "arguments/0/consequent", 15) : _parg2.tap(_parg2.tap(truthy, "arguments/0/alternate/test", 24) ? _parg2.tap(anotherFalsy, "arguments/0/alternate/consequent", 33) : _parg2.tap(truthy, "arguments/0/alternate/alternate", 48), "arguments/0/alternate", 31), "arguments/0", 13));
+_pasrt3.run(_parg3.rec(_parg3.tap(foo(), "arguments/0/test", 10) ? _parg3.tap(_parg3.tap(bar, "arguments/0/consequent/object", 15).baz, "arguments/0/consequent", 19) : _parg3.tap(typeof goo, "arguments/0/alternate", 26), "arguments/0", 13));
+_pasrt4.run(_parg4.rec(_parg4.tap(foo, "arguments/0/test", 14) ? _parg4.tap(bar, "arguments/0/consequent", 20) : _parg4.tap(baz, "arguments/0/alternate", 26), "arguments/0", 18), _parg5.rec(_parg5.tap(falsy, "arguments/1/test", 33) ? _parg5.tap(truthy, "arguments/1/consequent", 41) : _parg5.tap(_parg5.tap(truthy, "arguments/1/alternate/test", 50) ? _parg5.tap(anotherFalsy, "arguments/1/alternate/consequent", 59) : _parg5.tap(truthy, "arguments/1/alternate/alternate", 74), "arguments/1/alternate", 57), "arguments/1", 39));
