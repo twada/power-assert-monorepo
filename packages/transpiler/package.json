@@ -5,7 +5,12 @@
   "main": "dist/index.mjs",
   "devDependencies": {},
   "scripts": {
-    "test": "node --test"
+    "preversion": "npm run build && npm test",
+    "build": "npm run build:clean && npm run build:mjs",
+    "build:clean": "rimraf dist",
+    "build:mjs": "tsc",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix"
   },
   "keywords": [
     "power-assert"

@@ -6,6 +6,11 @@
   "keywords": [
     "power-assert"
   ],
+  "exports": {
+    ".": "./dist/transpiler-core.mjs",
+    "./package.json": "./package.json",
+    "./src/transpiler-core.mjs": "./dist/transpiler-core.mjs"
+  },
   "author": "Takuto WADA",
   "license": "MIT",
   "dependencies": {
