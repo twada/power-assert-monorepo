@@ -86,6 +86,7 @@
   },
   "workspaces": [
     "packages/transpiler",
+    "packages/transpiler-core",
     "packages/runtime",
     "packages/esm",
     "packages/integration-tests"
