@@ -1,0 +1,7 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/transpiler-core" },
+    { "path": "packages/transpiler" }
+  ]
+}

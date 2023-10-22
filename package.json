@@ -63,6 +63,7 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "build:all": "tsc --build tsconfig.build.json",
     "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader espower3/esm --test --test-reporter=spec --",
     "example": "npm run build && npm run power:example",
     "power": "node --enable-source-maps --no-warnings --loader espower3/esm --test --",
