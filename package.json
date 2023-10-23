@@ -55,8 +55,13 @@
     "typescript": "^5.0.4"
   },
   "scripts": {
+    "test": "npm run clean && npm run lint:all && npm run build:all && npm run test:all",
+    "clean": "rimraf -g \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
+    "lint:all": "npm run lint --workspaces",
     "build:all": "tsc --build tsconfig.build.json",
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader espower3/esm --test --test-reporter=spec --",
+    "test:all": "node --no-warnings --test --test-reporter=dot '**/dist/**/*test.mjs'",
+    "prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=test.mjs",
+    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run build && npm run power:example",
     "power": "node --enable-source-maps --no-warnings --loader espower3/esm --test --",
     "power:example": "npm run power examples/bowling_test.mjs",
@@ -71,11 +76,7 @@
     "build:cjs": "rollup -c",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix",
-    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --",
-    "test:dot": "npm run test:ts --test-reporter=dot --",
-    "test:spec": "npm run test:ts --test-reporter=spec --",
-    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
-    "test": "npm run lint && npm run build && npm run test:prove"
+    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
   },
   "workspaces": [
     "packages/transpiler",
