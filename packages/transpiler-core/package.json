@@ -25,8 +25,6 @@
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix",
-    "test:node": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'",
-    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
-    "test": "npm run lint && npm run test:prove"
+    "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"
   }
 }

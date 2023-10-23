@@ -13,29 +13,6 @@
     "dist",
     "package.json"
   ],
-  "exports": {
-    "./package.json": "./package.json",
-    "./runtime": {
-      "import": {
-        "types": "./dist/runtime/runtime.d.mts",
-        "default": "./dist/runtime/runtime.mjs"
-      },
-      "default": "./dist/runtime/runtime.mjs"
-    },
-    "./transpiler": {
-      "import": {
-        "types": "./dist/transpiler/transpile-with-sourcemap.d.mts",
-        "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
-      },
-      "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
-    },
-    "./esm": {
-      "import": {
-        "default": "./dist/esm/power-assert.mjs"
-      },
-      "default": "./dist/esm/power-assert.mjs"
-    }
-  },
   "devDependencies": {
     "@types/convert-source-map": "^2.0.0",
     "@types/estraverse": "^5.1.2",
@@ -46,7 +23,6 @@
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
-    "meriyah": "^4.3.7",
     "rimraf": "^5.0.0",
     "rollup": "^3.0.0",
     "rollup-plugin-copy": "^3.4.0",
