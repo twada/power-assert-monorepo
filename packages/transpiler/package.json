@@ -8,6 +8,11 @@
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
   },
+  "exports": {
+    ".": "./dist/transpile-with-sourcemap.mjs",
+    "./package.json": "./package.json",
+    "./src/transpile-with-sourcemap.mjs": "./dist/transpile-with-sourcemap.mjs"
+  },
   "keywords": [
     "power-assert"
   ],

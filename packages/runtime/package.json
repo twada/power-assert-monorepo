@@ -4,6 +4,11 @@
   "description": "power-assert runtime",
   "main": "dist/runtime.mjs",
   "devDependencies": {},
+  "exports": {
+    ".": "./dist/runtime.mjs",
+    "./package.json": "./package.json",
+    "./src/runtime.mjs": "./dist/runtime.mjs"
+  },
   "scripts": {
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",

@@ -2,6 +2,8 @@
   "files": [],
   "references": [
     { "path": "packages/transpiler-core" },
-    { "path": "packages/transpiler" }
+    { "path": "packages/transpiler" },
+    { "path": "packages/runtime" },
+    { "path": "packages/esm" }
   ]
 }
