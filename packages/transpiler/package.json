@@ -2,7 +2,7 @@
   "name": "@power-assert/transpiler",
   "version": "0.0.0",
   "description": "power-assert transpiler",
-  "main": "dist/index.mjs",
+  "main": "dist/transpile-with-sourcemap.mjs",
   "scripts": {
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",

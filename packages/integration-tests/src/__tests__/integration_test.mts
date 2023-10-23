@@ -5,7 +5,8 @@ import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
 // import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler/src/transpile-with-sourcemap.mjs';
+// import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler/src/transpile-with-sourcemap.mjs';
+import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
 // import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { SourceMapConsumer } from 'source-map';
 import type { AssertionError } from 'node:assert';

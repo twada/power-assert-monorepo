@@ -1,5 +1,5 @@
 import { parse } from 'acorn';
-import { espowerAst } from '@power-assert/transpiler-core/src/transpiler-core.mjs';
+import { espowerAst } from '@power-assert/transpiler-core';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
