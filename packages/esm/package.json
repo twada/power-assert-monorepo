@@ -4,6 +4,10 @@
   "description": "power-assert esm loader",
   "main": "dist/esm-loader.mjs",
   "devDependencies": {},
+  "exports": {
+    ".": "./dist/esm-loader.mjs",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
