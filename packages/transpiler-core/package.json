@@ -8,8 +8,7 @@
   ],
   "exports": {
     ".": "./dist/transpiler-core.mjs",
-    "./package.json": "./package.json",
-    "./src/transpiler-core.mjs": "./dist/transpiler-core.mjs"
+    "./package.json": "./package.json"
   },
   "author": "Takuto WADA",
   "license": "MIT",

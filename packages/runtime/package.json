@@ -6,8 +6,7 @@
   "devDependencies": {},
   "exports": {
     ".": "./dist/runtime.mjs",
-    "./package.json": "./package.json",
-    "./src/runtime.mjs": "./dist/runtime.mjs"
+    "./package.json": "./package.json"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",

@@ -10,8 +10,7 @@
   },
   "exports": {
     ".": "./dist/transpile-with-sourcemap.mjs",
-    "./package.json": "./package.json",
-    "./src/transpile-with-sourcemap.mjs": "./dist/transpile-with-sourcemap.mjs"
+    "./package.json": "./package.json"
   },
   "keywords": [
     "power-assert"
