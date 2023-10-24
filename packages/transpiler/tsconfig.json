@@ -2,19 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    // "target": "es2022",
-    // "module": "Node16",
-    // "declaration": true,
-    // "declarationMap": true,
-    // "sourceMap": true,
-    // // "inlineSourceMap": true,
-    // "moduleResolution": "node16",
-    // // use project references
-    // "composite": true,
-    // // any imports or exports without a type modifier are left around
-    // "verbatimModuleSyntax": true,
-    // "strict": true
+    "rootDir": "./src"
   },
   "include": ["./src/**/*.mts"],
   "references": [{ "path": "../transpiler-core" }]
