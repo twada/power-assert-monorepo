@@ -30,7 +30,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
     });
     const transpiledLines = transpiled.code.split('\n');
     // comment first line out since import statement does not work in eval
-    transpiledLines[0] = "//port { _power_ } from 'espower3/runtime';";
+    transpiledLines[0] = "//port { _power_ } from '@power-assert/runtime';";
     const evalTargetCode = transpiledLines.join('\n');
     try {
       testFunc(evalTargetCode);

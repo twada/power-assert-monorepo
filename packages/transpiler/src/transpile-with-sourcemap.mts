@@ -53,7 +53,6 @@ type CodeWithSourceMapConverter = {
 
 async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSourceMapConverter> {
   const mine = {
-    runtime: 'espower3/runtime',
     code
   };
   const config = { ...mine, ...options };

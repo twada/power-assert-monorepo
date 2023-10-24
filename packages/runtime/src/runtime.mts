@@ -260,7 +260,7 @@ class PowerAssertImpl implements PowerAssert {
 
 function createPowerAssertMetadata (content: string, extra?: unknown): PowerAssertMetadata {
   return Object.assign({
-    transpiler: 'espower3',
+    transpiler: 'power-assert',
     version: '0.0.0',
     content
   }, extra);

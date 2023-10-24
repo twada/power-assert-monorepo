@@ -75,7 +75,6 @@ describe('espowerAst', () => {
             const expected = readFileSync(expectedFilepath).toString();
             const ast = parseFixture(fixtureFilepath, loc, range);
             const modifiedAst = espowerAst(ast, {
-              // runtime: 'espower3/runtime',
               code: readFileSync(fixtureFilepath).toString()
             });
             const actual = generate(modifiedAst);
