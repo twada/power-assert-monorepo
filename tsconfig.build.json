@@ -5,7 +5,7 @@
     { "path": "packages/transpiler" },
     { "path": "packages/runtime" },
     { "path": "packages/esm" },
-    { "path": "packages/vitest" },
+    { "path": "packages/vitest-plugin" },
     { "path": "packages/integration-tests" }
   ]
 }
