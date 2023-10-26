@@ -60,6 +60,7 @@
     "packages/runtime",
     "packages/esm",
     "packages/integration-tests",
-    "packages/vitest-plugin"
+    "packages/vitest-plugin",
+    "packages/esbuild-plugin"
   ]
 }

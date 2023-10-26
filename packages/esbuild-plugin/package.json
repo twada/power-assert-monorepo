@@ -1,0 +1,15 @@
+{
+  "name": "@power-assert/esbuild-plugin",
+  "version": "0.0.0",
+  "description": "power-assert esbuild plugin",
+  "main": "./dist/power-assert-esbuild-plugin",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "power-assert"
+  ],
+  "author": "Takuto WADA",
+  "license": "MIT"
+}
