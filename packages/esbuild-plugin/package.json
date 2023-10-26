@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "power-assert esbuild plugin",
   "main": "./dist/power-assert-esbuild-plugin",
-  "devDependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.19.5"
+  },
   "scripts": {
     "test": "node --test"
   },
