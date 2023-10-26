@@ -35,7 +35,7 @@
     "clean": "rimraf -g \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
     "lint:all": "npm run lint --workspaces",
     "build:all": "tsc --build tsconfig.build.json",
-    "test:all": "node --no-warnings --test --test-reporter=dot '**/dist/**/*test.mjs'",
+    "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'",
     "prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=test.mjs",
     "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run build && npm run power:example",
