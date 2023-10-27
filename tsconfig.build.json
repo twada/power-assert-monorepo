@@ -6,6 +6,7 @@
     { "path": "packages/runtime" },
     { "path": "packages/esm" },
     { "path": "packages/vitest-plugin" },
+    { "path": "packages/esbuild-plugin" },
     { "path": "packages/integration-tests" }
   ]
 }
