@@ -2,6 +2,8 @@
   "name": "@power-assert/transpiler-core",
   "version": "0.0.0",
   "description": "power-assert transpiler core",
+  "author": "Takuto WADA",
+  "license": "MIT",
   "main": "dist/transpiler-core.mjs",
   "keywords": [
     "power-assert"
@@ -10,8 +12,11 @@
     ".": "./dist/transpiler-core.mjs",
     "./package.json": "./package.json"
   },
-  "author": "Takuto WADA",
-  "license": "MIT",
+  "files": [
+    "src",
+    "dist",
+    "package.json"
+  ],
   "dependencies": {
     "estraverse": "^5.3.0"
   },
