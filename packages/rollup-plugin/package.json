@@ -9,10 +9,12 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@power-assert/transpiler-core": "^0.0.0",
-    "@power-assert/runtime": "^0.0.0"
+    "@power-assert/runtime": "^0.0.0",
+    "@power-assert/transpiler-core": "^0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "rollup": "^4.2.0"
+  },
   "scripts": {
     "build:clean": "rimraf dist && rm tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
