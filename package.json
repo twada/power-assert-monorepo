@@ -61,6 +61,7 @@
     "packages/esm",
     "packages/integration-tests",
     "packages/vitest-plugin",
-    "packages/esbuild-plugin"
+    "packages/esbuild-plugin",
+    "packages/rollup-plugin"
   ]
 }
