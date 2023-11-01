@@ -24,15 +24,12 @@
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
     "rimraf": "^5.0.0",
-    "rollup": "^3.0.0",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-node-externals": "^6.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "test": "npm run clean && npm run lint:all && npm run build:all && npm run test:all",
-    "clean": "rimraf -g \"packages/**/dist\" \"packages/**/*.tsbuildinfo\"",
+    "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
+    "clean:all": "npm run build:clean --workspaces",
     "lint:all": "npm run lint --workspaces",
     "build:all": "tsc --build tsconfig.build.json",
     "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'",
@@ -44,14 +41,6 @@
     "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
     "ts-node:power": "npm run test:ts --loader @power-assert/esm --",
     "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader @power-assert/esm examples/spike/spike_test.mts",
-    "preversion": "npm run build && npm test",
-    "build": "npm run build:clean && npm run build:mjs",
-    "build:clean": "rimraf dist",
-    "build:mjs": "tsc",
-    "dist": "npm run build:cjs",
-    "build:cjs": "rollup -c",
-    "lint": "eslint src --ext .mts",
-    "fix": "npm run lint:src -- --fix",
     "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
   },
   "workspaces": [
