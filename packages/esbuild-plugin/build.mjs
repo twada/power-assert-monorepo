@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { powerAssertPlugin } from './dist/power-assert-esbuild-plugin.mjs';
+import { powerAssertPlugin } from '@power-assert/esbuild-plugin';
 
 await esbuild.build({
   entryPoints: ['examples/bowling.test.mjs'],
