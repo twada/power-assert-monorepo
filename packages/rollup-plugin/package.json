@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "power-assert rollup plugin",
   "type": "module",
-  "main": "./dist/power-assert-rollup-plugin.mjs",
+  "main": "./dist/rollup-plugin-power-assert.mjs",
   "exports": {
-    ".": "./dist/power-assert-rollup-plugin.mjs",
+    ".": "./dist/rollup-plugin-power-assert.mjs",
     "./package.json": "./package.json"
   },
   "dependencies": {
