@@ -17,9 +17,14 @@ import type {
 } from 'estree';
 import type { Scoped } from './node-factory.mjs';
 
-type EspowerOptions = {
+type TargetImportSpecifier = {
+  source: string,
+  imported: string[]
+};
+
+export type EspowerOptions = {
   runtime?: string,
-  modules?: string[],
+  modules?: (string | TargetImportSpecifier)[],
   code: string,
   variables?: string[]
 };
@@ -107,6 +112,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
   function handleImportSpecifiers (importDeclaration: ImportDeclaration) {
     for (const { local } of importDeclaration.specifiers) {
+      // TODO: filter
       registerIdentifierAsAssertionVariable(local);
     }
   }
@@ -116,8 +122,8 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       registerIdentifierAsAssertionVariable(node);
     } else if (isObjectPattern(node)) {
       handleDestructuredAssertionAssignment(node);
-    } else if (isImportDeclaration(node)) {
-      handleImportSpecifiers(node);
+    // } else if (isImportDeclaration(node)) {
+    //   handleImportSpecifiers(node);
     }
   }
 
@@ -210,7 +216,8 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
             }
             this.skip();
             // register local identifier(s) as assertion variable
-            registerAssertionVariables(currentNode);
+            // registerAssertionVariables(currentNode);
+            handleImportSpecifiers(currentNode);
             break;
           }
           case 'VariableDeclarator': {
@@ -331,11 +338,11 @@ function createPowerAssertImports ({ transformation, currentNode, runtime }: { t
   return decoratorFunctionIdent;
 }
 
-function espowerAst (ast: Node, options: EspowerOptions): Node {
+export function espowerAst (ast: Node, options: EspowerOptions): Node {
   return replace(ast, createVisitor(ast, options));
 }
 
-function defaultOptions () {
+export function defaultOptions () {
   return {
     runtime: '@power-assert/runtime',
     modules: [
@@ -346,8 +353,3 @@ function defaultOptions () {
     ]
   };
 }
-
-export {
-  espowerAst,
-  defaultOptions
-};

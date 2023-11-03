@@ -8,6 +8,7 @@ import { parseModule } from 'meriyah';
 import { generate } from 'astring';
 import { fileURLToPath } from 'node:url';
 import type { Node } from 'estree';
+import type { EspowerOptions } from '../transpiler-core.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function parseByMeriyah (filepath: string, loc: boolean, ranges: boolean): Node {
@@ -52,14 +53,15 @@ describe('espowerAst', () => {
     'ObjectExpression',
     'ObjectRestSpread',
     'Property',
-    'Scopes',
     'SequenceExpression',
     'SpreadElement',
     'TaggedTemplateExpression',
     'TemplateLiteral',
     'UnaryExpression',
     'UpdateExpression',
-    'YieldExpression'
+    'YieldExpression',
+    // 'VitestConfig',
+    'Scopes'
   ];
   for (const fixtureName of fixtures) {
     for (const loc of [true, false]) {
@@ -74,9 +76,18 @@ describe('espowerAst', () => {
             const actualFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, 'actual.mjs');
             const expected = readFileSync(expectedFilepath).toString();
             const ast = parseFixture(fixtureFilepath, loc, range);
-            const modifiedAst = espowerAst(ast, {
+            const powerAssertConfig: EspowerOptions = {
               code: readFileSync(fixtureFilepath).toString()
-            });
+            };
+            if (fixtureName === 'VitestConfig') {
+              powerAssertConfig.modules = [
+                {
+                  source: 'vitest',
+                  imported: ['assert']
+                }
+              ];
+            }
+            const modifiedAst = espowerAst(ast, powerAssertConfig);
             const actual = generate(modifiedAst);
             // console.log(actual);
             if (actual !== expected) {
