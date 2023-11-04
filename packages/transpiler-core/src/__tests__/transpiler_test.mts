@@ -60,7 +60,7 @@ describe('espowerAst', () => {
     'UnaryExpression',
     'UpdateExpression',
     'YieldExpression',
-    // 'VitestConfig',
+    'VitestConfig',
     'Scopes'
   ];
   for (const fixtureName of fixtures) {

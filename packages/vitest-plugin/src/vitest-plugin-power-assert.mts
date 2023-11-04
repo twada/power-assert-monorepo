@@ -9,10 +9,7 @@ export function powerAssertPlugin (): Plugin {
       if (id.endsWith('.test.mts') || id.endsWith('.test.mjs')) {
         console.log(id);
         const transpiled = await transpileWithSeparatedSourceMap(src, {
-          file: pathToFileURL(id).toString(),
-          runtime: '@power-assert/runtime',
-          // modules: ['node:assert/strict'],
-          variables: ['assert']
+          file: pathToFileURL(id).toString()
         });
         return {
           code: transpiled.code,
