@@ -15,9 +15,9 @@ export function powerAssertPlugin (): Plugin {
         const ast = parseAst(code) as Node;
         // this.warn(JSON.stringify(ast, null, 2));
         const modifiedAst = espowerAst(ast, {
-          code,
+          code
           // modules: ['node:assert/strict'],
-          variables: ['assert']
+          // variables: ['assert']
         });
         const url = pathToFileURL(id).toString();
         const smg = new SourceMapGenerator({
