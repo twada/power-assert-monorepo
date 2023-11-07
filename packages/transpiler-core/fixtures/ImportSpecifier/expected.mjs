@@ -1,0 +1,11 @@
+import {ok, equal as eq} from 'node:assert';
+import {_power_} from "@power-assert/runtime";
+const _pasrt1 = _power_(ok, null, "ok(truthy)");
+const _parg1 = _pasrt1.recorder(0);
+const _pasrt2 = _power_(eq, null, "eq(truthy, falsy)");
+const _parg2 = _pasrt2.recorder(0);
+const _parg3 = _pasrt2.recorder(1);
+const truthy = '1';
+const falsy = 0;
+_pasrt1.run(_parg1.rec(truthy, "arguments/0", 3));
+_pasrt2.run(_parg2.rec(truthy, "arguments/0", 3), _parg3.rec(falsy, "arguments/1", 11));

@@ -60,6 +60,9 @@ describe('espowerAst', () => {
     'UnaryExpression',
     'UpdateExpression',
     'YieldExpression',
+    'ImportDefaultSpecifier',
+    'ImportNamespaceSpecifier',
+    'ImportSpecifier',
     'VitestConfig',
     'Scopes'
   ];

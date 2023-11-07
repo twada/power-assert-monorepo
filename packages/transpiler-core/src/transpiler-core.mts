@@ -130,23 +130,12 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
     const imports = targetModules.get(source.value);
     for (const specifier of importDeclaration.specifiers) {
       if (specifier.type === 'ImportSpecifier') {
-        const local = specifier.local;
         const imported = specifier.imported;
         if (!imports || imports.length === 0 || imports.includes(imported.name)) {
-          registerIdentifierAsAssertionVariable(local);
+          registerIdentifierAsAssertionVariable(specifier.local);
         }
-      } else if (specifier.type === 'ImportDefaultSpecifier') {
-        // TODO: more tests and refactorings
-        const local = specifier.local;
-        if (!imports || imports.length === 0 || imports.includes(local.name)) {
-          registerIdentifierAsAssertionVariable(local);
-        }
-      } else if (specifier.type === 'ImportNamespaceSpecifier') {
-        // TODO: more tests and refactorings
-        const local = specifier.local;
-        if (!imports || imports.length === 0 || imports.includes(local.name)) {
-          registerIdentifierAsAssertionVariable(local);
-        }
+      } else if (specifier.type === 'ImportDefaultSpecifier' || specifier.type === 'ImportNamespaceSpecifier') {
+        registerIdentifierAsAssertionVariable(specifier.local);
       }
     }
   }
