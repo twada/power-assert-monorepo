@@ -9,11 +9,12 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
+import type { TargetImportSpecifier } from '@power-assert/transpiler-core';
 
 export type TranspileWithSourceMapOptions = {
   file?: string,
   runtime?: string,
-  modules?: string[],
+  modules?: (string | TargetImportSpecifier)[],
   variables?: string[]
 };
 

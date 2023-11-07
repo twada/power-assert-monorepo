@@ -10,9 +10,9 @@ export function powerAssertPlugin (): Plugin {
         console.log(id);
         const transpiled = await transpileWithSeparatedSourceMap(src, {
           file: pathToFileURL(id).toString(),
-          runtime: '@power-assert/runtime',
-          // modules: ['node:assert/strict'],
-          variables: ['assert']
+          modules: [
+            { source: 'vitest', imported: ['assert'] }
+          ]
         });
         return {
           code: transpiled.code,

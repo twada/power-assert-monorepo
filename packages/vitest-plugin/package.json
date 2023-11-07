@@ -15,7 +15,7 @@
     "vitest": "^0.34.6"
   },
   "scripts": {
-    "vitest": "vitest",
+    "example": "vitest run",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"

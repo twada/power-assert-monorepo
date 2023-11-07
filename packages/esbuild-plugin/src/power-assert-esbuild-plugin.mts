@@ -15,11 +15,9 @@ export function powerAssertPlugin (): Plugin {
         const source = await readFile(args.path, 'utf8');
         const filename = relative(process.cwd(), args.path);
         const transpiled = await transpileWithInlineSourceMap(source, {
+          file: filename
           // file: pathToFileURL(args.path).toString(),
-          file: filename,
-          runtime: '@power-assert/runtime',
-          modules: ['node:assert/strict']
-          // variables: ['assert']
+          // modules: ['node:assert/strict']
         });
         // console.log(transpiled.code);
         return {

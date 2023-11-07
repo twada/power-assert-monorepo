@@ -18,7 +18,7 @@
     "rollup": "^4.2.0"
   },
   "scripts": {
-    "rollup:power": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
+    "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
