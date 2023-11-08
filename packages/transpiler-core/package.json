@@ -4,12 +4,17 @@
   "description": "power-assert transpiler core",
   "author": "Takuto WADA",
   "license": "MIT",
-  "main": "dist/transpiler-core.mjs",
+  "main": "./dist/transpiler-core.mjs",
   "keywords": [
     "power-assert"
   ],
   "exports": {
-    ".": "./dist/transpiler-core.mjs",
+    ".": {
+      "import": {
+        "types": "./dist/transpiler-core.d.mts",
+        "default": "./dist/transpiler-core.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [

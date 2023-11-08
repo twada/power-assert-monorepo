@@ -9,7 +9,12 @@
   ],
   "main": "dist/runtime.mjs",
   "exports": {
-    ".": "./dist/runtime.mjs",
+    ".": {
+      "import": {
+        "types": "./dist/runtime.d.mts",
+        "default": "./dist/runtime.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
