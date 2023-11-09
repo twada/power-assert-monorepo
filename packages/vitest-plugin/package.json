@@ -2,6 +2,7 @@
   "name": "@power-assert/vitest-plugin",
   "version": "0.0.0",
   "description": "power-assert vitest plugin",
+  "type": "module",
   "main": "./dist/vitest-plugin-power-assert.mts",
   "exports": {
     ".": "./dist/vitest-plugin-power-assert.mts",

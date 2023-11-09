@@ -2,6 +2,7 @@
   "name": "@power-assert/esm",
   "version": "0.0.0",
   "description": "power-assert esm loader",
+  "type": "module",
   "main": "dist/esm-loader.mjs",
   "devDependencies": {},
   "exports": {

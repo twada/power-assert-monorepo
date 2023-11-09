@@ -4,6 +4,7 @@
   "description": "power-assert transpiler",
   "author": "Takuto WADA",
   "license": "MIT",
+  "type": "module",
   "main": "./dist/transpile-with-sourcemap.mjs",
   "exports": {
     ".": {
