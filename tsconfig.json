@@ -6,8 +6,8 @@
     "declarationMap": true,
     "sourceMap": true,
     // "inlineSourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
+    // "outDir": "./dist",
+    // "rootDir": "./src",
     "moduleResolution": "node16",
     // use project references
     "composite": true,
