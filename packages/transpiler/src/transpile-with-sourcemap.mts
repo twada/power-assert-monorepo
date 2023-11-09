@@ -1,5 +1,5 @@
 import { parse } from 'acorn';
-import { espowerAst } from './transpiler-core.mjs';
+import { espowerAst } from '@power-assert/transpiler-core';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
@@ -9,11 +9,12 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
+import type { TargetImportSpecifier } from '@power-assert/transpiler-core';
 
 export type TranspileWithSourceMapOptions = {
   file?: string,
   runtime?: string,
-  modules?: string[],
+  modules?: (string | TargetImportSpecifier)[],
   variables?: string[]
 };
 
@@ -53,7 +54,6 @@ type CodeWithSourceMapConverter = {
 
 async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSourceMapConverter> {
   const mine = {
-    runtime: 'espower3/runtime',
     code
   };
   const config = { ...mine, ...options };

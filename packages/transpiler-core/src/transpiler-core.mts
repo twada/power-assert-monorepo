@@ -17,9 +17,14 @@ import type {
 } from 'estree';
 import type { Scoped } from './node-factory.mjs';
 
-type EspowerOptions = {
+export type TargetImportSpecifier = {
+  source: string,
+  imported: string[]
+};
+
+export type EspowerOptions = {
   runtime?: string,
-  modules?: string[],
+  modules?: (string | TargetImportSpecifier)[],
   code: string,
   variables?: string[]
 };
@@ -47,17 +52,29 @@ function isMemberExpression (node: Node | null | undefined): node is MemberExpre
 function isCallExpression (node: Node | null| undefined): node is CallExpression {
   return !!node && node.type === 'CallExpression';
 }
-function isImportDeclaration (node: Node | null | undefined): node is ImportDeclaration {
-  return !!node && node.type === 'ImportDeclaration';
-}
-
 function isSpreadElement (node: Node | null | undefined): node is SpreadElement {
   return !!node && node.type === 'SpreadElement';
 }
 
+function handleModuleSettings (modules?: (string | TargetImportSpecifier)[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  if (!modules) {
+    return map;
+  }
+  for (const module of modules) {
+    if (typeof module === 'string') {
+      map.set(module, []);
+    } else {
+      const { source, imported } = module;
+      map.set(source, imported);
+    }
+  }
+  return map;
+}
+
 function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   const config = Object.assign(defaultOptions(), options);
-  const targetModules = new Set<string>(config.modules);
+  const targetModules = handleModuleSettings(config.modules);
   const targetVariables = new Set<string>(config.variables);
 
   function isAssertionModuleName (lit: Node) {
@@ -106,8 +123,20 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   }
 
   function handleImportSpecifiers (importDeclaration: ImportDeclaration) {
-    for (const { local } of importDeclaration.specifiers) {
-      registerIdentifierAsAssertionVariable(local);
+    const source = importDeclaration.source;
+    if (!isStringLiteral(source)) {
+      return;
+    }
+    const imports = targetModules.get(source.value);
+    for (const specifier of importDeclaration.specifiers) {
+      if (specifier.type === 'ImportSpecifier') {
+        const imported = specifier.imported;
+        if (!imports || imports.length === 0 || imports.includes(imported.name)) {
+          registerIdentifierAsAssertionVariable(specifier.local);
+        }
+      } else if (specifier.type === 'ImportDefaultSpecifier' || specifier.type === 'ImportNamespaceSpecifier') {
+        registerIdentifierAsAssertionVariable(specifier.local);
+      }
     }
   }
 
@@ -116,8 +145,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       registerIdentifierAsAssertionVariable(node);
     } else if (isObjectPattern(node)) {
       handleDestructuredAssertionAssignment(node);
-    } else if (isImportDeclaration(node)) {
-      handleImportSpecifiers(node);
     }
   }
 
@@ -210,7 +237,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
             }
             this.skip();
             // register local identifier(s) as assertion variable
-            registerAssertionVariables(currentNode);
+            handleImportSpecifiers(currentNode);
             break;
           }
           case 'VariableDeclarator': {
@@ -331,11 +358,17 @@ function createPowerAssertImports ({ transformation, currentNode, runtime }: { t
   return decoratorFunctionIdent;
 }
 
-function espowerAst (ast: Node, options: EspowerOptions): Node {
+export function espowerAst (ast: Node, options: EspowerOptions): Node {
   return replace(ast, createVisitor(ast, options));
 }
 
-function defaultOptions () {
+export type DefaultEspowerOptions = {
+  runtime: string,
+  modules?: (string | TargetImportSpecifier)[],
+  variables?: string[]
+};
+
+export function defaultOptions (): DefaultEspowerOptions {
   return {
     runtime: '@power-assert/runtime',
     modules: [
@@ -346,8 +379,3 @@ function defaultOptions () {
     ]
   };
 }
-
-export {
-  espowerAst,
-  defaultOptions
-};

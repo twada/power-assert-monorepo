@@ -1,0 +1,27 @@
+{
+  "name": "@power-assert/runtime",
+  "version": "0.0.0",
+  "description": "power-assert runtime",
+  "author": "Takuto WADA",
+  "license": "MIT",
+  "keywords": [
+    "power-assert"
+  ],
+  "type": "module",
+  "main": "dist/runtime.mjs",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/runtime.d.mts",
+        "default": "./dist/runtime.mjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix",
+    "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"
+  }
+}

@@ -3,9 +3,11 @@
 /* eslint no-eval: 0 */
 import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
-// import { _power_ } from 'espower3/runtime'; // variable '_power_' is referenced in eval
-import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
+import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
+// import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
+// import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler/src/transpile-with-sourcemap.mjs';
+import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
+// import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { SourceMapConsumer } from 'source-map';
 import type { AssertionError } from 'node:assert';
 
@@ -28,7 +30,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
     });
     const transpiledLines = transpiled.code.split('\n');
     // comment first line out since import statement does not work in eval
-    transpiledLines[0] = "//port { _power_ } from 'espower3/runtime';";
+    transpiledLines[0] = "//port { _power_ } from '@power-assert/runtime';";
     const evalTargetCode = transpiledLines.join('\n');
     try {
       testFunc(evalTargetCode);

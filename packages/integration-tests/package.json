@@ -1,0 +1,24 @@
+{
+  "name": "@power-assert/integration-tests",
+  "private": true,
+  "version": "0.0.0",
+  "description": "power-assert integration tests",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix",
+    "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"
+  },
+  "keywords": [
+    "power-assert"
+  ],
+  "author": "Takuto WADA",
+  "license": "MIT",
+  "dependencies": {
+    "@power-assert/transpiler": "^0.0.0",
+    "@power-assert/runtime": "^0.0.0",
+    "source-map": "^0.7.4"
+  }
+}

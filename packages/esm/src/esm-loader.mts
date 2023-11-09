@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { transpileWithInlineSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
+import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';

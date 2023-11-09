@@ -1,5 +1,6 @@
 {
-  "name": "espower3",
+  "name": "@power-assert/monorepo",
+  "private": true,
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
@@ -12,37 +13,6 @@
     "dist",
     "package.json"
   ],
-  "exports": {
-    "./package.json": "./package.json",
-    "./runtime": {
-      "import": {
-        "types": "./dist/runtime/runtime.d.mts",
-        "default": "./dist/runtime/runtime.mjs"
-      },
-      "default": "./dist/runtime/runtime.mjs"
-    },
-    "./transpiler": {
-      "import": {
-        "types": "./dist/transpiler/transpile-with-sourcemap.d.mts",
-        "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
-      },
-      "default": "./dist/transpiler/transpile-with-sourcemap.mjs"
-    },
-    "./esm": {
-      "import": {
-        "default": "./dist/esm/power-assert.mjs"
-      },
-      "default": "./dist/esm/power-assert.mjs"
-    }
-  },
-  "dependencies": {
-    "acorn": "^8.8.0",
-    "astring": "^1.8.4",
-    "convert-source-map": "^2.0.0",
-    "estraverse": "^5.3.0",
-    "multi-stage-sourcemap": "^0.3.1",
-    "source-map": "^0.7.4"
-  },
   "devDependencies": {
     "@types/convert-source-map": "^2.0.0",
     "@types/estraverse": "^5.1.2",
@@ -53,34 +23,34 @@
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
-    "meriyah": "^4.3.7",
     "rimraf": "^5.0.0",
-    "rollup": "^3.0.0",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-node-externals": "^6.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "scripts": {
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader espower3/esm --test --test-reporter=spec --",
+    "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
+    "clean:all": "npm run build:clean --workspaces",
+    "lint:all": "npm run lint --workspaces",
+    "build:all": "tsc --build tsconfig.build.json",
+    "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'",
+    "prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=test.mjs",
+    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run build && npm run power:example",
-    "power": "node --enable-source-maps --no-warnings --loader espower3/esm --test --",
+    "power": "node --enable-source-maps --no-warnings --loader @power-assert/esm --test --",
     "power:example": "npm run power examples/bowling_test.mjs",
     "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
-    "ts-node:power": "npm run test:ts --loader espower3/esm --",
-    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader espower3/esm examples/spike/spike_test.mts",
-    "preversion": "npm run build && npm test",
-    "build": "npm run build:clean && npm run build:mjs",
-    "build:clean": "rimraf dist",
-    "build:mjs": "tsc",
-    "dist": "npm run build:cjs",
-    "build:cjs": "rollup -c",
-    "lint": "eslint src --ext .mts",
-    "fix": "npm run lint:src -- --fix",
-    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --",
-    "test:dot": "npm run test:ts --test-reporter=dot --",
-    "test:spec": "npm run test:ts --test-reporter=spec --",
-    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r dist --ext=test.mjs",
-    "test": "npm run lint && npm run build && npm run test:prove"
-  }
+    "ts-node:power": "npm run test:ts --loader @power-assert/esm --",
+    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader @power-assert/esm examples/spike/spike_test.mts",
+    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
+  },
+  "workspaces": [
+    "packages/transpiler",
+    "packages/transpiler-core",
+    "packages/runtime",
+    "packages/esm",
+    "packages/integration-tests",
+    "packages/vitest-plugin",
+    "packages/esbuild-plugin",
+    "packages/rollup-plugin"
+  ]
 }

@@ -1,0 +1,26 @@
+{
+  "name": "@power-assert/esm",
+  "version": "0.0.0",
+  "description": "power-assert esm loader",
+  "type": "module",
+  "main": "dist/esm-loader.mjs",
+  "devDependencies": {},
+  "exports": {
+    ".": "./dist/esm-loader.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "lint": "eslint src --ext .mts",
+    "fix": "npm run lint:src -- --fix"
+  },
+  "keywords": [
+    "power-assert"
+  ],
+  "author": "Takuto WADA",
+  "license": "MIT",
+  "dependencies": {
+    "@power-assert/transpiler": "^0.0.0",
+    "@power-assert/runtime": "^0.0.0"
+  }
+}
