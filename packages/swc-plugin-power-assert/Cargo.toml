@@ -1,0 +1,25 @@
+[package]
+name = "swc_plugin_power_assert"
+version = "0.1.0"
+edition = "2021"
+include       = ["Cargo.toml", "src/**/*.rs"]
+license       = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+# [profile.release]
+# lto = true
+
+[dependencies]
+serde = "1"
+swc_core = { version = "0.86.*", features = ["ecma_plugin_transform"] }
+
+[dev-dependencies]
+swc_ecma_transforms_testing = "0.137.*"
+swc_ecma_parser = "0.141.*"
+testing = "0.35.*"
+
+# .cargo/config defines few alias to build plugin.
+# cargo build-wasi generates wasm-wasi32 binary
+# cargo build-wasm32 generates wasm32-unknown-unknown binary.

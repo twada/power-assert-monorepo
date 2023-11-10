@@ -1,0 +1,17 @@
+{
+  "name": "@power-assert/swc-plugin-power-assert",
+  "version": "0.0.0",
+  "description": "",
+  "main": "target/wasm32-wasi/release/swc-plugin-power-assert.wasm",
+  "devDependencies": {},
+  "scripts": {
+    "prepublishOnly": "cargo build-wasi --release"
+  },
+  "preferUnplugged": true
+  "keywords": [
+    "swc-plugin",
+    "power-assert"
+  ],
+  "author": "Takuto WADA",
+  "license": "MIT"
+}

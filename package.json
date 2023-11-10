@@ -51,6 +51,7 @@
     "packages/integration-tests",
     "packages/vitest-plugin",
     "packages/esbuild-plugin",
-    "packages/rollup-plugin"
+    "packages/rollup-plugin",
+    "packages/swc-plugin-power-assert"
   ]
 }
