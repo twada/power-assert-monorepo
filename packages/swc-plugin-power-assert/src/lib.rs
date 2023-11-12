@@ -114,7 +114,7 @@ impl TransformVisitor {
         }
     }
 
-    fn next_powered_variable_name(&mut self) -> String {
+    fn next_powered_runner_variable_name(&mut self) -> String {
         self.powered_var_cnt += 1;
         format!("_pasrt{}", self.powered_var_cnt)
     }
@@ -139,7 +139,7 @@ impl TransformVisitor {
         ))
     }
 
-    fn enclose_in_rec (&mut self, arg: &ExprOrSpread, argrec_ident_name: &String, arg_pos: &u32) -> Expr {
+    fn wrap_with_rec(&mut self, arg: &ExprOrSpread, argrec_ident_name: &String, arg_pos: &u32) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
@@ -164,7 +164,7 @@ impl TransformVisitor {
         })
     }
 
-    fn enclose_in_tap (&mut self, expr: &Expr) -> Expr {
+    fn wrap_with_tap(&mut self, expr: &Expr) -> Expr {
         let arg_recorder = self.arg_recorder.as_ref().unwrap();
         let arg_pos = expr.span_lo().0 - arg_recorder.assertion_start_pos;
         Expr::Call(CallExpr {
@@ -233,7 +233,7 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_decorator_decl(&self, decorator_metadata: &DecoratorMetadata) -> Stmt {
+    fn create_powered_runner_decl(&self, decorator_metadata: &DecoratorMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -345,7 +345,7 @@ impl VisitMut for TransformVisitor {
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
         for decorator in self.decorator_metadata_vec.iter() {
-            new_items.push(ModuleItem::Stmt(self.create_decorator_decl(decorator)));
+            new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(decorator)));
         }
         for argrec in self.argrec_metadata_vec.iter() {
             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argrec)));
@@ -365,7 +365,7 @@ impl VisitMut for TransformVisitor {
         stmts.visit_mut_children_with(self);
         let mut new_items: Vec<Stmt> = Vec::new();
         for decorator in self.decorator_metadata_vec.iter() {
-            new_items.push(self.create_decorator_decl(decorator));
+            new_items.push(self.create_powered_runner_decl(decorator));
         }
         for argrec in self.argrec_metadata_vec.iter() {
             new_items.push(self.create_argrec_decl(argrec));
@@ -384,7 +384,7 @@ impl VisitMut for TransformVisitor {
                         } else if self.target_variables.contains(&ident.sym) {
                             self.is_capturing = true;
                             self.is_captured = false;
-                            let powered_ident_name = self.next_powered_variable_name();
+                            let powered_ident_name = self.next_powered_runner_variable_name();
                             let assertion_start_pos = n.span_lo().0;
 
                             match self.code {
@@ -426,7 +426,7 @@ impl VisitMut for TransformVisitor {
                                 // wrap argument with arg_recorder
                                 *arg = ExprOrSpread {
                                     spread: None,
-                                    expr: Box::new(self.enclose_in_rec(&arg, &argrec_ident_name, &arg_pos))
+                                    expr: Box::new(self.wrap_with_rec(&arg, &argrec_ident_name, &arg_pos))
                                 };
 
                                 // make arg_recorder None then store it to vec for later use
@@ -456,7 +456,7 @@ impl VisitMut for TransformVisitor {
     fn visit_mut_expr(&mut self, n: &mut Expr) {
         n.visit_mut_children_with(self);
         if self.arg_recorder.is_some() {
-            *n = self.enclose_in_tap(n);
+            *n = self.wrap_with_tap(n);
         }
     }
 }
