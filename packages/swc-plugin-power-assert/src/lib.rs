@@ -183,15 +183,13 @@ impl TransformVisitor {
         })
     }
 
-    fn wrap_with_tap(&self, expr: &Expr) -> Expr {
-        let arg_recorder = self.arg_recorder.as_ref().unwrap();
-        let arg_pos = expr.span_lo().0 - arg_recorder.assertion_start_pos;
+    fn wrap_with_tap(&self, expr: &Expr, argrec_ident_name: &String, pos: &u32) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
                 MemberExpr {
                     span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(arg_recorder.ident_name.clone().into(), Span::default()))),
+                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.clone().into(), Span::default()))),
                     prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
                 }
             ))),
@@ -204,13 +202,17 @@ impl TransformVisitor {
                     spread: None,
                     expr: Box::new(Expr::Lit(Lit::Num(Number {
                         span: Span::default(),
-                        value: arg_pos.into(),
+                        value: *pos as f64,
                         raw: None
                     })))
                 }
             ],
             type_args: None,
         })
+    }
+
+    fn calculate_pos(&self, span: Span) -> u32 {
+        span.lo.0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos
     }
 
     fn create_argrec_decl(&self, argrec: &ArgRecorderMetadata) -> Stmt {
@@ -481,7 +483,9 @@ impl VisitMut for TransformVisitor {
             return;
         }
         // save expr position here
+        let expr_pos = self.calculate_pos(n.span());
         n.visit_mut_children_with(self);
+        let arg_rec = self.arg_recorder.as_ref().unwrap();
         match n {
             Expr::Seq(_) => {
                 // do not capture sequence expression itself
@@ -490,7 +494,7 @@ impl VisitMut for TransformVisitor {
                 // do not capture parenthesized expression itself
             },
             _ => {
-                *n = self.wrap_with_tap(n);
+                *n = self.wrap_with_tap(n, &arg_rec.ident_name, &expr_pos);
             }
         }
         // println!("############ leave expr: {:?}", n);
