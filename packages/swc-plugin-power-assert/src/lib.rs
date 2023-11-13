@@ -139,7 +139,34 @@ impl TransformVisitor {
         ))
     }
 
-    fn wrap_with_rec(&mut self, arg: &ExprOrSpread, argrec_ident_name: &String, arg_pos: &u32) -> Expr {
+    fn replace_tap_right_under_the_arg_to_rec(&mut self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
+        match arg.expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), .. }) => {
+                match callee.as_mut() {
+                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ident) => {
+                                if ident.sym == *argrec_ident_name {
+                                    if let MemberProp::Ident(prop_ident) = prop {
+                                        if prop_ident.sym == "tap" {
+                                            *prop_ident = Ident::new("rec".into(), Span::default());
+                                            return true;
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+        false
+    }
+
+    fn enclose_in_rec_without_pos(&mut self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
@@ -150,15 +177,7 @@ impl TransformVisitor {
                 }
             ))),
             args: vec![
-                arg.clone(),
-                ExprOrSpread {
-                    spread: None,
-                    expr: Box::new(Expr::Lit(Lit::Num(Number {
-                        span: Span::default(),
-                        value: *arg_pos as f64,
-                        raw: None
-                    })))
-                }
+                arg.clone()
             ],
             type_args: None,
         })
@@ -412,7 +431,6 @@ impl VisitMut for TransformVisitor {
                             for (idx, arg) in n.args.iter_mut().enumerate() {
                                 // const _parg1 = _pasrt1.recorder(0);
                                 let argrec_ident_name = self.next_argrec_variable_name();
-                                let arg_pos = arg.span_lo().0 - assertion_start_pos;
                                 self.arg_recorder = Some(ArgRecorderMetadata {
                                     ident_name: argrec_ident_name.clone(),
                                     arg_index: idx,
@@ -424,10 +442,13 @@ impl VisitMut for TransformVisitor {
                                 arg.visit_mut_children_with(self);
 
                                 // wrap argument with arg_recorder
-                                *arg = ExprOrSpread {
-                                    spread: None,
-                                    expr: Box::new(self.wrap_with_rec(&arg, &argrec_ident_name, &arg_pos))
-                                };
+                                let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
+                                if !changed {
+                                    *arg = ExprOrSpread {
+                                        spread: None,
+                                        expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
+                                    };
+                                }
 
                                 // make arg_recorder None then store it to vec for later use
                                 self.argrec_metadata_vec.push(self.arg_recorder.take().unwrap());
@@ -454,10 +475,22 @@ impl VisitMut for TransformVisitor {
     }
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
+        // println!("############ enter expr: {:?}", n);
         n.visit_mut_children_with(self);
         if self.arg_recorder.is_some() {
-            *n = self.wrap_with_tap(n);
+            match n {
+                Expr::Seq(_) => {
+                    // do not capture sequence expression itself
+                },
+                Expr::Paren(_) => {
+                    // do not capture parenthesized expression itself
+                },
+                _ => {
+                    *n = self.wrap_with_tap(n);
+                }
+            }
         }
+        // println!("############ leave expr: {:?}", n);
     }
 }
 
