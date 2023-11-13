@@ -211,8 +211,8 @@ impl TransformVisitor {
         })
     }
 
-    fn calculate_pos(&self, span: Span) -> u32 {
-        span.lo.0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos
+    fn calculate_pos(&self, expr: &Expr) -> u32 {
+        expr.span_lo().0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos
     }
 
     fn create_argrec_decl(&self, argrec: &ArgRecorderMetadata) -> Stmt {
@@ -483,7 +483,7 @@ impl VisitMut for TransformVisitor {
             return;
         }
         // save expr position here
-        let expr_pos = self.calculate_pos(n.span());
+        let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
         let arg_rec = self.arg_recorder.as_ref().unwrap();
         match n {
