@@ -11,6 +11,7 @@ use swc_core::ecma::{
         Ident,
         BindingIdent,
         CallExpr,
+        BinExpr,
         Expr,
         ExprOrSpread,
         Pat,
@@ -212,7 +213,28 @@ impl TransformVisitor {
     }
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
-        expr.span_lo().0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos
+        let default_pos = expr.span_lo().0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos;
+        match expr {
+            Expr::Member(_) => {
+                default_pos
+            },
+            Expr::Call(_) => {
+                default_pos
+            },
+            Expr::Bin(BinExpr{ left, op, ..}) => {
+                // estree's LogicalExpression is mapped to BinaryExpression in swc
+                default_pos
+            },
+            Expr::Assign(_) => {
+                default_pos
+            }
+            Expr::Cond(_) => {
+                default_pos
+            },
+            _ => {
+                default_pos
+            }
+        }
     }
 
     fn create_argrec_decl(&self, argrec: &ArgRecorderMetadata) -> Stmt {
