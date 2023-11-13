@@ -129,7 +129,7 @@ impl TransformVisitor {
         self.argrec_metadata_vec.clear();
     }
 
-    fn replace_calee_with_powered_run (&mut self, powered_ident_name: &String) -> Callee {
+    fn replace_calee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
@@ -139,7 +139,7 @@ impl TransformVisitor {
         ))
     }
 
-    fn replace_tap_right_under_the_arg_to_rec(&mut self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
+    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
         match arg.expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), .. }) => {
                 match callee.as_mut() {
@@ -166,7 +166,7 @@ impl TransformVisitor {
         false
     }
 
-    fn enclose_in_rec_without_pos(&mut self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
+    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
@@ -183,7 +183,7 @@ impl TransformVisitor {
         })
     }
 
-    fn wrap_with_tap(&mut self, expr: &Expr) -> Expr {
+    fn wrap_with_tap(&self, expr: &Expr) -> Expr {
         let arg_recorder = self.arg_recorder.as_ref().unwrap();
         let arg_pos = expr.span_lo().0 - arg_recorder.assertion_start_pos;
         Expr::Call(CallExpr {
