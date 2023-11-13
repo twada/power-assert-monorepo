@@ -476,18 +476,21 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
         // println!("############ enter expr: {:?}", n);
+        if self.arg_recorder.is_some() == false {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        // save expr position here
         n.visit_mut_children_with(self);
-        if self.arg_recorder.is_some() {
-            match n {
-                Expr::Seq(_) => {
-                    // do not capture sequence expression itself
-                },
-                Expr::Paren(_) => {
-                    // do not capture parenthesized expression itself
-                },
-                _ => {
-                    *n = self.wrap_with_tap(n);
-                }
+        match n {
+            Expr::Seq(_) => {
+                // do not capture sequence expression itself
+            },
+            Expr::Paren(_) => {
+                // do not capture parenthesized expression itself
+            },
+            _ => {
+                *n = self.wrap_with_tap(n);
             }
         }
         // println!("############ leave expr: {:?}", n);
