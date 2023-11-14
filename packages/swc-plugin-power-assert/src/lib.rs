@@ -31,6 +31,7 @@ use swc_core::ecma::{
         MemberProp,
         ComputedPropName,
         AssignExpr,
+        CondExpr,
         Callee
     },
     atoms::JsWord,
@@ -260,8 +261,11 @@ impl TransformVisitor {
                 let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
                 found_pos
             }
-            Expr::Cond(_) => {
-                default_pos
+            Expr::Cond(CondExpr{ test, .. }) => {
+                let search_start_pos = test.span_hi().0 - assertion_start_pos;
+                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
+                let found_pos = code[search_start_pos as usize..].find("?").unwrap_or(0) as u32 + search_start_pos;
+                found_pos
             },
             _ => {
                 default_pos
@@ -561,15 +565,13 @@ impl VisitMut for TransformVisitor {
                     Expr::Member(MemberExpr{ prop, obj, .. }) => {
                         match prop {
                             MemberProp::Ident(prop_ident) => {
-                                if self.assertion_metadata.is_some() {
-                                    // callexp inside assertion
+                                if self.assertion_metadata.is_some() { // callexp inside assertion
                                     // memo: do not visit and wrap prop if prop is Ident
                                     obj.visit_mut_with(self);
                                     for arg in n.args.iter_mut() {
                                         arg.visit_mut_with(self);
                                     }
-                                } else {
-                                    // callexp outside assertion
+                                } else { // callexp outside assertion
                                     match obj.as_ref() {
                                         Expr::Ident(ref obj_ident) => {
                                             if self.target_variables.contains(&obj_ident.sym) {
