@@ -2,9 +2,7 @@ import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert([foo, bar])");
 const _parg1 = _pasrt1.recorder(0);
-const _pasrt2 = _power_(assert, null, "assert(typeof [[foo.bar, baz(moo)], + fourStr] === 'number')", {
-  binexp: "==="
-});
+const _pasrt2 = _power_(assert, null, "assert(typeof [[foo.bar, baz(moo)], + fourStr] === 'number')");
 const _parg2 = _pasrt2.recorder(0);
 const _pasrt3 = _power_(assert.notDeepEqual, assert, "assert.notDeepEqual([foo, bar], [hoge, fuga, piyo])");
 const _parg3 = _pasrt3.recorder(0);
