@@ -105,6 +105,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
         left
       };
       this.#capturedValues.push(cap);
+      // capture asesert.throws, assert.doesNotThrow, assert.rejects, assert.doesNotReject
       if (typeof value === 'function') {
         value = new Proxy(value, {
           apply (target, thisArg, args) {
