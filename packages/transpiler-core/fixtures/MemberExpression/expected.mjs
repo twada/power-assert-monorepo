@@ -1,5 +1,5 @@
 import {describe, it} from 'node:test';
-import assert from 'node:assert/strict';
+import assert from 'node:assert';
 import {_power_} from "@power-assert/runtime";
 describe('description', () => {
   it('non-computed', () => {
