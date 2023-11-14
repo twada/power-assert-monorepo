@@ -230,33 +230,17 @@ impl TransformVisitor {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
-                    MemberProp::Computed(ComputedPropName{ span, .. }) => {
-                        span.lo.0 - assertion_start_pos
-                    },
-                    MemberProp::Ident(Ident { span, .. }) => {
-                        span.lo.0 - assertion_start_pos
-                    },
-                    _ => {
-                        expr.span_lo().0 - assertion_start_pos
-                    }
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => span.lo.0 - assertion_start_pos,
+                    MemberProp::Ident(Ident { span, .. }) => span.lo.0 - assertion_start_pos,
+                    _ => expr.span_lo().0 - assertion_start_pos
                 }
             },
-            Expr::Call(CallExpr{ callee, .. }) => {
-                self.search_pos_for("(", &callee.span())
-            },
+            Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span()),
             // estree's LogicalExpression is mapped to BinaryExpression in swc
-            Expr::Bin(BinExpr{ left, op, ..}) => {
-                self.search_pos_for(op.as_str(), &left.span())
-            },
-            Expr::Assign(AssignExpr{ left, op, .. }) => {
-                self.search_pos_for(op.as_str(), &left.span())
-            }
-            Expr::Cond(CondExpr{ test, .. }) => {
-                self.search_pos_for("?", &test.span())
-            },
-            _ => {
-                expr.span_lo().0 - assertion_start_pos
-            }
+            Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span()),
+            Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span()),
+            Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span()),
+            _ => expr.span_lo().0 - assertion_start_pos
         }
     }
 
