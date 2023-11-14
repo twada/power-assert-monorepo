@@ -29,6 +29,7 @@ use swc_core::ecma::{
         ModuleExportName,
         MemberExpr,
         MemberProp,
+        ComputedPropName,
         Callee
     },
     atoms::JsWord,
@@ -54,6 +55,11 @@ struct ArgumentMetadata {
     powered_ident_name: String
 }
 
+// enum Metadata {
+//     Assertion(AssertionMetadata),
+//     Argument(ArgumentMetadata)
+// }
+
 pub struct TransformVisitor {
     is_capturing: bool,
     is_captured: bool,
@@ -64,6 +70,7 @@ pub struct TransformVisitor {
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
     argument_metadata: Option<ArgumentMetadata>,
+    // metadata_vec: Vec<Metadata>,
     code: Option<Arc<String>>
 }
 
@@ -79,6 +86,7 @@ impl TransformVisitor {
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
+            // metadata_vec: Vec::new(),
             code: None
         }
     }
@@ -94,6 +102,7 @@ impl TransformVisitor {
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
+            // metadata_vec: Vec::new(),
             code: Some(Arc::new(code.into()))
         }
     }
@@ -115,6 +124,7 @@ impl TransformVisitor {
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
+            // metadata_vec: Vec::new(),
             code
         }
     }
@@ -132,6 +142,7 @@ impl TransformVisitor {
     fn clear_transformations(&mut self) {
         self.assertion_metadata_vec.clear();
         self.argument_metadata_vec.clear();
+        // self.metadata_vec.clear();
     }
 
     fn replace_calee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
@@ -217,17 +228,28 @@ impl TransformVisitor {
     }
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
-        let default_pos = expr.span_lo().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+        let default_pos = expr.span_lo().0 - assertion_start_pos;
         match expr {
-            Expr::Member(_) => {
-                default_pos
+            Expr::Member(MemberExpr{ prop, .. }) => {
+                match prop {
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => {
+                        span.lo.0 - assertion_start_pos
+                    },
+                    MemberProp::Ident(Ident { span, .. }) => {
+                        span.lo.0 - assertion_start_pos
+                    },
+                    _ => {
+                        default_pos
+                    }
+                }
             },
             Expr::Call(_) => {
                 default_pos
             },
             // estree's LogicalExpression is mapped to BinaryExpression in swc
             Expr::Bin(BinExpr{ left, op, ..}) => {
-                let search_start_pos = left.span_hi().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+                let search_start_pos = left.span_hi().0 - assertion_start_pos;
                 let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
 
                 // search op position in code from search_start_pos
@@ -286,7 +308,7 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_powered_runner_decl(&self, decorator_metadata: &AssertionMetadata) -> Stmt {
+    fn create_powered_runner_decl(&self, assertion_metadata: &AssertionMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -295,7 +317,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(decorator_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(assertion_metadata.ident_name.clone().into(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -306,12 +328,12 @@ impl TransformVisitor {
                         args: vec![
                             ExprOrSpread {
                                 spread: None,
-                                expr: Box::new(Expr::Ident(Ident::new(decorator_metadata.callee_ident_name.clone().into(), Span::default())))
+                                expr: Box::new(Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default())))
                             },
                             ExprOrSpread {
                                 spread: None,
                                 expr: Box::new(
-                                    match &decorator_metadata.receiver_ident_name {
+                                    match &assertion_metadata.receiver_ident_name {
                                         Some(receiver_ident_name) => {
                                             Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
                                         },
@@ -323,7 +345,7 @@ impl TransformVisitor {
                             },
                             ExprOrSpread {
                                 spread: None,
-                                expr: Box::new(Expr::Lit(Lit::Str(decorator_metadata.assertion_code.clone().into())))
+                                expr: Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into())))
                             }
                         ],
                         type_args: None,
@@ -397,11 +419,21 @@ impl VisitMut for TransformVisitor {
         n.visit_mut_children_with(self);
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
-        for decorator in self.assertion_metadata_vec.iter() {
-            new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(decorator)));
+        // for metadata in self.metadata_vec.iter() {
+        //     match metadata {
+        //         Metadata::Assertion(assertion_metadata) => {
+        //             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
+        //         },
+        //         Metadata::Argument(argument_metadata) => {
+        //             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
+        //         }
+        //     }
+        // }
+        for assertion_metadata in self.assertion_metadata_vec.iter() {
+            new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
         }
-        for argrec in self.argument_metadata_vec.iter() {
-            new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argrec)));
+        for argument_metadata in self.argument_metadata_vec.iter() {
+            new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
         }
         let end_of_import_position = n.iter().position(|item| {
             match item {
@@ -417,11 +449,21 @@ impl VisitMut for TransformVisitor {
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
         let mut new_items: Vec<Stmt> = Vec::new();
-        for decorator in self.assertion_metadata_vec.iter() {
-            new_items.push(self.create_powered_runner_decl(decorator));
+        // for metadata in self.metadata_vec.iter() {
+        //     match metadata {
+        //         Metadata::Assertion(assertion_metadata) => {
+        //             new_items.push(self.create_powered_runner_decl(assertion_metadata));
+        //         },
+        //         Metadata::Argument(argument_metadata) => {
+        //             new_items.push(self.create_argrec_decl(argument_metadata));
+        //         }
+        //     }
+        // }
+        for assertion_metadata in self.assertion_metadata_vec.iter() {
+            new_items.push(self.create_powered_runner_decl(assertion_metadata));
         }
-        for argrec in self.argument_metadata_vec.iter() {
-            new_items.push(self.create_argrec_decl(argrec));
+        for argument_metadata in self.argument_metadata_vec.iter() {
+            new_items.push(self.create_argrec_decl(argument_metadata));
         }
         stmts.splice(0..0, new_items);
         self.clear_transformations();
@@ -487,6 +529,7 @@ impl VisitMut for TransformVisitor {
 
                                 // make argument_metadata None then store it to vec for later use
                                 self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
+                                // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
                             }
 
                             //TODO: if is_captured {
@@ -494,6 +537,7 @@ impl VisitMut for TransformVisitor {
 
                             // make assertion_metadata None then store it to vec for later use
                             self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
+                            // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
 
                             self.is_capturing = false;
                             self.is_captured = false;
@@ -568,7 +612,7 @@ mod tests {
     use std::fs;
     use super::TransformVisitor;
 
-    #[testing::fixture("tests/fixtures/*/input.mjs")]
+    #[testing::fixture("tests/fixtures/*/fixture.mjs")]
     fn test_with_fixtures(input: PathBuf) {
         let output = input.with_file_name("expected.mjs");
         let code = fs::read_to_string(&input).unwrap();
