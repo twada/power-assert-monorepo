@@ -244,18 +244,18 @@ impl TransformVisitor {
                     }
                 }
             },
-            Expr::Call(_) => {
-                default_pos
+            Expr::Call(CallExpr{ callee, .. }) => {
+                let search_start_pos = callee.span_hi().0 - assertion_start_pos;
+                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
+                let found_pos = code[search_start_pos as usize..].find("(").unwrap_or(0) as u32 + search_start_pos;
+                found_pos
             },
             // estree's LogicalExpression is mapped to BinaryExpression in swc
             Expr::Bin(BinExpr{ left, op, ..}) => {
                 let search_start_pos = left.span_hi().0 - assertion_start_pos;
                 let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-
-                // search op position in code from search_start_pos
-                let op_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
-
-                op_pos
+                let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
+                found_pos
             },
             Expr::Assign(_) => {
                 default_pos
@@ -269,7 +269,7 @@ impl TransformVisitor {
         }
     }
 
-    fn create_argrec_decl(&self, argrec: &ArgumentMetadata) -> Stmt {
+    fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -278,7 +278,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(argrec.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(argument_metadata.ident_name.clone().into(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -286,7 +286,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(argrec.powered_ident_name.clone().into(), Span::default()))),
+                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone().into(), Span::default()))),
                                 prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
                             }
                         ))),
@@ -295,7 +295,7 @@ impl TransformVisitor {
                                 spread: None,
                                 expr: Box::new(Expr::Lit(Lit::Num(Number {
                                     span: Span::default(),
-                                    value: argrec.arg_index as f64,
+                                    value: argument_metadata.arg_index as f64,
                                     raw: None
                                 })))
                             }
@@ -471,16 +471,50 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
         match n.callee {
-            Callee::Expr(ref expr) => {
-                match expr.as_ref() {
+            Callee::Expr(ref mut expr) => {
+                match expr.as_mut() {
+                    Expr::Member(MemberExpr{ prop, obj, .. }) => {
+                        match prop {
+                            MemberProp::Ident(_) => {
+                                if self.assertion_metadata.is_none() {
+                                    // callexp outside assertion
+                                    // TODO: target variable check
+                                } else if self.argument_metadata.is_none() {
+                                    // callexp outside assertion
+                                    n.visit_mut_children_with(self);
+                                    return;
+                                } else {
+                                    // callexp inside assertion
+                                    // do not visit and wrap prop if prop is Ident
+                                    let expr_pos = self.calculate_pos(&obj);
+                                    obj.visit_mut_children_with(self);
+                                    for arg in n.args.iter_mut() {
+                                        arg.visit_mut_children_with(self);
+                                    }
+                                    let argmeta = self.argument_metadata.as_ref().unwrap();
+                                    // wrap obj with tap
+                                    *obj = Box::new(self.wrap_with_tap(obj, &argmeta.ident_name, &expr_pos));
+                                }
+                            },
+                            _ => {
+                                n.visit_mut_children_with(self);
+                            }
+                        }
+                    },
                     Expr::Ident(ref ident) => {
                         if self.is_capturing {
-                            n.visit_mut_children_with(self);
+                            // callexp outside assertion
+                            // n.visit_mut_children_with(self);
+                            // enter arguments
+                            for arg in n.args.iter_mut() {
+                                arg.visit_mut_children_with(self);
+                            }
                         } else if self.target_variables.contains(&ident.sym) {
                             self.is_capturing = true;
                             self.is_captured = false;
                             let powered_ident_name = self.next_powered_runner_variable_name();
-                            let assertion_start_pos = n.span_lo().0;
+                            // let assertion_start_pos = n.span_lo().0;
+                            let assertion_start_pos = n.span.lo.0;
 
                             match self.code {
                                 Some(ref code) => {
@@ -501,10 +535,10 @@ impl VisitMut for TransformVisitor {
                                 }
                             }
 
-                            // enter callee
-                            n.callee.visit_mut_children_with(self);
+                            // do not enter callee ident
+                            // n.callee.visit_mut_children_with(self);
 
-                            // then enter arguments
+                            // enter arguments
                             for (idx, arg) in n.args.iter_mut().enumerate() {
                                 // const _parg1 = _pasrt1.recorder(0);
                                 let argrec_ident_name = self.next_argrec_variable_name();
@@ -542,6 +576,7 @@ impl VisitMut for TransformVisitor {
                             self.is_capturing = false;
                             self.is_captured = false;
                         } else {
+                            // callexp outside assertion
                             n.visit_mut_children_with(self);
                         }
                     },
@@ -557,11 +592,11 @@ impl VisitMut for TransformVisitor {
     }
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
-        // println!("############ enter expr: {:?}", n);
-        if self.argument_metadata.is_some() == false {
+        if self.argument_metadata.is_none() {
             n.visit_mut_children_with(self);
             return;
         }
+        // println!("############ enter expr: {:?}", n);
         // save expr position here
         let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
