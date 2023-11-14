@@ -387,6 +387,74 @@ impl TransformVisitor {
             with: None
         }))
     }
+
+    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: String, obj_ident_name: Option<String>) {
+        self.is_captured = false;
+        let powered_ident_name = self.next_powered_runner_variable_name();
+        let assertion_start_pos = n.span.lo.0;
+
+        match self.code {
+            Some(ref code) => {
+                let start = (n.span.lo.0 - 1) as usize;
+                let end = (n.span.hi.0 - 1) as usize;
+                let assertion_code = code[start..end].to_string();
+
+                self.assertion_metadata = Some(AssertionMetadata {
+                    ident_name: powered_ident_name.clone(),
+                    callee_ident_name: prop_ident_name.clone(),
+                    receiver_ident_name: obj_ident_name,
+                    assertion_code: assertion_code
+                });
+            },
+            None => {
+                // TODO: error handling
+                panic!("code is None");
+                // return;
+            }
+        }
+
+        // do not enter callee ident
+        // n.callee.visit_mut_children_with(self);
+
+        // enter arguments
+        for (idx, arg) in n.args.iter_mut().enumerate() {
+            // const _parg1 = _pasrt1.recorder(0);
+            let argrec_ident_name = self.next_argrec_variable_name();
+            self.argument_metadata = Some(ArgumentMetadata {
+                ident_name: argrec_ident_name.clone(),
+                arg_index: idx,
+                assertion_start_pos,
+                powered_ident_name: powered_ident_name.clone()
+            });
+
+            // enter argument
+            arg.visit_mut_with(self);
+
+            // wrap argument with arg_recorder
+            let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
+            if !changed {
+                *arg = ExprOrSpread {
+                    spread: None,
+                    expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
+                };
+            }
+
+            // make argument_metadata None then store it to vec for later use
+            self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
+            // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
+        }
+
+        //TODO: if is_captured {
+        n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
+
+        // make assertion_metadata None then store it to vec for later use
+        self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
+        // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
+
+        self.is_captured = false;
+    }
+
+
 }
 
 
@@ -485,94 +553,33 @@ impl VisitMut for TransformVisitor {
     }
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
+        let mut prop_name: Option<String> = None;
+        let mut obj_name: Option<String> = None;
         match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop, obj, .. }) => {
                         match prop {
-                            MemberProp::Ident(ref prop_ident) => {
-                                if self.assertion_metadata.is_none() {
-                                    // callexp outside assertion
-                                    // TODO: target variable check
-                                    match obj.as_ref() {
-                                        Expr::Ident(ref obj_ident) => {
-                                            if self.target_variables.contains(&obj_ident.sym) {
-                                                self.is_captured = false;
-                                                let powered_ident_name = self.next_powered_runner_variable_name();
-                                                let assertion_start_pos = n.span.lo.0;
-
-                                                match self.code {
-                                                    Some(ref code) => {
-                                                        let start = (n.span.lo.0 - 1) as usize;
-                                                        let end = (n.span.hi.0 - 1) as usize;
-                                                        let assertion_code = code[start..end].to_string();
-
-                                                        self.assertion_metadata = Some(AssertionMetadata {
-                                                            ident_name: powered_ident_name.clone(),
-                                                            callee_ident_name: prop_ident.sym.to_string(),
-                                                            receiver_ident_name: Some(obj_ident.sym.to_string()),
-                                                            assertion_code: assertion_code
-                                                        });
-                                                    },
-                                                    None => {
-                                                        // TODO: error handling
-                                                        return;
-                                                    }
-                                                }
-
-                                                // do not enter callee ident
-                                                // n.callee.visit_mut_children_with(self);
-
-                                                // enter arguments
-                                                for (idx, arg) in n.args.iter_mut().enumerate() {
-                                                    // const _parg1 = _pasrt1.recorder(0);
-                                                    let argrec_ident_name = self.next_argrec_variable_name();
-                                                    self.argument_metadata = Some(ArgumentMetadata {
-                                                        ident_name: argrec_ident_name.clone(),
-                                                        arg_index: idx,
-                                                        assertion_start_pos,
-                                                        powered_ident_name: powered_ident_name.clone()
-                                                    });
-
-                                                    // enter argument
-                                                    arg.visit_mut_with(self);
-
-                                                    // wrap argument with arg_recorder
-                                                    let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
-                                                    if !changed {
-                                                        *arg = ExprOrSpread {
-                                                            spread: None,
-                                                            expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
-                                                        };
-                                                    }
-
-                                                    // make argument_metadata None then store it to vec for later use
-                                                    self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
-                                                    // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
-                                                }
-
-                                                //TODO: if is_captured {
-                                                n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
-
-                                                // make assertion_metadata None then store it to vec for later use
-                                                self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
-                                                // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
-
-                                                self.is_captured = false;
-                                            }
-                                        },
-                                        _ => {}
-                                    }
-                                } else if self.argument_metadata.is_none() {
-                                    // callexp outside assertion
-                                    n.visit_mut_children_with(self);
-                                    return;
-                                } else {
+                            MemberProp::Ident(prop_ident) => {
+                                if self.assertion_metadata.is_some() {
                                     // callexp inside assertion
                                     // memo: do not visit and wrap prop if prop is Ident
                                     obj.visit_mut_with(self);
                                     for arg in n.args.iter_mut() {
                                         arg.visit_mut_with(self);
+                                    }
+                                } else {
+                                    // callexp outside assertion
+                                    match obj.as_ref() {
+                                        Expr::Ident(ref obj_ident) => {
+                                            if self.target_variables.contains(&obj_ident.sym) {
+                                                prop_name = Some(prop_ident.sym.to_string());
+                                                obj_name = Some(obj_ident.sym.to_string());
+                                            }
+                                        },
+                                        _ => {
+                                            n.visit_mut_children_with(self);
+                                        }
                                     }
                                 }
                             },
@@ -582,78 +589,17 @@ impl VisitMut for TransformVisitor {
                         }
                     },
                     Expr::Ident(ref ident) => {
-                        if self.assertion_metadata.is_some() {
-                            // callexp inside assertion
+                        if self.assertion_metadata.is_some() { // callexp inside assertion
                             // memo: do not wrap callee if callee is Ident
                             for arg in n.args.iter_mut() {
                                 arg.visit_mut_with(self);
                             }
-                        } else if self.target_variables.contains(&ident.sym) {
-                            self.is_captured = false;
-                            let powered_ident_name = self.next_powered_runner_variable_name();
-                            let assertion_start_pos = n.span.lo.0;
-
-                            match self.code {
-                                Some(ref code) => {
-                                    let start = (n.span.lo.0 - 1) as usize;
-                                    let end = (n.span.hi.0 - 1) as usize;
-                                    let assertion_code = code[start..end].to_string();
-
-                                    self.assertion_metadata = Some(AssertionMetadata {
-                                        ident_name: powered_ident_name.clone(),
-                                        callee_ident_name: ident.sym.to_string(),
-                                        receiver_ident_name: None,
-                                        assertion_code: assertion_code
-                                    });
-                                },
-                                None => {
-                                    // TODO: error handling
-                                    return;
-                                }
+                        } else { // callexp outside assertion
+                            if self.target_variables.contains(&ident.sym) {
+                                prop_name = Some(ident.sym.to_string());
+                            } else {
+                                n.visit_mut_children_with(self);
                             }
-
-                            // do not enter callee ident
-                            // n.callee.visit_mut_children_with(self);
-
-                            // enter arguments
-                            for (idx, arg) in n.args.iter_mut().enumerate() {
-                                // const _parg1 = _pasrt1.recorder(0);
-                                let argrec_ident_name = self.next_argrec_variable_name();
-                                self.argument_metadata = Some(ArgumentMetadata {
-                                    ident_name: argrec_ident_name.clone(),
-                                    arg_index: idx,
-                                    assertion_start_pos,
-                                    powered_ident_name: powered_ident_name.clone()
-                                });
-
-                                // enter argument
-                                arg.visit_mut_with(self);
-
-                                // wrap argument with arg_recorder
-                                let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
-                                if !changed {
-                                    *arg = ExprOrSpread {
-                                        spread: None,
-                                        expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
-                                    };
-                                }
-
-                                // make argument_metadata None then store it to vec for later use
-                                self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
-                                // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
-                            }
-
-                            //TODO: if is_captured {
-                            n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
-
-                            // make assertion_metadata None then store it to vec for later use
-                            self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
-                            // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
-
-                            self.is_captured = false;
-                        } else {
-                            // callexp outside assertion
-                            n.visit_mut_children_with(self);
                         }
                     },
                     _ => {
@@ -664,6 +610,9 @@ impl VisitMut for TransformVisitor {
             _ => {
                 n.visit_mut_children_with(self);
             }
+        }
+        if prop_name.is_some() {
+            self.capture_assertion(n, prop_name.unwrap(), obj_name);
         }
     }
 
