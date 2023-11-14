@@ -225,9 +225,15 @@ impl TransformVisitor {
             Expr::Call(_) => {
                 default_pos
             },
+            // estree's LogicalExpression is mapped to BinaryExpression in swc
             Expr::Bin(BinExpr{ left, op, ..}) => {
-                // estree's LogicalExpression is mapped to BinaryExpression in swc
-                default_pos
+                let search_start_pos = left.span_hi().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
+
+                // search op position in code from search_start_pos
+                let op_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
+
+                op_pos
             },
             Expr::Assign(_) => {
                 default_pos

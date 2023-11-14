@@ -13,7 +13,7 @@ describe("description", ()=>{
         const _parg2 = _pasrt2.recorder(0);
         const truthy = 1;
         const falsy = 0;
-        _pasrt2.run(_parg2.rec(_parg2.tap(truthy, 7) === _parg2.tap(falsy, 18), 7));
+        _pasrt2.run(_parg2.rec(_parg2.tap(truthy, 7) === _parg2.tap(falsy, 18), 14));
     });
     describe("nested", ()=>{
         it("test3", ()=>{
@@ -21,7 +21,7 @@ describe("description", ()=>{
             const _parg3 = _pasrt3.recorder(0);
             const truthy = 0;
             const another = 0;
-            _pasrt3.run(_parg3.rec(_parg3.tap(truthy, 7) !== _parg3.tap(another, 18), 7));
+            _pasrt3.run(_parg3.rec(_parg3.tap(truthy, 7) !== _parg3.tap(another, 18), 14));
         });
     });
 });
