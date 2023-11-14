@@ -62,7 +62,6 @@ struct ArgumentMetadata {
 // }
 
 pub struct TransformVisitor {
-    is_capturing: bool,
     is_captured: bool,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
@@ -78,7 +77,6 @@ pub struct TransformVisitor {
 impl TransformVisitor {
     pub fn new() -> TransformVisitor {
         TransformVisitor {
-            is_capturing: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -94,7 +92,6 @@ impl TransformVisitor {
 
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
-            is_capturing: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -116,7 +113,6 @@ impl TransformVisitor {
             None => None
         };
         TransformVisitor {
-            is_capturing: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -502,14 +498,13 @@ impl VisitMut for TransformVisitor {
                         }
                     },
                     Expr::Ident(ref ident) => {
-                        if self.is_capturing {
+                        if self.assertion_metadata.is_some() {
                             // callexp inside assertion
                             // memo: do not wrap callee if callee is Ident
                             for arg in n.args.iter_mut() {
                                 arg.visit_mut_with(self);
                             }
                         } else if self.target_variables.contains(&ident.sym) {
-                            self.is_capturing = true;
                             self.is_captured = false;
                             let powered_ident_name = self.next_powered_runner_variable_name();
                             let assertion_start_pos = n.span.lo.0;
@@ -571,7 +566,6 @@ impl VisitMut for TransformVisitor {
                             self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
                             // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
 
-                            self.is_capturing = false;
                             self.is_captured = false;
                         } else {
                             // callexp outside assertion
