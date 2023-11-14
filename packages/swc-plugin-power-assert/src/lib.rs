@@ -490,14 +490,10 @@ impl VisitMut for TransformVisitor {
                                 } else {
                                     // callexp inside assertion
                                     // do not visit and wrap prop if prop is Ident
-                                    let expr_pos = self.calculate_pos(&obj);
-                                    obj.visit_mut_children_with(self);
+                                    obj.visit_mut_with(self);
                                     for arg in n.args.iter_mut() {
-                                        arg.visit_mut_children_with(self);
+                                        arg.visit_mut_with(self);
                                     }
-                                    let argmeta = self.argument_metadata.as_ref().unwrap();
-                                    // wrap obj with tap
-                                    *obj = Box::new(self.wrap_with_tap(obj, &argmeta.ident_name, &expr_pos));
                                 }
                             },
                             _ => {
@@ -511,7 +507,7 @@ impl VisitMut for TransformVisitor {
                             // n.visit_mut_children_with(self);
                             // enter arguments
                             for arg in n.args.iter_mut() {
-                                arg.visit_mut_children_with(self);
+                                arg.visit_mut_with(self);
                             }
                         } else if self.target_variables.contains(&ident.sym) {
                             self.is_capturing = true;
@@ -554,7 +550,7 @@ impl VisitMut for TransformVisitor {
                                 });
 
                                 // enter argument
-                                arg.visit_mut_children_with(self);
+                                arg.visit_mut_with(self);
 
                                 // wrap argument with arg_recorder
                                 let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
