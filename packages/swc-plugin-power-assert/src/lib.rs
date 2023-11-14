@@ -143,7 +143,7 @@ impl TransformVisitor {
         // self.metadata_vec.clear();
     }
 
-    fn replace_calee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
+    fn replace_callee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
@@ -449,7 +449,7 @@ impl TransformVisitor {
         }
 
         //TODO: if is_captured {
-        n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
+        n.callee = self.replace_callee_with_powered_run(&powered_ident_name);
 
         // make assertion_metadata None then store it to vec for later use
         self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
