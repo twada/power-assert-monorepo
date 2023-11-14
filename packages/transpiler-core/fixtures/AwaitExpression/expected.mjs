@@ -5,5 +5,5 @@ async function myAsync(a) {
     binexp: "==="
   });
   const _parg1 = _pasrt1.recorder(0);
-  _pasrt1.run(_parg1.rec(_parg1.tap(await a, "arguments/0/left", 8) === _parg1.tap(3, "arguments/0/right", 23), "arguments/0", 19));
+  _pasrt1.run(_parg1.rec(_parg1.tap(await a, 8) === _parg1.tap(3, 23), 19));
 }

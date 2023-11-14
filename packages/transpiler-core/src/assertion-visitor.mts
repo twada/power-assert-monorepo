@@ -185,11 +185,11 @@ class ArgumentModification {
   }
 
   #insertRecorderNode (currentNode: Node, astPath: AstPath, methodName: string, capture: boolean): CallExpression {
-    const relativeAstPath = this.#relativeAstPath(astPath);
+    // const relativeAstPath = this.#relativeAstPath(astPath);
     const types = nodeFactory(currentNode);
     const args = [
-      currentNode,
-      types.stringLiteral(relativeAstPath.join('/'))
+      currentNode
+      // types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
       const targetAddr = this.#targetAddress(currentNode);
