@@ -489,7 +489,7 @@ impl VisitMut for TransformVisitor {
                                     return;
                                 } else {
                                     // callexp inside assertion
-                                    // do not visit and wrap prop if prop is Ident
+                                    // memo: do not visit and wrap prop if prop is Ident
                                     obj.visit_mut_with(self);
                                     for arg in n.args.iter_mut() {
                                         arg.visit_mut_with(self);
@@ -503,9 +503,8 @@ impl VisitMut for TransformVisitor {
                     },
                     Expr::Ident(ref ident) => {
                         if self.is_capturing {
-                            // callexp outside assertion
-                            // n.visit_mut_children_with(self);
-                            // enter arguments
+                            // callexp inside assertion
+                            // memo: do not wrap callee if callee is Ident
                             for arg in n.args.iter_mut() {
                                 arg.visit_mut_with(self);
                             }
@@ -513,7 +512,6 @@ impl VisitMut for TransformVisitor {
                             self.is_capturing = true;
                             self.is_captured = false;
                             let powered_ident_name = self.next_powered_runner_variable_name();
-                            // let assertion_start_pos = n.span_lo().0;
                             let assertion_start_pos = n.span.lo.0;
 
                             match self.code {
