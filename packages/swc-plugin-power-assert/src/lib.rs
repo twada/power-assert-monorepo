@@ -30,6 +30,7 @@ use swc_core::ecma::{
         MemberExpr,
         MemberProp,
         ComputedPropName,
+        AssignExpr,
         Callee
     },
     atoms::JsWord,
@@ -257,8 +258,11 @@ impl TransformVisitor {
                 let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
                 found_pos
             },
-            Expr::Assign(_) => {
-                default_pos
+            Expr::Assign(AssignExpr{ left, op, .. }) => {
+                let search_start_pos = left.span_hi().0 - assertion_start_pos;
+                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
+                let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
+                found_pos
             }
             Expr::Cond(_) => {
                 default_pos
@@ -589,6 +593,15 @@ impl VisitMut for TransformVisitor {
                 n.visit_mut_children_with(self);
             }
         }
+    }
+
+    fn visit_mut_assign_expr(&mut self, n: &mut AssignExpr) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        // skip left side of assignment
+        n.right.visit_mut_with(self);
     }
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
