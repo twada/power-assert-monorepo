@@ -227,7 +227,6 @@ impl TransformVisitor {
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
         let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
-        let default_pos = expr.span_lo().0 - assertion_start_pos;
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
@@ -238,39 +237,35 @@ impl TransformVisitor {
                         span.lo.0 - assertion_start_pos
                     },
                     _ => {
-                        default_pos
+                        expr.span_lo().0 - assertion_start_pos
                     }
                 }
             },
             Expr::Call(CallExpr{ callee, .. }) => {
-                let search_start_pos = callee.span_hi().0 - assertion_start_pos;
-                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-                let found_pos = code[search_start_pos as usize..].find("(").unwrap_or(0) as u32 + search_start_pos;
-                found_pos
+                self.search_pos_for("(", &callee.span())
             },
             // estree's LogicalExpression is mapped to BinaryExpression in swc
             Expr::Bin(BinExpr{ left, op, ..}) => {
-                let search_start_pos = left.span_hi().0 - assertion_start_pos;
-                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-                let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
-                found_pos
+                self.search_pos_for(op.as_str(), &left.span())
             },
             Expr::Assign(AssignExpr{ left, op, .. }) => {
-                let search_start_pos = left.span_hi().0 - assertion_start_pos;
-                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-                let found_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
-                found_pos
+                self.search_pos_for(op.as_str(), &left.span())
             }
             Expr::Cond(CondExpr{ test, .. }) => {
-                let search_start_pos = test.span_hi().0 - assertion_start_pos;
-                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-                let found_pos = code[search_start_pos as usize..].find("?").unwrap_or(0) as u32 + search_start_pos;
-                found_pos
+                self.search_pos_for("?", &test.span())
             },
             _ => {
-                default_pos
+                expr.span_lo().0 - assertion_start_pos
             }
         }
+    }
+
+    fn search_pos_for(&self, search_target_str: &str, span: &Span) -> u32 {
+        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+        let search_start_pos = span.hi.0 - assertion_start_pos;
+        let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
+        let found_pos = code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos;
+        found_pos
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
