@@ -40,14 +40,14 @@ use swc_core::common::{
 };
 use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
 
-struct DecoratorMetadata {
+struct AssertionMetadata {
     ident_name: String,
     callee_ident_name: String,
     receiver_ident_name: Option<String>,
     assertion_code: String
 }
 
-struct ArgRecorderMetadata {
+struct ArgumentMetadata {
     ident_name: String,
     arg_index: usize,
     assertion_start_pos: u32,
@@ -60,9 +60,10 @@ pub struct TransformVisitor {
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: HashSet<JsWord>,
-    decorator_metadata_vec: Vec<DecoratorMetadata>,
-    argrec_metadata_vec: Vec<ArgRecorderMetadata>,
-    arg_recorder: Option<ArgRecorderMetadata>,
+    assertion_metadata_vec: Vec<AssertionMetadata>,
+    assertion_metadata: Option<AssertionMetadata>,
+    argument_metadata_vec: Vec<ArgumentMetadata>,
+    argument_metadata: Option<ArgumentMetadata>,
     code: Option<Arc<String>>
 }
 
@@ -74,9 +75,10 @@ impl TransformVisitor {
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
             target_variables: HashSet::new(),
-            decorator_metadata_vec: Vec::new(),
-            argrec_metadata_vec: Vec::new(),
-            arg_recorder: None,
+            assertion_metadata_vec: Vec::new(),
+            assertion_metadata: None,
+            argument_metadata_vec: Vec::new(),
+            argument_metadata: None,
             code: None
         }
     }
@@ -88,9 +90,10 @@ impl TransformVisitor {
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
             target_variables: HashSet::new(),
-            decorator_metadata_vec: Vec::new(),
-            argrec_metadata_vec: Vec::new(),
-            arg_recorder: None,
+            assertion_metadata_vec: Vec::new(),
+            assertion_metadata: None,
+            argument_metadata_vec: Vec::new(),
+            argument_metadata: None,
             code: Some(Arc::new(code.into()))
         }
     }
@@ -108,9 +111,10 @@ impl TransformVisitor {
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
             target_variables: HashSet::new(),
-            decorator_metadata_vec: Vec::new(),
-            argrec_metadata_vec: Vec::new(),
-            arg_recorder: None,
+            assertion_metadata_vec: Vec::new(),
+            assertion_metadata: None,
+            argument_metadata_vec: Vec::new(),
+            argument_metadata: None,
             code
         }
     }
@@ -126,8 +130,8 @@ impl TransformVisitor {
     }
 
     fn clear_transformations(&mut self) {
-        self.decorator_metadata_vec.clear();
-        self.argrec_metadata_vec.clear();
+        self.assertion_metadata_vec.clear();
+        self.argument_metadata_vec.clear();
     }
 
     fn replace_calee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
@@ -213,7 +217,7 @@ impl TransformVisitor {
     }
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
-        let default_pos = expr.span_lo().0 - self.arg_recorder.as_ref().unwrap().assertion_start_pos;
+        let default_pos = expr.span_lo().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
         match expr {
             Expr::Member(_) => {
                 default_pos
@@ -237,7 +241,7 @@ impl TransformVisitor {
         }
     }
 
-    fn create_argrec_decl(&self, argrec: &ArgRecorderMetadata) -> Stmt {
+    fn create_argrec_decl(&self, argrec: &ArgumentMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -276,7 +280,7 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_powered_runner_decl(&self, decorator_metadata: &DecoratorMetadata) -> Stmt {
+    fn create_powered_runner_decl(&self, decorator_metadata: &AssertionMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -387,10 +391,10 @@ impl VisitMut for TransformVisitor {
         n.visit_mut_children_with(self);
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
-        for decorator in self.decorator_metadata_vec.iter() {
+        for decorator in self.assertion_metadata_vec.iter() {
             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(decorator)));
         }
-        for argrec in self.argrec_metadata_vec.iter() {
+        for argrec in self.argument_metadata_vec.iter() {
             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argrec)));
         }
         let end_of_import_position = n.iter().position(|item| {
@@ -407,10 +411,10 @@ impl VisitMut for TransformVisitor {
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
         let mut new_items: Vec<Stmt> = Vec::new();
-        for decorator in self.decorator_metadata_vec.iter() {
+        for decorator in self.assertion_metadata_vec.iter() {
             new_items.push(self.create_powered_runner_decl(decorator));
         }
-        for argrec in self.argrec_metadata_vec.iter() {
+        for argrec in self.argument_metadata_vec.iter() {
             new_items.push(self.create_argrec_decl(argrec));
         }
         stmts.splice(0..0, new_items);
@@ -436,7 +440,7 @@ impl VisitMut for TransformVisitor {
                                     let end = (n.span.hi.0 - 1) as usize;
                                     let assertion_code = code[start..end].to_string();
 
-                                    self.decorator_metadata_vec.push(DecoratorMetadata {
+                                    self.assertion_metadata = Some(AssertionMetadata {
                                         ident_name: powered_ident_name.clone(),
                                         callee_ident_name: ident.sym.to_string(),
                                         receiver_ident_name: None,
@@ -445,6 +449,7 @@ impl VisitMut for TransformVisitor {
                                 },
                                 None => {
                                     // TODO: error handling
+                                    return;
                                 }
                             }
 
@@ -455,7 +460,7 @@ impl VisitMut for TransformVisitor {
                             for (idx, arg) in n.args.iter_mut().enumerate() {
                                 // const _parg1 = _pasrt1.recorder(0);
                                 let argrec_ident_name = self.next_argrec_variable_name();
-                                self.arg_recorder = Some(ArgRecorderMetadata {
+                                self.argument_metadata = Some(ArgumentMetadata {
                                     ident_name: argrec_ident_name.clone(),
                                     arg_index: idx,
                                     assertion_start_pos,
@@ -474,12 +479,15 @@ impl VisitMut for TransformVisitor {
                                     };
                                 }
 
-                                // make arg_recorder None then store it to vec for later use
-                                self.argrec_metadata_vec.push(self.arg_recorder.take().unwrap());
+                                // make argument_metadata None then store it to vec for later use
+                                self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
                             }
 
                             //TODO: if is_captured {
                             n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
+
+                            // make assertion_metadata None then store it to vec for later use
+                            self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
 
                             self.is_capturing = false;
                             self.is_captured = false;
@@ -500,14 +508,14 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
         // println!("############ enter expr: {:?}", n);
-        if self.arg_recorder.is_some() == false {
+        if self.argument_metadata.is_some() == false {
             n.visit_mut_children_with(self);
             return;
         }
         // save expr position here
         let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
-        let arg_rec = self.arg_recorder.as_ref().unwrap();
+        let arg_rec = self.argument_metadata.as_ref().unwrap();
         match n {
             Expr::Seq(_) => {
                 // do not capture sequence expression itself
