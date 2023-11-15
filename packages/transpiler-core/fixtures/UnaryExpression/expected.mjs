@@ -23,6 +23,14 @@ _pasrt1.run(_parg1.rec(!_parg1.tap(truth, 8), 7));
 _pasrt2.run(_parg2.rec(!_parg2.tap(!_parg2.tap(some, 9), 8), 7));
 _pasrt3.run(_parg3.rec(!_parg3.tap(!_parg3.tap(_parg3.tap(foo, 9).bar, 13), 8), 7));
 _pasrt4.run(_parg4.rec(delete _parg4.tap(_parg4.tap(foo, 14).bar, 18), 7));
-_pasrt5.run(_parg5.rec(_parg5.tap(typeof foo, 7) !== _parg5.tap('undefined', 22), 18));
-_pasrt6.run(_parg6.rec(_parg6.tap(typeof _parg6.tap(_parg6.tap(foo, 14).bar, 18), 7) !== _parg6.tap('undefined', 26), 22));
+_pasrt5.run(_parg5.rec(_parg5.tap(typeof foo, 7, {
+  hint: "left"
+}) !== _parg5.tap('undefined', 22, {
+  hint: "right"
+}), 18));
+_pasrt6.run(_parg6.rec(_parg6.tap(typeof _parg6.tap(_parg6.tap(foo, 14).bar, 18), 7, {
+  hint: "left"
+}) !== _parg6.tap('undefined', 26, {
+  hint: "right"
+}), 22));
 _pasrt7.run(_parg7.rec(typeof foo, 19), _parg8.rec(typeof bar, 31));

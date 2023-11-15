@@ -187,6 +187,75 @@ impl TransformVisitor {
         false
     }
 
+    fn apply_hint_right_left(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, hint: &str) {
+        match expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
+                match callee.as_mut() {
+                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ident) => {
+                                if ident.sym == *argrec_ident_name {
+                                    if let MemberProp::Ident(prop_ident) = prop {
+                                        if prop_ident.sym == "tap" {
+                                            args.push(ExprOrSpread {
+                                                spread: None,
+                                                expr: Box::new(Expr::Object(ObjectLit{
+                                                    span: Span::default(),
+                                                    props: vec![
+                                                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                                            key: PropName::Ident(Ident::new("hint".into(), Span::default())),
+                                                            value: Box::new(Expr::Lit(Lit::Str(hint.into())))
+                                                        })))
+                                                    ]
+                                                }))
+                                            });
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+    }
+
+    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) {
+        match arg.expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
+                match callee.as_mut() {
+                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ident) => {
+                                if ident.sym == *argrec_ident_name {
+                                    if let MemberProp::Ident(prop_ident) = prop {
+                                        if prop_ident.sym == "tap" {
+                                            let value = &mut args[0];
+                                            // let mut pos = &args[1];
+                                            match value.expr.as_mut() {
+                                                Expr::Bin(BinExpr { left, right, .. }) => {
+                                                    self.apply_hint_right_left(left, argrec_ident_name, "left".into());
+                                                    self.apply_hint_right_left(right, argrec_ident_name, "right".into());
+                                                },
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+    }
+
     fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
@@ -457,8 +526,29 @@ impl TransformVisitor {
                 }
             });
 
+            // detect left and right of binaryexpression here
+            let is_binexp_right_under_the_arg = match arg {
+                ExprOrSpread { spread: None, expr } => {
+                    match expr.as_ref() {
+                        Expr::Bin(BinExpr{ op, .. }) => {
+                            match op.as_str() {
+                                "==" | "===" | "!=" | "!==" => true,
+                                _ => false
+                            }
+                        },
+                        _ => false
+                    }
+                },
+                _ => false
+            };
+
             // enter argument
             arg.visit_mut_with(self);
+
+            // apply binexp hint to left and right
+            if is_binexp_right_under_the_arg {
+                self.apply_binexp_hint(arg, &argrec_ident_name);
+            }
 
             // wrap argument with arg_recorder
             let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);

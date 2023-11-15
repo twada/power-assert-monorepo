@@ -1,5 +1,5 @@
 import { renderDiagram } from './diagram.mjs';
-// import { stringifier } from './stringifier/stringifier.mjs';
+import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert, AssertionError } from 'node:assert';
 
 type PowerAssertMetadata = {
@@ -9,10 +9,15 @@ type PowerAssertMetadata = {
   binexp?: string;
 };
 
+type CapturedValueMetadata = {
+  hint?: string;
+};
+
 type CapturedValue = {
   value: unknown;
   // espath: string;
   left: number;
+  metadata?: CapturedValueMetadata;
 };
 
 type RecordedArgument = {
@@ -87,11 +92,12 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   }
 
   // tap (value: unknown, espath: string, left: number): unknown {
-  tap (value: unknown, left: number): unknown {
+  tap (value: unknown, left: number, metadata?: CapturedValueMetadata): unknown {
     this.#capturedValues.push({
       value: wrap(value),
       // espath,
-      left
+      left,
+      metadata
     });
     return value;
   }
@@ -177,7 +183,7 @@ function isMultiline (s: string): boolean {
   return s.indexOf('\n') !== -1;
 }
 
-// const stringify = stringifier();
+const stringify = stringifier();
 
 class PowerAssertImpl implements PowerAssert {
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -212,7 +218,8 @@ class PowerAssertImpl implements PowerAssert {
             logs.push({
               value: cap.value,
               // espath: cap.espath,
-              leftIndex: cap.left
+              leftIndex: cap.left,
+              metadata: cap.metadata
             });
           }
         }
@@ -243,21 +250,18 @@ class PowerAssertImpl implements PowerAssert {
       };
 
       // BinaryExpression analysis
-      // if (this.#assertionMetadata.binexp) {
-      //   const binexp = this.#assertionMetadata.binexp;
-      //   newAssertionErrorProps.operator = binexp;
-      //   newAssertionErrorProps.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
-      //   newAssertionErrorProps.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
-      //   const { expected, actual, operator } = newAssertionErrorProps;
-      //   newMessageFragments.push(`${stringify(actual)} ${operator} ${stringify(expected)}`);
-      //   newMessageFragments.push('');
-      // } else {
-      //   newMessageFragments.push(originalMessage);
-      //   newMessageFragments.push('');
-      // }
-      newMessageFragments.push(originalMessage);
-      newMessageFragments.push('');
-
+      if (this.#assertionMetadata.binexp) {
+        const binexp = this.#assertionMetadata.binexp;
+        newAssertionErrorProps.operator = binexp;
+        newAssertionErrorProps.actual = logs.find((log) => log.metadata?.hint === 'left')?.value;
+        newAssertionErrorProps.expected = logs.find((log) => log.metadata?.hint === 'right')?.value;
+        const { expected, actual, operator } = newAssertionErrorProps;
+        newMessageFragments.push(`${stringify(actual)} ${operator} ${stringify(expected)}`);
+        newMessageFragments.push('');
+      } else {
+        newMessageFragments.push(originalMessage);
+        newMessageFragments.push('');
+      }
       newAssertionErrorProps.message = newMessageFragments.join('\n');
 
       throw new AssertionError(newAssertionErrorProps);

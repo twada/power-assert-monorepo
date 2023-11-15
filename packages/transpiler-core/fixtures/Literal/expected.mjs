@@ -38,7 +38,15 @@ _pasrt4.run(_parg5.rec(false, 7), _parg6.rec('message', 14));
 _pasrt5.run(_parg7.rec(false, 7), _parg8.rec(messageStr, 14));
 _pasrt6.run(_parg9.rec(foo, 13), _parg10.rec('bar', 18), _parg11.rec('msg', 25));
 _pasrt7.run(_parg12.rec(_parg12.tap(/^not/, 7).exec(_parg12.tap(str, 19)), 18));
-_pasrt8.run(_parg13.rec(_parg13.tap(fuga, 7) !== _parg13.tap('ふが', 16), 12));
-_pasrt9.run(_parg14.rec(_parg14.tap('ほげ', 7) !== _parg14.tap('ふが', 16), 12));
+_pasrt8.run(_parg13.rec(_parg13.tap(fuga, 7, {
+  hint: "left"
+}) !== _parg13.tap('ふが', 16, {
+  hint: "right"
+}), 12));
+_pasrt9.run(_parg14.rec(_parg14.tap('ほげ', 7, {
+  hint: "left"
+}) !== _parg14.tap('ふが', 16, {
+  hint: "right"
+}), 12));
 _pasrt10.run(_parg15.rec(0b111110111, 7));
 _pasrt11.run(_parg16.rec(0o767, 7));

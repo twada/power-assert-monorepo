@@ -93,7 +93,7 @@ assert(truthy === falsy)
        |      false
        "1"
 
-false == true
+"1" === 0
 `);
   });
 
@@ -314,7 +314,7 @@ assert(truthy
        ===
        falsy)
 
-false == true
+"1" === 0
 `, 3);
   });
 
