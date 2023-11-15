@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {_power_} from "@power-assert/runtime";
 const _pasrt1 = _power_(assert, null, "assert((2, 1, 0))");
 const _parg1 = _pasrt1.recorder(0);
-const _pasrt2 = _power_(assert, null, "assert((foo, bar) === baz)");
+const _pasrt2 = _power_(assert, null, "assert((foo, bar) === baz)", {
+  binexp: "==="
+});
 const _parg2 = _pasrt2.recorder(0);
 const _pasrt3 = _power_(assert, null, "assert(toto((tata, titi)))");
 const _parg3 = _pasrt3.recorder(0);

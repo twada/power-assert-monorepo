@@ -6,7 +6,9 @@ import {_power_} from "@power-assert/runtime";
   _pasrt1.run(_parg1.rec([_parg1.tap(foo, 8), _parg1.tap(bar, 13)], 7));
 }
 {
-  const _pasrt2 = _power_(assert, null, "assert(typeof [[foo.bar, baz(moo)], + fourStr] === 'number')");
+  const _pasrt2 = _power_(assert, null, "assert(typeof [[foo.bar, baz(moo)], + fourStr] === 'number')", {
+    binexp: "==="
+  });
   const _parg2 = _pasrt2.recorder(0);
   _pasrt2.run(_parg2.rec(_parg2.tap(typeof _parg2.tap([_parg2.tap([_parg2.tap(_parg2.tap(foo, 16).bar, 20), _parg2.tap(baz(_parg2.tap(moo, 29)), 28)], 15), _parg2.tap(+_parg2.tap(fourStr, 38), 36)], 14), 7) === _parg2.tap('number', 51), 47));
 }

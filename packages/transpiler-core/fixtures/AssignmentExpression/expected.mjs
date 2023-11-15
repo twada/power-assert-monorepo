@@ -16,7 +16,9 @@ import {_power_} from "@power-assert/runtime";
   _pasrt3.run(_parg3.rec(dog.age += _parg3.tap(1, 22), 18));
 }
 {
-  const _pasrt4 = _power_(assert, null, "assert((dog.age += 1) === three)");
+  const _pasrt4 = _power_(assert, null, "assert((dog.age += 1) === three)", {
+    binexp: "==="
+  });
   const _parg4 = _pasrt4.recorder(0);
   _pasrt4.run(_parg4.rec(_parg4.tap(dog.age += _parg4.tap(1, 19), 16) === _parg4.tap(three, 26), 22));
 }

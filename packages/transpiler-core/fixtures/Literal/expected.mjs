@@ -19,9 +19,13 @@ const _parg10 = _pasrt6.recorder(1);
 const _parg11 = _pasrt6.recorder(2);
 const _pasrt7 = _power_(assert, null, "assert(/^not/.exec(str))");
 const _parg12 = _pasrt7.recorder(0);
-const _pasrt8 = _power_(assert, null, "assert(fuga !== 'ふが')");
+const _pasrt8 = _power_(assert, null, "assert(fuga !== 'ふが')", {
+  binexp: "!=="
+});
 const _parg13 = _pasrt8.recorder(0);
-const _pasrt9 = _power_(assert, null, "assert('ほげ' !== 'ふが')");
+const _pasrt9 = _power_(assert, null, "assert('ほげ' !== 'ふが')", {
+  binexp: "!=="
+});
 const _parg14 = _pasrt9.recorder(0);
 const _pasrt10 = _power_(assert, null, "assert(0b111110111)");
 const _parg15 = _pasrt10.recorder(0);

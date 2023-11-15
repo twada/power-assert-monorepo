@@ -292,9 +292,9 @@ export class AssertionVisitor {
     const types = nodeFactory(currentNode);
     // extra properties are not required for now
     const extraProps: ExtraProps = {};
-    // if (this.#binexp) {
-    //   extraProps.binexp = this.#binexp;
-    // }
+    if (this.#binexp) {
+      extraProps.binexp = this.#binexp;
+    }
     // if (this.withinAsync) {
     //   extraProps.async = true;
     // }

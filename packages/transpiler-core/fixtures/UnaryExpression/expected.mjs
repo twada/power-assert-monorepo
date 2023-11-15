@@ -8,9 +8,13 @@ const _pasrt3 = _power_(assert, null, "assert(!!foo.bar)");
 const _parg3 = _pasrt3.recorder(0);
 const _pasrt4 = _power_(assert, null, "assert(delete foo.bar)");
 const _parg4 = _pasrt4.recorder(0);
-const _pasrt5 = _power_(assert, null, "assert(typeof foo !== 'undefined')");
+const _pasrt5 = _power_(assert, null, "assert(typeof foo !== 'undefined')", {
+  binexp: "!=="
+});
 const _parg5 = _pasrt5.recorder(0);
-const _pasrt6 = _power_(assert, null, "assert(typeof foo.bar !== 'undefined')");
+const _pasrt6 = _power_(assert, null, "assert(typeof foo.bar !== 'undefined')", {
+  binexp: "!=="
+});
 const _parg6 = _pasrt6.recorder(0);
 const _pasrt7 = _power_(assert.strictEqual, assert, "assert.strictEqual(typeof foo, typeof bar)");
 const _parg7 = _pasrt7.recorder(0);
