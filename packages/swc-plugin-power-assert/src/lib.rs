@@ -32,6 +32,11 @@ use swc_core::ecma::{
         ComputedPropName,
         AssignExpr,
         CondExpr,
+        ObjectLit,
+        PropOrSpread,
+        Prop,
+        KeyValueProp,
+        PropName,
         Callee
     },
     atoms::JsWord,
@@ -47,14 +52,16 @@ struct AssertionMetadata {
     ident_name: String,
     callee_ident_name: String,
     receiver_ident_name: Option<String>,
-    assertion_code: String
+    assertion_code: String,
+    binary_op: Option<String>
 }
 
 struct ArgumentMetadata {
     ident_name: String,
     arg_index: usize,
     assertion_start_pos: u32,
-    powered_ident_name: String
+    powered_ident_name: String,
+    binary_op: Option<String>
 }
 
 // enum Metadata {
@@ -292,6 +299,61 @@ impl TransformVisitor {
     }
 
     fn create_powered_runner_decl(&self, assertion_metadata: &AssertionMetadata) -> Stmt {
+        let mut args = vec![
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(
+                    match &assertion_metadata.receiver_ident_name {
+                        Some(receiver_ident_name) => {
+                            Expr::Member(
+                                MemberExpr {
+                                    span: Span::default(),
+                                    obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
+                                    prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                                }
+                            )
+                        },
+                        None => {
+                            Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                        }
+                    }
+                )
+            },
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(
+                    match &assertion_metadata.receiver_ident_name {
+                        Some(receiver_ident_name) => {
+                            Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
+                        },
+                        None => {
+                            Expr::Lit(Lit::Null(Null { span: Span::default() }))
+                        }
+                    }
+                )
+            },
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into())))
+            }
+        ];
+
+        if assertion_metadata.binary_op.is_some() {
+            // add object expression { binexp: "===" } to args
+            args.push(ExprOrSpread {
+                spread: None,
+                expr: Box::new(Expr::Object(ObjectLit{
+                    span: Span::default(),
+                    props: vec![
+                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                            key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
+                            value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
+                        })))
+                    ]
+                }))
+            });
+        }
+
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -308,44 +370,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(
                             Expr::Ident(Ident::new("_power_".into(), Span::default()))
                         )),
-                        args: vec![
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(
-                                    match &assertion_metadata.receiver_ident_name {
-                                        Some(receiver_ident_name) => {
-                                            Expr::Member(
-                                                MemberExpr {
-                                                    span: Span::default(),
-                                                    obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
-                                                    prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
-                                                }
-                                            )
-                                        },
-                                        None => {
-                                            Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
-                                        }
-                                    }
-                                )
-                            },
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(
-                                    match &assertion_metadata.receiver_ident_name {
-                                        Some(receiver_ident_name) => {
-                                            Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
-                                        },
-                                        None => {
-                                            Expr::Lit(Lit::Null(Null { span: Span::default() }))
-                                        }
-                                    }
-                                )
-                            },
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into())))
-                            }
-                        ],
+                        args,
                         type_args: None,
                     }))),
                     definite: false
@@ -386,7 +411,20 @@ impl TransformVisitor {
                     ident_name: powered_ident_name.clone(),
                     callee_ident_name: prop_ident_name.clone(),
                     receiver_ident_name: obj_ident_name,
-                    assertion_code: assertion_code
+                    assertion_code: assertion_code,
+                    binary_op: if n.args.len() == 1 {
+                        match n.args.first().unwrap().expr.as_ref() {
+                            Expr::Bin(BinExpr{ op, .. }) => {
+                                match op.as_str() {
+                                    "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
+                                    _ => None
+                                }
+                            },
+                            _ => None
+                        }
+                    } else {
+                        None
+                    }
                 });
             },
             None => {
@@ -407,7 +445,16 @@ impl TransformVisitor {
                 ident_name: argrec_ident_name.clone(),
                 arg_index: idx,
                 assertion_start_pos,
-                powered_ident_name: powered_ident_name.clone()
+                powered_ident_name: powered_ident_name.clone(),
+                binary_op: match arg.expr.as_ref() {
+                    Expr::Bin(BinExpr{ op, .. }) => {
+                        match op.as_str() {
+                            "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
+                            _ => None
+                        }
+                    },
+                    _ => None
+                }
             });
 
             // enter argument
