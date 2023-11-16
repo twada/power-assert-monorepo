@@ -1,13 +1,23 @@
 {
   "name": "@power-assert/swc-plugin-power-assert",
   "version": "0.0.0",
-  "description": "",
-  "main": "target/wasm32-wasi/release/swc-plugin-power-assert.wasm",
-  "devDependencies": {},
-  "scripts": {
-    "prepublishOnly": "cargo build-wasi --release"
+  "description": "power-assert SWC plugin",
+  "main": "./swc_plugin_power_assert.wasm",
+  "devDependencies": {
+    "@swc/cli": "^0.1.62",
+    "@swc/core": "^1.3.96",
+    "@swc/plugin-remove-console": "^1.5.98"
   },
-  "preferUnplugged": true
+  "scripts": {
+    "swc": "cat ./examples/bowling.test.mjs | swc -f input.js",
+    "example": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --test --enable-source-maps ./tmp/bowling.test.mjs",
+    "build": "npm run build:cargo && npm run build:cp",
+    "build:cargo": "cargo build-wasi --release",
+    "build:cp": "cp ../../target/wasm32-wasi/release/swc_plugin_power_assert.wasm ./swc_plugin_power_assert.wasm",
+    "prepublishOnly": "cargo build-wasi --release",
+    "prepack": "cargo prepublish --release && cp target/wasm32-wasi/release/swc_plugin_power_assert.wasm ."
+  },
+  "preferUnplugged": true,
   "keywords": [
     "swc-plugin",
     "power-assert"
