@@ -9,10 +9,15 @@ type PowerAssertMetadata = {
   binexp?: string;
 };
 
+type CapturedValueMetadata = {
+  hint?: string;
+};
+
 type CapturedValue = {
   value: unknown;
-  espath: string;
+  // espath: string;
   left: number;
+  metadata?: CapturedValueMetadata;
 };
 
 type RecordedArgument = {
@@ -21,8 +26,10 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  tap(value: unknown, espath: string, left: number): unknown;
-  rec(value: unknown, espath: string, left: number): ArgumentRecorder;
+  // tap(value: unknown, espath: string, left: number): unknown;
+  // rec(value: unknown, espath: string, left: number): ArgumentRecorder;
+  tap(value: unknown, left: number): unknown;
+  rec(value: unknown, left?: number): ArgumentRecorder;
 }
 
 type PowerAssert = {
@@ -84,16 +91,19 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, espath: string, left: number): unknown {
+  // tap (value: unknown, espath: string, left: number): unknown {
+  tap (value: unknown, left: number, metadata?: CapturedValueMetadata): unknown {
     this.#capturedValues.push({
       value: wrap(value),
-      espath,
-      left
+      // espath,
+      left,
+      metadata
     });
     return value;
   }
 
-  rec (value: unknown, espath: string, left?: number): ArgumentRecorder {
+  // rec (value: unknown, espath: string, left?: number): ArgumentRecorder {
+  rec (value: unknown, left?: number): ArgumentRecorder {
     try {
       if (typeof left === 'undefined') {
         // node right under the assertion is not captured
@@ -101,7 +111,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
       }
       const cap = {
         value: wrap(value),
-        espath,
+        // espath,
         left
       };
       this.#capturedValues.push(cap);
@@ -207,8 +217,9 @@ class PowerAssertImpl implements PowerAssert {
           for (const cap of rec.capturedValues) {
             logs.push({
               value: cap.value,
-              espath: cap.espath,
-              leftIndex: cap.left
+              // espath: cap.espath,
+              leftIndex: cap.left,
+              metadata: cap.metadata
             });
           }
         }
@@ -242,8 +253,8 @@ class PowerAssertImpl implements PowerAssert {
       if (this.#assertionMetadata.binexp) {
         const binexp = this.#assertionMetadata.binexp;
         newAssertionErrorProps.operator = binexp;
-        newAssertionErrorProps.actual = logs.find((log) => log.espath === 'arguments/0/left')?.value;
-        newAssertionErrorProps.expected = logs.find((log) => log.espath === 'arguments/0/right')?.value;
+        newAssertionErrorProps.actual = logs.find((log) => log.metadata?.hint === 'left')?.value;
+        newAssertionErrorProps.expected = logs.find((log) => log.metadata?.hint === 'right')?.value;
         const { expected, actual, operator } = newAssertionErrorProps;
         newMessageFragments.push(`${stringify(actual)} ${operator} ${stringify(expected)}`);
         newMessageFragments.push('');
@@ -251,7 +262,6 @@ class PowerAssertImpl implements PowerAssert {
         newMessageFragments.push(originalMessage);
         newMessageFragments.push('');
       }
-
       newAssertionErrorProps.message = newMessageFragments.join('\n');
 
       throw new AssertionError(newAssertionErrorProps);

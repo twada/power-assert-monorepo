@@ -1,0 +1,11 @@
+{
+  "jsc": {
+    "experimental": {
+      "plugins": [
+        ["./swc_plugin_power_assert.wasm", {}]
+      ]
+    }
+  },
+  "sourceMaps": true,
+  "inlineSourcesContent": true
+}

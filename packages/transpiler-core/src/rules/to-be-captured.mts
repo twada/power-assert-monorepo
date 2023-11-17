@@ -18,6 +18,7 @@ const caputuringTargetTypes = new Set([
   'AssignmentExpression',
   'NewExpression',
   'UpdateExpression',
+  // 'SequenceExpression',
   'YieldExpression',
   'AwaitExpression',
   'TemplateLiteral',

@@ -47,7 +47,8 @@ type ArgumentModificationParams = {
   assertionPath: AstPath,
   assertionCode: string,
   transformation: Transformation,
-  poweredAssertIdent: Identifier
+  poweredAssertIdent: Identifier,
+  binexp?: string
 };
 
 type ExtraProps = {
@@ -100,9 +101,10 @@ class ArgumentModification {
   readonly #poweredAssertIdent: Identifier;
   readonly #addresses: Map<Node, number>;
   readonly #argumentRecorderIdent: Identifier;
+  readonly #binexp: string | undefined;
   #argumentModified: boolean;
 
-  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent }: ArgumentModificationParams) {
+  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent, binexp }: ArgumentModificationParams) {
     this.#argNum = argNum;
     this.#argNode = argNode;
     this.#callexp = callexp;
@@ -110,6 +112,7 @@ class ArgumentModification {
     this.#assertionCode = assertionCode;
     this.#transformation = transformation;
     this.#poweredAssertIdent = poweredAssertIdent;
+    this.#binexp = binexp;
     this.#argumentModified = false;
     this.#addresses = new Map<Node, number>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
@@ -188,14 +191,27 @@ class ArgumentModification {
     const relativeAstPath = this.#relativeAstPath(astPath);
     const types = nodeFactory(currentNode);
     const args = [
-      currentNode,
-      types.stringLiteral(relativeAstPath.join('/'))
+      currentNode
+      // types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
       const targetAddr = this.#targetAddress(currentNode);
       assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
       args.push(types.numericLiteral(targetAddr));
     }
+    const extraProps: ExtraProps = {};
+    if (this.#binexp && (relativeAstPath.join('/') === 'arguments/0/left')) {
+      extraProps.hint = 'left';
+    }
+    if (this.#binexp && (relativeAstPath.join('/') === 'arguments/0/right')) {
+      extraProps.hint = 'right';
+    }
+    const propsNode = types.valueToNode(extraProps);
+    assert(propsNode.type === 'ObjectExpression', 'propsNode must be an ObjectExpression');
+    if (propsNode.properties.length > 0) {
+      args.push(propsNode);
+    }
+
     const receiver = this.#argumentRecorderIdent;
     const newNode = types.callExpression(
       types.memberExpression(receiver, types.identifier(methodName)),
@@ -336,7 +352,8 @@ export class AssertionVisitor {
       assertionPath: this.#assertionPath,
       assertionCode: this.#assertionCode,
       transformation: this.#transformation,
-      poweredAssertIdent: this.#poweredAssertIdent
+      poweredAssertIdent: this.#poweredAssertIdent,
+      binexp: this.#binexp
     });
     // modification.enter(controller);
     this.#argumentModifications.push(modification);

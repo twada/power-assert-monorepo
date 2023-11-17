@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use std::collections::HashSet;
 use std::sync::Arc;
 use swc_core::ecma::{
@@ -29,6 +30,14 @@ use swc_core::ecma::{
         ModuleExportName,
         MemberExpr,
         MemberProp,
+        ComputedPropName,
+        AssignExpr,
+        CondExpr,
+        ObjectLit,
+        PropOrSpread,
+        Prop,
+        KeyValueProp,
+        PropName,
         Callee
     },
     atoms::JsWord,
@@ -38,13 +47,31 @@ use swc_core::common::{
     Span,
     Spanned
 };
-use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
+use swc_core::plugin::plugin_transform;
+use swc_core::plugin::metadata::TransformPluginProgramMetadata;
+use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Config {
+    All(bool),
+    WithOptions(Options),
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct Options {
+    #[serde(default)]
+    pub modules: Vec<JsWord>,
+    #[serde(default)]
+    pub variables: Vec<JsWord>,
+}
 
 struct AssertionMetadata {
     ident_name: String,
     callee_ident_name: String,
     receiver_ident_name: Option<String>,
-    assertion_code: String
+    assertion_code: String,
+    binary_op: Option<String>
 }
 
 struct ArgumentMetadata {
@@ -54,8 +81,12 @@ struct ArgumentMetadata {
     powered_ident_name: String
 }
 
+// enum Metadata {
+//     Assertion(AssertionMetadata),
+//     Argument(ArgumentMetadata)
+// }
+
 pub struct TransformVisitor {
-    is_capturing: bool,
     is_captured: bool,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
@@ -64,28 +95,13 @@ pub struct TransformVisitor {
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
     argument_metadata: Option<ArgumentMetadata>,
+    // metadata_vec: Vec<Metadata>,
     code: Option<Arc<String>>
 }
 
 impl TransformVisitor {
-    pub fn new() -> TransformVisitor {
-        TransformVisitor {
-            is_capturing: false,
-            is_captured: false,
-            powered_var_cnt: 0,
-            argrec_var_cnt: 0,
-            target_variables: HashSet::new(),
-            assertion_metadata_vec: Vec::new(),
-            assertion_metadata: None,
-            argument_metadata_vec: Vec::new(),
-            argument_metadata: None,
-            code: None
-        }
-    }
-
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
-            is_capturing: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -94,19 +110,38 @@ impl TransformVisitor {
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
+            // metadata_vec: Vec::new(),
             code: Some(Arc::new(code.into()))
         }
     }
 
-    pub fn new_with_metadata(metadata: &TransformPluginProgramMetadata) -> TransformVisitor {
+    pub fn new_with_metadata(metadata: TransformPluginProgramMetadata) -> TransformVisitor {
+        let config = serde_json::from_str::<Option<Config>>(
+            &metadata
+                .get_transform_plugin_config()
+                .expect("failed to get plugin config for power-assert"),
+        );
+        println!("config: {:?}", config);
+
         let code = match metadata.source_map.source_file.get() {
             Some(source_file) => {
                 Some(source_file.src.clone())
             },
-            None => None
+            None => {
+                let filename = metadata
+                    .get_context(&TransformPluginMetadataContextKind::Filename)
+                    .expect("filename should exist");
+                println!("filename: {:?}", filename);
+                // /cwd is the root of sandbox
+                // https://github.com/swc-project/swc/discussions/4997
+                let path_in_sandbox = format!("/cwd/{}", filename);
+                println!("path_in_sandbox: {:?}", path_in_sandbox);
+                // read all file contens into string
+                let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
+                Some(Arc::new(code))
+            }
         };
         TransformVisitor {
-            is_capturing: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -115,6 +150,7 @@ impl TransformVisitor {
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
+            // metadata_vec: Vec::new(),
             code
         }
     }
@@ -132,9 +168,10 @@ impl TransformVisitor {
     fn clear_transformations(&mut self) {
         self.assertion_metadata_vec.clear();
         self.argument_metadata_vec.clear();
+        // self.metadata_vec.clear();
     }
 
-    fn replace_calee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
+    fn replace_callee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
@@ -169,6 +206,75 @@ impl TransformVisitor {
             _ => {}
         }
         false
+    }
+
+    fn apply_hint_right_left(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, hint: &str) {
+        match expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
+                match callee.as_mut() {
+                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ident) => {
+                                if ident.sym == *argrec_ident_name {
+                                    if let MemberProp::Ident(prop_ident) = prop {
+                                        if prop_ident.sym == "tap" {
+                                            args.push(ExprOrSpread {
+                                                spread: None,
+                                                expr: Box::new(Expr::Object(ObjectLit{
+                                                    span: Span::default(),
+                                                    props: vec![
+                                                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                                                            key: PropName::Ident(Ident::new("hint".into(), Span::default())),
+                                                            value: Box::new(Expr::Lit(Lit::Str(hint.into())))
+                                                        })))
+                                                    ]
+                                                }))
+                                            });
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+    }
+
+    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) {
+        match arg.expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
+                match callee.as_mut() {
+                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ident) => {
+                                if ident.sym == *argrec_ident_name {
+                                    if let MemberProp::Ident(prop_ident) = prop {
+                                        if prop_ident.sym == "tap" {
+                                            let value = &mut args[0];
+                                            // let mut pos = &args[1];
+                                            match value.expr.as_mut() {
+                                                Expr::Bin(BinExpr { left, right, .. }) => {
+                                                    self.apply_hint_right_left(left, argrec_ident_name, "left".into());
+                                                    self.apply_hint_right_left(right, argrec_ident_name, "right".into());
+                                                },
+                                                _ => {}
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
     }
 
     fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
@@ -217,37 +323,33 @@ impl TransformVisitor {
     }
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
-        let default_pos = expr.span_lo().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
         match expr {
-            Expr::Member(_) => {
-                default_pos
+            Expr::Member(MemberExpr{ prop, .. }) => {
+                match prop {
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => span.lo.0 - assertion_start_pos,
+                    MemberProp::Ident(Ident { span, .. }) => span.lo.0 - assertion_start_pos,
+                    _ => expr.span_lo().0 - assertion_start_pos
+                }
             },
-            Expr::Call(_) => {
-                default_pos
-            },
+            Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span()),
             // estree's LogicalExpression is mapped to BinaryExpression in swc
-            Expr::Bin(BinExpr{ left, op, ..}) => {
-                let search_start_pos = left.span_hi().0 - self.argument_metadata.as_ref().unwrap().assertion_start_pos;
-                let code = self.assertion_metadata.as_ref().unwrap().assertion_code.clone();
-
-                // search op position in code from search_start_pos
-                let op_pos = code[search_start_pos as usize..].find(op.as_str()).unwrap_or(0) as u32 + search_start_pos;
-
-                op_pos
-            },
-            Expr::Assign(_) => {
-                default_pos
-            }
-            Expr::Cond(_) => {
-                default_pos
-            },
-            _ => {
-                default_pos
-            }
+            Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span()),
+            Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span()),
+            Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span()),
+            _ => expr.span_lo().0 - assertion_start_pos
         }
     }
 
-    fn create_argrec_decl(&self, argrec: &ArgumentMetadata) -> Stmt {
+    fn search_pos_for(&self, search_target_str: &str, span: &Span) -> u32 {
+        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+        let search_start_pos = span.hi.0 - assertion_start_pos;
+        let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
+        let found_pos = code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos;
+        found_pos
+    }
+
+    fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -256,7 +358,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(argrec.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(argument_metadata.ident_name.clone().into(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -264,7 +366,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(argrec.powered_ident_name.clone().into(), Span::default()))),
+                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone().into(), Span::default()))),
                                 prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
                             }
                         ))),
@@ -273,7 +375,7 @@ impl TransformVisitor {
                                 spread: None,
                                 expr: Box::new(Expr::Lit(Lit::Num(Number {
                                     span: Span::default(),
-                                    value: argrec.arg_index as f64,
+                                    value: argument_metadata.arg_index as f64,
                                     raw: None
                                 })))
                             }
@@ -286,7 +388,62 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_powered_runner_decl(&self, decorator_metadata: &AssertionMetadata) -> Stmt {
+    fn create_powered_runner_decl(&self, assertion_metadata: &AssertionMetadata) -> Stmt {
+        let mut args = vec![
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(
+                    match &assertion_metadata.receiver_ident_name {
+                        Some(receiver_ident_name) => {
+                            Expr::Member(
+                                MemberExpr {
+                                    span: Span::default(),
+                                    obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
+                                    prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                                }
+                            )
+                        },
+                        None => {
+                            Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                        }
+                    }
+                )
+            },
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(
+                    match &assertion_metadata.receiver_ident_name {
+                        Some(receiver_ident_name) => {
+                            Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
+                        },
+                        None => {
+                            Expr::Lit(Lit::Null(Null { span: Span::default() }))
+                        }
+                    }
+                )
+            },
+            ExprOrSpread {
+                spread: None,
+                expr: Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into())))
+            }
+        ];
+
+        if assertion_metadata.binary_op.is_some() {
+            // add object expression { binexp: "===" } to args
+            args.push(ExprOrSpread {
+                spread: None,
+                expr: Box::new(Expr::Object(ObjectLit{
+                    span: Span::default(),
+                    props: vec![
+                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                            key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
+                            value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
+                        })))
+                    ]
+                }))
+            });
+        }
+
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
             span: Span::default(),
             kind: VarDeclKind::Const,
@@ -295,7 +452,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(decorator_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(assertion_metadata.ident_name.clone().into(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -303,29 +460,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(
                             Expr::Ident(Ident::new("_power_".into(), Span::default()))
                         )),
-                        args: vec![
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(Expr::Ident(Ident::new(decorator_metadata.callee_ident_name.clone().into(), Span::default())))
-                            },
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(
-                                    match &decorator_metadata.receiver_ident_name {
-                                        Some(receiver_ident_name) => {
-                                            Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
-                                        },
-                                        None => {
-                                            Expr::Lit(Lit::Null(Null { span: Span::default() }))
-                                        }
-                                    }
-                                )
-                            },
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(Expr::Lit(Lit::Str(decorator_metadata.assertion_code.clone().into())))
-                            }
-                        ],
+                        args,
                         type_args: None,
                     }))),
                     definite: false
@@ -350,6 +485,108 @@ impl TransformVisitor {
             with: None
         }))
     }
+
+    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: String, obj_ident_name: Option<String>) {
+        self.is_captured = false;
+        let powered_ident_name = self.next_powered_runner_variable_name();
+        let assertion_start_pos = n.span.lo.0;
+
+        match self.code {
+            Some(ref code) => {
+                let start = (n.span.lo.0 - 1) as usize;
+                let end = (n.span.hi.0 - 1) as usize;
+                let assertion_code = code[start..end].to_string();
+
+                self.assertion_metadata = Some(AssertionMetadata {
+                    ident_name: powered_ident_name.clone(),
+                    callee_ident_name: prop_ident_name.clone(),
+                    receiver_ident_name: obj_ident_name,
+                    assertion_code: assertion_code,
+                    binary_op: if n.args.len() == 1 {
+                        match n.args.first().unwrap().expr.as_ref() {
+                            Expr::Bin(BinExpr{ op, .. }) => {
+                                match op.as_str() {
+                                    "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
+                                    _ => None
+                                }
+                            },
+                            _ => None
+                        }
+                    } else {
+                        None
+                    }
+                });
+            },
+            None => {
+                // TODO: error handling
+                panic!("code is None");
+                // return;
+            }
+        }
+
+        // do not enter callee ident
+        // n.callee.visit_mut_children_with(self);
+
+        // enter arguments
+        for (idx, arg) in n.args.iter_mut().enumerate() {
+            // const _parg1 = _pasrt1.recorder(0);
+            let argrec_ident_name = self.next_argrec_variable_name();
+            self.argument_metadata = Some(ArgumentMetadata {
+                ident_name: argrec_ident_name.clone(),
+                arg_index: idx,
+                assertion_start_pos,
+                powered_ident_name: powered_ident_name.clone()
+            });
+
+            // detect left and right of binaryexpression here
+            let is_binexp_right_under_the_arg = match arg {
+                ExprOrSpread { spread: None, expr } => {
+                    match expr.as_ref() {
+                        Expr::Bin(BinExpr{ op, .. }) => {
+                            match op.as_str() {
+                                "==" | "===" | "!=" | "!==" => true,
+                                _ => false
+                            }
+                        },
+                        _ => false
+                    }
+                },
+                _ => false
+            };
+
+            // enter argument
+            arg.visit_mut_with(self);
+
+            // apply binexp hint to left and right
+            if is_binexp_right_under_the_arg {
+                self.apply_binexp_hint(arg, &argrec_ident_name);
+            }
+
+            // wrap argument with arg_recorder
+            let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
+            if !changed {
+                *arg = ExprOrSpread {
+                    spread: None,
+                    expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
+                };
+            }
+
+            // make argument_metadata None then store it to vec for later use
+            self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
+            // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
+        }
+
+        //TODO: if is_captured {
+        n.callee = self.replace_callee_with_powered_run(&powered_ident_name);
+
+        // make assertion_metadata None then store it to vec for later use
+        self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
+        // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
+
+        self.is_captured = false;
+    }
+
+
 }
 
 
@@ -397,11 +634,21 @@ impl VisitMut for TransformVisitor {
         n.visit_mut_children_with(self);
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
-        for decorator in self.assertion_metadata_vec.iter() {
-            new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(decorator)));
+        // for metadata in self.metadata_vec.iter() {
+        //     match metadata {
+        //         Metadata::Assertion(assertion_metadata) => {
+        //             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
+        //         },
+        //         Metadata::Argument(argument_metadata) => {
+        //             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
+        //         }
+        //     }
+        // }
+        for assertion_metadata in self.assertion_metadata_vec.iter() {
+            new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
         }
-        for argrec in self.argument_metadata_vec.iter() {
-            new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argrec)));
+        for argument_metadata in self.argument_metadata_vec.iter() {
+            new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
         }
         let end_of_import_position = n.iter().position(|item| {
             match item {
@@ -417,88 +664,72 @@ impl VisitMut for TransformVisitor {
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
         let mut new_items: Vec<Stmt> = Vec::new();
-        for decorator in self.assertion_metadata_vec.iter() {
-            new_items.push(self.create_powered_runner_decl(decorator));
+        // for metadata in self.metadata_vec.iter() {
+        //     match metadata {
+        //         Metadata::Assertion(assertion_metadata) => {
+        //             new_items.push(self.create_powered_runner_decl(assertion_metadata));
+        //         },
+        //         Metadata::Argument(argument_metadata) => {
+        //             new_items.push(self.create_argrec_decl(argument_metadata));
+        //         }
+        //     }
+        // }
+        for assertion_metadata in self.assertion_metadata_vec.iter() {
+            new_items.push(self.create_powered_runner_decl(assertion_metadata));
         }
-        for argrec in self.argument_metadata_vec.iter() {
-            new_items.push(self.create_argrec_decl(argrec));
+        for argument_metadata in self.argument_metadata_vec.iter() {
+            new_items.push(self.create_argrec_decl(argument_metadata));
         }
         stmts.splice(0..0, new_items);
         self.clear_transformations();
     }
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
+        let mut prop_name: Option<String> = None;
+        let mut obj_name: Option<String> = None;
         match n.callee {
-            Callee::Expr(ref expr) => {
-                match expr.as_ref() {
+            Callee::Expr(ref mut expr) => {
+                match expr.as_mut() {
+                    Expr::Member(MemberExpr{ prop, obj, .. }) => {
+                        match prop {
+                            MemberProp::Ident(prop_ident) => {
+                                if self.assertion_metadata.is_some() { // callexp inside assertion
+                                    // memo: do not visit and wrap prop if prop is Ident
+                                    obj.visit_mut_with(self);
+                                    for arg in n.args.iter_mut() {
+                                        arg.visit_mut_with(self);
+                                    }
+                                } else { // callexp outside assertion
+                                    match obj.as_ref() {
+                                        Expr::Ident(ref obj_ident) => {
+                                            if self.target_variables.contains(&obj_ident.sym) {
+                                                prop_name = Some(prop_ident.sym.to_string());
+                                                obj_name = Some(obj_ident.sym.to_string());
+                                            }
+                                        },
+                                        _ => {
+                                            n.visit_mut_children_with(self);
+                                        }
+                                    }
+                                }
+                            },
+                            _ => {
+                                n.visit_mut_children_with(self);
+                            }
+                        }
+                    },
                     Expr::Ident(ref ident) => {
-                        if self.is_capturing {
-                            n.visit_mut_children_with(self);
-                        } else if self.target_variables.contains(&ident.sym) {
-                            self.is_capturing = true;
-                            self.is_captured = false;
-                            let powered_ident_name = self.next_powered_runner_variable_name();
-                            let assertion_start_pos = n.span_lo().0;
-
-                            match self.code {
-                                Some(ref code) => {
-                                    let start = (n.span.lo.0 - 1) as usize;
-                                    let end = (n.span.hi.0 - 1) as usize;
-                                    let assertion_code = code[start..end].to_string();
-
-                                    self.assertion_metadata = Some(AssertionMetadata {
-                                        ident_name: powered_ident_name.clone(),
-                                        callee_ident_name: ident.sym.to_string(),
-                                        receiver_ident_name: None,
-                                        assertion_code: assertion_code
-                                    });
-                                },
-                                None => {
-                                    // TODO: error handling
-                                    return;
-                                }
+                        if self.assertion_metadata.is_some() { // callexp inside assertion
+                            // memo: do not wrap callee if callee is Ident
+                            for arg in n.args.iter_mut() {
+                                arg.visit_mut_with(self);
                             }
-
-                            // enter callee
-                            n.callee.visit_mut_children_with(self);
-
-                            // then enter arguments
-                            for (idx, arg) in n.args.iter_mut().enumerate() {
-                                // const _parg1 = _pasrt1.recorder(0);
-                                let argrec_ident_name = self.next_argrec_variable_name();
-                                self.argument_metadata = Some(ArgumentMetadata {
-                                    ident_name: argrec_ident_name.clone(),
-                                    arg_index: idx,
-                                    assertion_start_pos,
-                                    powered_ident_name: powered_ident_name.clone()
-                                });
-
-                                // enter argument
-                                arg.visit_mut_children_with(self);
-
-                                // wrap argument with arg_recorder
-                                let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
-                                if !changed {
-                                    *arg = ExprOrSpread {
-                                        spread: None,
-                                        expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
-                                    };
-                                }
-
-                                // make argument_metadata None then store it to vec for later use
-                                self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
+                        } else { // callexp outside assertion
+                            if self.target_variables.contains(&ident.sym) {
+                                prop_name = Some(ident.sym.to_string());
+                            } else {
+                                n.visit_mut_children_with(self);
                             }
-
-                            //TODO: if is_captured {
-                            n.callee = self.replace_calee_with_powered_run(&powered_ident_name);
-
-                            // make assertion_metadata None then store it to vec for later use
-                            self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
-
-                            self.is_capturing = false;
-                            self.is_captured = false;
-                        } else {
-                            n.visit_mut_children_with(self);
                         }
                     },
                     _ => {
@@ -510,14 +741,26 @@ impl VisitMut for TransformVisitor {
                 n.visit_mut_children_with(self);
             }
         }
+        if prop_name.is_some() {
+            self.capture_assertion(n, prop_name.unwrap(), obj_name);
+        }
     }
 
-    fn visit_mut_expr(&mut self, n: &mut Expr) {
-        // println!("############ enter expr: {:?}", n);
-        if self.argument_metadata.is_some() == false {
+    fn visit_mut_assign_expr(&mut self, n: &mut AssignExpr) {
+        if self.argument_metadata.is_none() {
             n.visit_mut_children_with(self);
             return;
         }
+        // skip left side of assignment
+        n.right.visit_mut_with(self);
+    }
+
+    fn visit_mut_expr(&mut self, n: &mut Expr) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        // println!("############ enter expr: {:?}", n);
         // save expr position here
         let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
@@ -554,7 +797,7 @@ impl VisitMut for TransformVisitor {
 /// Refer swc_plugin_macro to see how does it work internally.
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
-    program.fold_with(&mut as_folder(TransformVisitor::new_with_metadata(&metadata)))
+    program.fold_with(&mut as_folder(TransformVisitor::new_with_metadata(metadata)))
 }
 
 
@@ -568,7 +811,7 @@ mod tests {
     use std::fs;
     use super::TransformVisitor;
 
-    #[testing::fixture("tests/fixtures/*/input.mjs")]
+    #[testing::fixture("tests/fixtures/*/fixture.mjs")]
     fn test_with_fixtures(input: PathBuf) {
         let output = input.with_file_name("expected.mjs");
         let code = fs::read_to_string(&input).unwrap();

@@ -11,18 +11,18 @@ const _parg4 = _pasrt4.recorder(0);
 const _pasrt5 = _power_(assert, null, "assert({foo, bar: baz})");
 const _parg5 = _pasrt5.recorder(0);
 _pasrt1.run(_parg1.rec({
-  [_parg1.tap(num, "arguments/0/properties/0/key", 9)]: _parg1.tap(foo, "arguments/0/properties/0/value", 15)
-}, "arguments/0", 7));
+  [_parg1.tap(num, 9)]: _parg1.tap(foo, 15)
+}, 7));
 _pasrt2.run(_parg2.rec({
-  [_parg2.tap(_parg2.tap('prop_', "arguments/0/properties/0/key/left", 10) + _parg2.tap((() => bar())(), "arguments/0/properties/0/key/right", 33), "arguments/0/properties/0/key", 18)]: _parg2.tap(42, "arguments/0/properties/0/value", 39)
-}, "arguments/0", 7));
+  [_parg2.tap(_parg2.tap('prop_', 10) + _parg2.tap((() => bar())(), 33), 18)]: _parg2.tap(42, 39)
+}, 7));
 _pasrt3.run(_parg3.rec({
-  [_parg3.tap(`prop_${_parg3.tap(generate(_parg3.tap(seed, "arguments/0/properties/0/key/expressions/0/arguments/0", 26)), "arguments/0/properties/0/key/expressions/0", 25)}`, "arguments/0/properties/0/key", 9)]: _parg3.tap(foo, "arguments/0/properties/0/value", 36)
-}, "arguments/0", 7));
+  [_parg3.tap(`prop_${_parg3.tap(generate(_parg3.tap(seed, 26)), 25)}`, 9)]: _parg3.tap(foo, 36)
+}, 7));
 _pasrt4.run(_parg4.rec({
   foo
-}, "arguments/0", 7));
+}, 7));
 _pasrt5.run(_parg5.rec({
   foo,
-  bar: _parg5.tap(baz, "arguments/0/properties/1/value", 18)
-}, "arguments/0", 7));
+  bar: _parg5.tap(baz, 18)
+}, 7));
