@@ -1,6 +1,4 @@
-use std::path::Path;
 use serde::Deserialize;
-use std::path::PathBuf;
 use std::collections::HashSet;
 use std::sync::Arc;
 use swc_core::ecma::{
@@ -46,36 +44,18 @@ use swc_core::ecma::{
     visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
 };
 use swc_core::common::{
-    FileName,
     Span,
     Spanned
 };
 use swc_core::plugin::plugin_transform;
 use swc_core::plugin::metadata::TransformPluginProgramMetadata;
 use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
-// use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
-// use swc_common::{plugin::metadata::TransformPluginMetadataContextKind, SourceMapper, Spanned};
-// // pub mod metadata {
-// //     pub use swc_common::plugin::metadata::TransformPluginMetadataContextKind;
-// //     pub use swc_plugin_proxy::TransformPluginProgramMetadata;
-// // }
-
-
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Config {
     All(bool),
     WithOptions(Options),
-}
-
-impl Config {
-    pub fn truthy(&self) -> bool {
-        match self {
-            Config::All(b) => *b,
-            Config::WithOptions(_) => true,
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -119,21 +99,6 @@ pub struct TransformVisitor {
 }
 
 impl TransformVisitor {
-    pub fn new() -> TransformVisitor {
-        TransformVisitor {
-            is_captured: false,
-            powered_var_cnt: 0,
-            argrec_var_cnt: 0,
-            target_variables: HashSet::new(),
-            assertion_metadata_vec: Vec::new(),
-            assertion_metadata: None,
-            argument_metadata_vec: Vec::new(),
-            argument_metadata: None,
-            // metadata_vec: Vec::new(),
-            code: None
-        }
-    }
-
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
             is_captured: false,
@@ -150,38 +115,29 @@ impl TransformVisitor {
     }
 
     pub fn new_with_metadata(metadata: TransformPluginProgramMetadata) -> TransformVisitor {
-        // let filename = if let Some(filename) = metadata.get_context(&TransformPluginMetadataContextKind::Filename)
-        //     {
-        //         FileName::Real(PathBuf::from(filename))
-        //     } else {
-        //         FileName::Anon
-        //     };
-        // println!("filename: {:?}", filename);
+        let config = serde_json::from_str::<Option<Config>>(
+            &metadata
+                .get_transform_plugin_config()
+                .expect("failed to get plugin config for power-assert"),
+        );
+        println!("config: {:?}", config);
 
-        // let file_name = metadata
-        //     .get_context(&TransformPluginMetadataContextKind::Filename)
-        //     .unwrap();
-        // println!("file_name: {:?}", file_name);
-        // let path = Path::new(&file_name);
-        // let source_map = std::sync::Arc::new(metadata.source_map);
-        // println!("path: {:?}", path);
-        // println!("source_map: {:?}", source_map);
-
-        // println!("metadata: {:?}", metadata);
-        // println!("metadata: {:?}", metadata.source_map);
-        // let code = None;
         let code = match metadata.source_map.source_file.get() {
             Some(source_file) => {
                 Some(source_file.src.clone())
             },
             None => {
-                panic!("source_file is None")
-                // None
-                // let file_name = metadata
-                //     .get_context(&TransformPluginMetadataContextKind::Filename)
-                //     .expect("filename should exist");
-                // println!("file_name: {:?}", file_name);
-                //  panic!("source_file is None")
+                let filename = metadata
+                    .get_context(&TransformPluginMetadataContextKind::Filename)
+                    .expect("filename should exist");
+                println!("filename: {:?}", filename);
+                // /cwd is the root of sandbox
+                // https://github.com/swc-project/swc/discussions/4997
+                let path_in_sandbox = format!("/cwd/{}", filename);
+                println!("path_in_sandbox: {:?}", path_in_sandbox);
+                // read all file contens into string
+                let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
+                Some(Arc::new(code))
             }
         };
         TransformVisitor {
@@ -849,56 +805,7 @@ impl VisitMut for TransformVisitor {
 /// Refer swc_plugin_macro to see how does it work internally.
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
-    let config = serde_json::from_str::<Option<Config>>(
-        &metadata
-            .get_transform_plugin_config()
-            .expect("failed to get plugin config for remove-console"),
-    );
-    println!("config: {:?}", config);
-
-    let file_name = metadata
-        .get_context(&TransformPluginMetadataContextKind::Filename)
-        .expect("filename should exist");
-    println!("file_name: {:?}", file_name);
-
-    // let filename = if let Some(filename) = metadata.get_context(&TransformPluginMetadataContextKind::Filename)
-    // {
-    //     FileName::Real(PathBuf::from(filename))
-    // } else {
-    //     FileName::Anon
-    // };
-    // println!("filename: {:?}", filename);
-
-    // let path = Path::new(&file_name);
-    // println!("path: {:?}", path);
-
-    // https://github.com/swc-project/swc/discussions/4997
-    let path_in_sandbox = format!("/cwd/{}", file_name);
-
-    println!("path_in_sandbox: {:?}", path_in_sandbox);
-
-    // read all file contens into string
-    let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
-
-    // let code = match metadata.source_map.source_file.get() {
-    //     Some(source_file) => {
-    //         panic!("################ test2 ################");
-    //         Some(source_file.src.clone())
-    //     },
-    //     None => {
-    //         panic!("################ test3 ################");
-    //         panic!("source_file is None")
-    //         // None
-    //         //  panic!("source_file is None")
-    //     }
-    // };
-    // panic!("################ test4 ################");
-
-    let visitor = TransformVisitor::new_with_code(&code);
-    // panic!("################ test5 ################");
-
-    program.fold_with(&mut as_folder(visitor))
-    // program.fold_with(&mut as_folder(TransformVisitor::new_with_metadata(metadata)))
+    program.fold_with(&mut as_folder(TransformVisitor::new_with_metadata(metadata)))
 }
 
 
