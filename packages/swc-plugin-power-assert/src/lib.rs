@@ -61,7 +61,9 @@ pub enum Config {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Options {
     #[serde(default)]
-    pub exclude: Vec<JsWord>,
+    pub modules: Vec<JsWord>,
+    #[serde(default)]
+    pub variables: Vec<JsWord>,
 }
 
 struct AssertionMetadata {
@@ -76,8 +78,7 @@ struct ArgumentMetadata {
     ident_name: String,
     arg_index: usize,
     assertion_start_pos: u32,
-    powered_ident_name: String,
-    binary_op: Option<String>
+    powered_ident_name: String
 }
 
 // enum Metadata {
@@ -534,16 +535,7 @@ impl TransformVisitor {
                 ident_name: argrec_ident_name.clone(),
                 arg_index: idx,
                 assertion_start_pos,
-                powered_ident_name: powered_ident_name.clone(),
-                binary_op: match arg.expr.as_ref() {
-                    Expr::Bin(BinExpr{ op, .. }) => {
-                        match op.as_str() {
-                            "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
-                            _ => None
-                        }
-                    },
-                    _ => None
-                }
+                powered_ident_name: powered_ident_name.clone()
             });
 
             // detect left and right of binaryexpression here
