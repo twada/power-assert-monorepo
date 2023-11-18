@@ -91,6 +91,7 @@ pub struct TransformVisitor {
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: HashSet<JsWord>,
+    target_modules: Vec<JsWord>,
     assertion_metadata_vec: Vec<AssertionMetadata>,
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
@@ -105,6 +106,12 @@ impl TransformVisitor {
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
+            target_modules: vec![
+                "node:assert".into(),
+                "node:assert/strict".into(),
+                "assert".into(),
+                "assert/strict".into(),
+            ],
             target_variables: HashSet::new(),
             assertion_metadata_vec: Vec::new(),
             assertion_metadata: None,
@@ -145,6 +152,12 @@ impl TransformVisitor {
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
+            target_modules: vec![
+                "node:assert".into(),
+                "node:assert/strict".into(),
+                "assert".into(),
+                "assert/strict".into(),
+            ],
             target_variables: HashSet::new(),
             assertion_metadata_vec: Vec::new(),
             assertion_metadata: None,
@@ -596,7 +609,7 @@ impl VisitMut for TransformVisitor {
     // https://rustdoc.swc.rs/swc_ecma_visit/trait.VisitMut.html
 
     fn visit_mut_import_decl(&mut self, n: &mut ImportDecl) {
-        if n.src.value == "node:assert" {
+        if self.target_modules.contains(&n.src.value) {
             for s in &mut n.specifiers {
                 match s {
                     ImportSpecifier::Default(ImportDefaultSpecifier { local, .. }) => {
