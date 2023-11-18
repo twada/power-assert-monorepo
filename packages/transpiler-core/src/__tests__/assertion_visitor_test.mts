@@ -188,12 +188,10 @@ assert.ok(truthy);
       it('its arguments', () => {
         // (truthy, 'arguments/0', 10)
         const args = resultNode.arguments;
-        assert.equal(args.length, 3);
+        assert.equal(args.length, 2);
         assert.equal(args[0], controller.current());
         assert.equal(args[1].type, 'Literal');
-        assert.equal(args[1].value, 'arguments/0');
-        assert.equal(args[2].type, 'Literal');
-        assert.equal(args[2].value, 10);
+        assert.equal(args[1].value, 10);
       });
     });
   });

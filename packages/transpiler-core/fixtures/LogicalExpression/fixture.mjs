@@ -1,11 +1,25 @@
-import assert from 'node:assert/strict';
+import { it } from 'node:test';
+import assert from 'node:assert';
 
-assert(5 < actual && actual < 13);
+const zero = 0;
+const ten = 0;
 
-assert.ok(actual < 5 || 13 < actual);
+it ('logical AND', () => {
+    assert(5 < zero && zero < 13);
+});
 
-assert(2 > actual && actual < 13);
+it ('logical OR', () => {
+    assert(ten < 5 || 13 < ten);
+});
 
-assert(2   >   actual    &&  actual     <  13);
+it ('logical AND with parentheses', () => {
+    assert((5 < zero) && (zero < 13));
+});
 
-assert.equal(5 < actual && actual < 13, falsy);
+it ('logical OR with parentheses', () => {
+    assert((ten < 5) || (13 < ten));
+});
+
+it ('two or more whitespaces', () => {
+    assert(2   <   ten    &&  ten     <  8);
+});

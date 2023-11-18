@@ -29,8 +29,8 @@
   },
   "scripts": {
     "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
-    "clean:all": "npm run build:clean --workspaces",
-    "lint:all": "npm run lint --workspaces",
+    "clean:all": "npm run build:clean --workspaces --if-present",
+    "lint:all": "npm run lint --workspaces --if-present",
     "build:all": "tsc --build tsconfig.build.json",
     "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'",
     "prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=test.mjs",
@@ -51,6 +51,7 @@
     "packages/integration-tests",
     "packages/vitest-plugin",
     "packages/esbuild-plugin",
-    "packages/rollup-plugin"
+    "packages/rollup-plugin",
+    "packages/swc-plugin-power-assert"
   ]
 }

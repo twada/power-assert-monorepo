@@ -1,12 +1,12 @@
 import {describe, it} from 'node:test';
-import assert from 'node:assert/strict';
+import assert from 'node:assert';
 import {_power_} from "@power-assert/runtime";
 describe('description', () => {
   it('function', () => {
     const _pasrt1 = _power_(assert, null, "assert(func())");
     const _parg1 = _pasrt1.recorder(0);
     const func = () => false;
-    _pasrt1.run(_parg1.rec(func(), "arguments/0", 11));
+    _pasrt1.run(_parg1.rec(func(), 11));
   });
   it('method', () => {
     const _pasrt2 = _power_(assert, null, "assert(obj.method())");
@@ -14,6 +14,6 @@ describe('description', () => {
     const obj = {
       method: () => false
     };
-    _pasrt2.run(_parg2.rec(_parg2.tap(obj, "arguments/0/callee/object", 7).method(), "arguments/0", 17));
+    _pasrt2.run(_parg2.rec(_parg2.tap(obj, 7).method(), 17));
   });
 });
