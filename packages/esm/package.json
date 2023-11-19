@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/esm",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "power-assert esm loader",
   "author": {
     "name": "Takuto WADA",
