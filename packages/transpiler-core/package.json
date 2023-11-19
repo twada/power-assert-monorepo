@@ -2,13 +2,19 @@
   "name": "@power-assert/transpiler-core",
   "version": "0.0.0",
   "description": "power-assert transpiler core",
-  "author": "Takuto WADA",
+  "author": {
+    "name": "Takuto WADA",
+    "email": "takuto.wada@gmail.com",
+    "url": "https://github.com/twada"
+  },
   "license": "MIT",
+  "keywords": [
+    "power-assert",
+    "assert",
+    "assertion"
+  ],
   "type": "module",
   "main": "./dist/transpiler-core.mjs",
-  "keywords": [
-    "power-assert"
-  ],
   "exports": {
     ".": {
       "import": {
@@ -33,6 +39,7 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "preversion": "rimraf dist/__tests__",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix",
     "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"

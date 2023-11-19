@@ -2,17 +2,15 @@
   "name": "@power-assert/monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "power-assert monorepo",
   "keywords": [],
-  "author": "",
+  "author": {
+    "name": "Takuto WADA",
+    "email": "takuto.wada@gmail.com",
+    "url": "https://github.com/twada"
+  },
   "license": "MIT",
   "type": "module",
-  "files": [
-    "src",
-    "dist",
-    "package.json"
-  ],
   "devDependencies": {
     "@types/convert-source-map": "^2.0.0",
     "@types/estraverse": "^5.1.2",
