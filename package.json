@@ -31,16 +31,7 @@
     "clean:all": "npm run build:clean --workspaces --if-present",
     "lint:all": "npm run lint --workspaces --if-present",
     "build:all": "tsc --build tsconfig.build.json",
-    "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'",
-    "prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=test.mjs",
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
-    "example": "npm run build && npm run power:example",
-    "power": "node --enable-source-maps --no-warnings --loader @power-assert/esm --test --",
-    "power:example": "npm run power examples/bowling_test.mjs",
-    "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
-    "ts-node:power": "npm run test:ts --loader @power-assert/esm --",
-    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader @power-assert/esm examples/spike/spike_test.mts",
-    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
+    "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'"
   },
   "workspaces": [
     "packages/transpiler",

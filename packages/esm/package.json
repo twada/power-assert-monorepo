@@ -34,6 +34,14 @@
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
-    "fix": "npm run lint:src -- --fix"
+    "fix": "npm run lint:src -- --fix",
+    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
+    "example": "npm run power:example",
+    "power": "node --enable-source-maps --no-warnings --loader @power-assert/esm --test --",
+    "power:example": "npm run power examples/bowling_test.mjs",
+    "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
+    "ts-node:power": "npm run test:ts --loader @power-assert/esm --",
+    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader @power-assert/esm examples/spike/spike_test.mts",
+    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
   }
 }
