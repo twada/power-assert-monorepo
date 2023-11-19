@@ -1,5 +1,5 @@
 {
-  "name": "@power-assert/rollup-plugin",
+  "name": "rollup-plugin-power-assert",
   "version": "0.0.0",
   "description": "power-assert rollup plugin",
   "author": {

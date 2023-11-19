@@ -1,5 +1,5 @@
 {
-  "name": "@power-assert/esbuild-plugin",
+  "name": "esbuild-plugin-power-assert",
   "version": "0.0.0",
   "description": "power-assert esbuild plugin",
   "author": {

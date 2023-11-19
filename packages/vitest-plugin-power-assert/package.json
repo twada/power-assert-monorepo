@@ -1,5 +1,5 @@
 {
-  "name": "@power-assert/vitest-plugin",
+  "name": "vitest-plugin-power-assert",
   "version": "0.0.0",
   "description": "power-assert vitest plugin",
   "author": {
