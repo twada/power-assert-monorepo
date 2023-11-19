@@ -2,8 +2,12 @@
 name = "swc_plugin_power_assert"
 version = "0.1.0"
 edition = "2021"
-include       = ["Cargo.toml", "src/**/*.rs"]
-license       = "MIT"
+authors = ["Takuto WADA <takuto.wada@gmail.com>"]
+include = ["Cargo.toml", "src/**/*.rs"]
+license = "MIT"
+description = """
+SWC plugin for power-assert
+"""
 
 [lib]
 crate-type = ["cdylib", "rlib"]
