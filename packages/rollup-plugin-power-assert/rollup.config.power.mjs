@@ -1,5 +1,5 @@
 import { globSync } from 'glob';
-import { powerAssertPlugin } from '@power-assert/rollup-plugin';
+import { powerAssertPlugin } from 'rollup-plugin-power-assert';
 
 export default {
   input: globSync('examples/**/*.mjs'),

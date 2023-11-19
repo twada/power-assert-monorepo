@@ -1,7 +1,7 @@
 {
-  "name": "@power-assert/vitest-plugin",
+  "name": "esbuild-plugin-power-assert",
   "version": "0.0.0",
-  "description": "power-assert vitest plugin",
+  "description": "power-assert esbuild plugin",
   "author": {
     "name": "Takuto WADA",
     "email": "takuto.wada@gmail.com",
@@ -10,12 +10,12 @@
   "license": "MIT",
   "keywords": [
     "power-assert",
-    "vitest-plugin"
+    "esbuild-plugin"
   ],
   "type": "module",
-  "main": "./dist/vitest-plugin-power-assert.mts",
+  "main": "./dist/power-assert-esbuild-plugin.mjs",
   "exports": {
-    ".": "./dist/vitest-plugin-power-assert.mts",
+    ".": "./dist/power-assert-esbuild-plugin.mjs",
     "./package.json": "./package.json"
   },
   "files": [
@@ -30,11 +30,11 @@
     "@power-assert/runtime": "^0.0.0"
   },
   "devDependencies": {
-    "vitest": "^0.34.6"
+    "esbuild": "^0.19.5"
   },
   "scripts": {
-    "example": "vitest run",
-    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "example": "node build.mjs && node --test --enable-source-maps tmp/bowling.test.js",
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
   }

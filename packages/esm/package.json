@@ -19,6 +19,9 @@
     "dist",
     "package.json"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "power-assert"
   ],
