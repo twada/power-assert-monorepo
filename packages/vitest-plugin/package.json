@@ -2,14 +2,31 @@
   "name": "@power-assert/vitest-plugin",
   "version": "0.0.0",
   "description": "power-assert vitest plugin",
+  "author": {
+    "name": "Takuto WADA",
+    "email": "takuto.wada@gmail.com",
+    "url": "https://github.com/twada"
+  },
+  "license": "MIT",
+  "keywords": [
+    "power-assert",
+    "vitest-plugin"
+  ],
   "type": "module",
   "main": "./dist/vitest-plugin-power-assert.mts",
   "exports": {
     ".": "./dist/vitest-plugin-power-assert.mts",
     "./package.json": "./package.json"
   },
+  "files": [
+    "src",
+    "dist",
+    "package.json"
+  ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.0.0",
+    "@power-assert/transpiler": "^0.0.0"
+  },
+  "peerDependencies": {
     "@power-assert/runtime": "^0.0.0"
   },
   "devDependencies": {
@@ -20,11 +37,5 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
-  },
-  "keywords": [
-    "power-assert",
-    "vitest-plugin"
-  ],
-  "author": "Takuto WADA",
-  "license": "MIT"
+  }
 }

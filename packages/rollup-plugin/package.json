@@ -2,17 +2,33 @@
   "name": "@power-assert/rollup-plugin",
   "version": "0.0.0",
   "description": "power-assert rollup plugin",
+  "author": {
+    "name": "Takuto WADA",
+    "email": "takuto.wada@gmail.com",
+    "url": "https://github.com/twada"
+  },
+  "license": "MIT",
+  "keywords": [
+    "power-assert"
+  ],
   "type": "module",
   "main": "./dist/rollup-plugin-power-assert.mjs",
   "exports": {
     ".": "./dist/rollup-plugin-power-assert.mjs",
     "./package.json": "./package.json"
   },
+  "files": [
+    "src",
+    "dist",
+    "package.json"
+  ],
   "dependencies": {
-    "@power-assert/runtime": "^0.0.0",
     "@power-assert/transpiler-core": "^0.0.0",
     "astring": "^1.8.6",
     "source-map": "^0.7.4"
+  },
+  "peerDependencies": {
+    "@power-assert/runtime": "^0.0.0"
   },
   "devDependencies": {
     "rollup": "^4.2.0"
@@ -22,10 +38,5 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src --ext .mts",
     "fix": "npm run lint:src -- --fix"
-  },
-  "keywords": [
-    "power-assert"
-  ],
-  "author": "Takuto WADA",
-  "license": "MIT"
+  }
 }

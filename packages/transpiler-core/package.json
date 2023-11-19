@@ -33,6 +33,7 @@
     "estraverse": "^5.3.0"
   },
   "devDependencies": {
+    "@types/estree": "^1.0.1",
     "acorn": "^8.10.0",
     "astring": "^1.8.6",
     "meriyah": "^4.3.7"
