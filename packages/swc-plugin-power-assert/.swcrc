@@ -1,5 +1,9 @@
 {
   "jsc": {
+    "parser": {
+      "syntax": "ecmascript",
+      "jsx": true
+    },
     "experimental": {
       "plugins": [
         ["./swc_plugin_power_assert.wasm", {}]
