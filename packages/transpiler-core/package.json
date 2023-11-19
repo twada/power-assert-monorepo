@@ -13,6 +13,9 @@
     "assert",
     "assertion"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/transpiler-core.mjs",
   "exports": {
