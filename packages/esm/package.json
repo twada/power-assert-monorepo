@@ -17,6 +17,7 @@
   "files": [
     "src",
     "dist",
+    "README.md",
     "package.json"
   ],
   "publishConfig": {
