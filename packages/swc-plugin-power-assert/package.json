@@ -29,11 +29,13 @@
     "@swc/core": "^1.3.96"
   },
   "scripts": {
-    "example": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --test --enable-source-maps ./tmp/bowling.test.mjs",
-    "build": "npm run build:cargo && npm run build:cp",
-    "build:cargo": "cargo build-wasi --release",
+    "example": "npm run example:cli",
+    "example:cli": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --test --enable-source-maps ./tmp/bowling.test.mjs",
+    "example:loader": "SWCRC=true node --enable-source-maps --no-warnings --loader @swc-node/register/esm --test ./examples/truth.test.mts",
+    "test": "cargo test",
+    "build": "npm run build:release && npm run build:cp",
+    "build:release": "cargo build-wasi --release",
     "build:cp": "cp ../../target/wasm32-wasi/release/swc_plugin_power_assert.wasm ./swc_plugin_power_assert.wasm",
-    "prepublishOnly": "cargo build-wasi --release",
-    "prepack": "cargo prepublish --release && npm run build:cp"
+    "prepack": "npm run build"
   }
 }
