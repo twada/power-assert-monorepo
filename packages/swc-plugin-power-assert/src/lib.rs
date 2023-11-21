@@ -100,6 +100,20 @@ pub struct TransformVisitor {
     code: Option<Arc<String>>
 }
 
+fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
+    if filename.starts_with("file://") {
+        let abs_path_like = filename.replace("file://", "");
+        if abs_path_like.starts_with(cwd_str) {
+            let relative_path_from_cwd = abs_path_like.replace(cwd_str, "");
+            return format!("/cwd{}", relative_path_from_cwd);
+        }
+    }
+    // /cwd is the root of sandbox
+    // https://github.com/swc-project/swc/discussions/4997
+    let path_in_sandbox = format!("/cwd/{}", filename);
+    path_in_sandbox
+}
+
 impl TransformVisitor {
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
@@ -139,9 +153,20 @@ impl TransformVisitor {
                     .get_context(&TransformPluginMetadataContextKind::Filename)
                     .expect("filename should exist");
                 println!("filename: {:?}", filename);
+
+                let cwd = metadata
+                    .get_context(&TransformPluginMetadataContextKind::Cwd)
+                    .expect("cwd should exist");
+                println!("cwd: {:?}", cwd);
+
+                // let env = metadata
+                //     .get_context(&TransformPluginMetadataContextKind::Env)
+                //     .expect("env should exist");
+                // println!("env: {:?}", env);  // "development"
+
                 // /cwd is the root of sandbox
                 // https://github.com/swc-project/swc/discussions/4997
-                let path_in_sandbox = format!("/cwd/{}", filename);
+                let path_in_sandbox = resolve_path_in_sandbox(&filename, &cwd);
                 println!("path_in_sandbox: {:?}", path_in_sandbox);
                 // read all file contens into string
                 let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
@@ -840,5 +865,19 @@ mod tests {
                 ..Default::default()
             },
         );
+    }
+
+    #[test]
+    fn test_relative_path() {
+        let input = "examples/bowling.test.mjs".to_string();
+        let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
+        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/bowling.test.mjs");
+    }
+
+    #[test]
+    fn test_absolute_url() {
+        let input = "file:///Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/truth.test.mts".to_string();
+        let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
+        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/truth.test.mts");
     }
 }
