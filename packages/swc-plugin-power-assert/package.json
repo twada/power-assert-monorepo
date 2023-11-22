@@ -1,6 +1,6 @@
 {
   "name": "swc-plugin-power-assert",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "power-assert SWC plugin",
   "author": {
     "name": "Takuto WADA",
