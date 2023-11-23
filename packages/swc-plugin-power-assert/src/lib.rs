@@ -32,6 +32,7 @@ use swc_core::ecma::{
         MemberProp,
         ComputedPropName,
         AssignExpr,
+        AwaitExpr,
         CondExpr,
         ObjectLit,
         PropOrSpread,
@@ -41,7 +42,12 @@ use swc_core::ecma::{
         Callee
     },
     atoms::JsWord,
-    visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
+    visit::{
+        as_folder,
+        FoldWith,
+        VisitMut,
+        VisitMutWith
+    },
 };
 use swc_core::common::{
     Span,
@@ -96,6 +102,7 @@ pub struct TransformVisitor {
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
     argument_metadata: Option<ArgumentMetadata>,
+    do_not_capture_immediate_child: bool,
     // metadata_vec: Vec<Metadata>,
     code: Option<Arc<String>>
 }
@@ -117,6 +124,7 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
 impl TransformVisitor {
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
+            do_not_capture_immediate_child: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -174,6 +182,7 @@ impl TransformVisitor {
             }
         };
         TransformVisitor {
+            do_not_capture_immediate_child: false,
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
@@ -793,27 +802,39 @@ impl VisitMut for TransformVisitor {
         n.right.visit_mut_with(self);
     }
 
+    fn visit_mut_await_expr(&mut self, n: &mut AwaitExpr) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        self.do_not_capture_immediate_child = true;
+        n.visit_mut_children_with(self);
+        self.do_not_capture_immediate_child = false;
+    }
+
     fn visit_mut_expr(&mut self, n: &mut Expr) {
         if self.argument_metadata.is_none() {
             n.visit_mut_children_with(self);
             return;
         }
+        match n {
+            Expr::Seq(_) | Expr::Paren(_) => {
+                n.visit_mut_children_with(self);
+                return;
+            },
+            _ => {}
+        }
         // println!("############ enter expr: {:?}", n);
+        let do_not_capture_current_expr = self.do_not_capture_immediate_child;
+        self.do_not_capture_immediate_child = false;
         // save expr position here
         let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
         let arg_rec = self.argument_metadata.as_ref().unwrap();
-        match n {
-            Expr::Seq(_) => {
-                // do not capture sequence expression itself
-            },
-            Expr::Paren(_) => {
-                // do not capture parenthesized expression itself
-            },
-            _ => {
-                *n = self.wrap_with_tap(n, &arg_rec.ident_name, &expr_pos);
-            }
+        if do_not_capture_current_expr {
+            return;
         }
+        *n = self.wrap_with_tap(n, &arg_rec.ident_name, &expr_pos);
         // println!("############ leave expr: {:?}", n);
     }
 }
