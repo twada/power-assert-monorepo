@@ -252,7 +252,7 @@ impl TransformVisitor {
         false
     }
 
-    fn apply_hint_right_left(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, hint: &str) {
+    fn apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, f: &dyn Fn(&mut Vec<ExprOrSpread>)) {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -262,18 +262,7 @@ impl TransformVisitor {
                                 if ident.sym == *argrec_ident_name {
                                     if let MemberProp::Ident(prop_ident) = prop {
                                         if prop_ident.sym == "tap" {
-                                            args.push(ExprOrSpread {
-                                                spread: None,
-                                                expr: Box::new(Expr::Object(ObjectLit{
-                                                    span: Span::default(),
-                                                    props: vec![
-                                                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                                                            key: PropName::Ident(Ident::new("hint".into(), Span::default())),
-                                                            value: Box::new(Expr::Lit(Lit::Str(hint.into())))
-                                                        })))
-                                                    ]
-                                                }))
-                                            });
+                                            f(args);
                                         }
                                     }
                                 }
@@ -288,37 +277,40 @@ impl TransformVisitor {
         }
     }
 
+    fn create_hint_object(&self, hint: &str) -> Expr {
+        Expr::Object(ObjectLit{
+            span: Span::default(),
+            props: vec![
+                PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                    key: PropName::Ident(Ident::new("hint".into(), Span::default())),
+                    value: Box::new(Expr::Lit(Lit::Str(hint.into())))
+                })))
+            ]
+        })
+    }
+
     fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) {
-        match arg.expr.as_mut() {
-            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
-                match callee.as_mut() {
-                    Expr::Member(MemberExpr { obj, prop, .. }) => {
-                        match obj.as_ref() {
-                            Expr::Ident(ident) => {
-                                if ident.sym == *argrec_ident_name {
-                                    if let MemberProp::Ident(prop_ident) = prop {
-                                        if prop_ident.sym == "tap" {
-                                            let value = &mut args[0];
-                                            // let mut pos = &args[1];
-                                            match value.expr.as_mut() {
-                                                Expr::Bin(BinExpr { left, right, .. }) => {
-                                                    self.apply_hint_right_left(left, argrec_ident_name, "left".into());
-                                                    self.apply_hint_right_left(right, argrec_ident_name, "right".into());
-                                                },
-                                                _ => {}
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            _ => {}
-                        }
-                    },
-                    _ => {}
-                }
-            },
-            _ => {}
-        }
+        self.apply_to_tap(&mut arg.expr, argrec_ident_name, &|args| {
+            let value = &mut args[0];
+            // let mut pos = &args[1];
+            match value.expr.as_mut() {
+                Expr::Bin(BinExpr { left, right, .. }) => {
+                    self.apply_to_tap(left, argrec_ident_name, &|args| {
+                        args.push(ExprOrSpread {
+                            spread: None,
+                            expr: Box::new(self.create_hint_object("left"))
+                        });
+                    });
+                    self.apply_to_tap(right, argrec_ident_name, &|args| {
+                        args.push(ExprOrSpread {
+                            spread: None,
+                            expr: Box::new(self.create_hint_object("right"))
+                        });
+                    });
+                },
+                _ => {}
+            };
+        });
     }
 
     fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
