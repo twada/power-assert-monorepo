@@ -107,6 +107,29 @@ pub struct TransformVisitor {
     code: Option<Arc<String>>
 }
 
+impl Default for TransformVisitor {
+    fn default() -> Self {
+        TransformVisitor {
+            is_captured: false,
+            powered_var_cnt: 0,
+            argrec_var_cnt: 0,
+            target_modules: vec![
+                "node:assert".into(),
+                "node:assert/strict".into(),
+                "assert".into(),
+                "assert/strict".into(),
+            ],
+            target_variables: HashSet::new(),
+            assertion_metadata_vec: Vec::new(),
+            assertion_metadata: None,
+            argument_metadata_vec: Vec::new(),
+            argument_metadata: None,
+            do_not_capture_immediate_child: false,
+            code: None
+        }
+    }
+}
+
 fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
     if filename.starts_with("file://") {
         let abs_path_like = filename.replace("file://", "");
@@ -124,23 +147,8 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
 impl TransformVisitor {
     pub fn new_with_code(code: &String) -> TransformVisitor {
         TransformVisitor {
-            do_not_capture_immediate_child: false,
-            is_captured: false,
-            powered_var_cnt: 0,
-            argrec_var_cnt: 0,
-            target_modules: vec![
-                "node:assert".into(),
-                "node:assert/strict".into(),
-                "assert".into(),
-                "assert/strict".into(),
-            ],
-            target_variables: HashSet::new(),
-            assertion_metadata_vec: Vec::new(),
-            assertion_metadata: None,
-            argument_metadata_vec: Vec::new(),
-            argument_metadata: None,
-            // metadata_vec: Vec::new(),
-            code: Some(Arc::new(code.into()))
+            code: Some(Arc::new(code.into())),
+            .. Default::default()
         }
     }
 
@@ -182,23 +190,8 @@ impl TransformVisitor {
             }
         };
         TransformVisitor {
-            do_not_capture_immediate_child: false,
-            is_captured: false,
-            powered_var_cnt: 0,
-            argrec_var_cnt: 0,
-            target_modules: vec![
-                "node:assert".into(),
-                "node:assert/strict".into(),
-                "assert".into(),
-                "assert/strict".into(),
-            ],
-            target_variables: HashSet::new(),
-            assertion_metadata_vec: Vec::new(),
-            assertion_metadata: None,
-            argument_metadata_vec: Vec::new(),
-            argument_metadata: None,
-            // metadata_vec: Vec::new(),
-            code
+            code,
+            .. Default::default()
         }
     }
 
