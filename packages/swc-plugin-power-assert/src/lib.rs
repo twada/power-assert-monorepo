@@ -144,15 +144,17 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
     path_in_sandbox
 }
 
-impl TransformVisitor {
-    pub fn new_with_code(code: &String) -> TransformVisitor {
+impl From<&String> for TransformVisitor {
+    fn from(code: &String) -> Self {
         TransformVisitor {
             code: Some(Arc::new(code.into())),
             .. Default::default()
         }
     }
+}
 
-    pub fn new_with_metadata(metadata: TransformPluginProgramMetadata) -> TransformVisitor {
+impl From<TransformPluginProgramMetadata> for TransformVisitor {
+    fn from(metadata: TransformPluginProgramMetadata) -> Self {
         let config = serde_json::from_str::<Option<Config>>(
             &metadata
                 .get_transform_plugin_config()
@@ -194,7 +196,9 @@ impl TransformVisitor {
             .. Default::default()
         }
     }
+}
 
+impl TransformVisitor {
     fn next_powered_runner_variable_name(&mut self) -> String {
         self.powered_var_cnt += 1;
         format!("_pasrt{}", self.powered_var_cnt)
@@ -626,7 +630,6 @@ impl TransformVisitor {
         self.is_captured = false;
     }
 
-
 }
 
 
@@ -849,7 +852,7 @@ impl VisitMut for TransformVisitor {
 /// Refer swc_plugin_macro to see how does it work internally.
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
-    program.fold_with(&mut as_folder(TransformVisitor::new_with_metadata(metadata)))
+    program.fold_with(&mut as_folder(TransformVisitor::from(metadata)))
 }
 
 
@@ -870,7 +873,7 @@ mod tests {
         test_fixture(
             Syntax::Es(EsConfig::default()),
             &|_t| {
-                as_folder(TransformVisitor::new_with_code(&code))
+                as_folder(TransformVisitor::from(&code))
             },
             &input,
             &output,
