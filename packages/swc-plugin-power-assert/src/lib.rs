@@ -225,9 +225,9 @@ impl TransformVisitor {
         ))
     }
 
-    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
-        match arg.expr.as_mut() {
-            Expr::Call(CallExpr { callee: Callee::Expr(callee), .. }) => {
+    fn find_and_apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
+        match expr.as_mut() {
+            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
                     Expr::Member(MemberExpr { obj, prop, .. }) => {
                         match obj.as_ref() {
@@ -235,7 +235,7 @@ impl TransformVisitor {
                                 if ident.sym == *argrec_ident_name {
                                     if let MemberProp::Ident(prop_ident) = prop {
                                         if prop_ident.sym == "tap" {
-                                            *prop_ident = Ident::new("rec".into(), Span::default());
+                                            f(args, prop_ident);
                                             return true;
                                         }
                                     }
@@ -252,29 +252,10 @@ impl TransformVisitor {
         false
     }
 
-    fn apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, f: &dyn Fn(&mut Vec<ExprOrSpread>)) {
-        match expr.as_mut() {
-            Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
-                match callee.as_mut() {
-                    Expr::Member(MemberExpr { obj, prop, .. }) => {
-                        match obj.as_ref() {
-                            Expr::Ident(ident) => {
-                                if ident.sym == *argrec_ident_name {
-                                    if let MemberProp::Ident(prop_ident) = prop {
-                                        if prop_ident.sym == "tap" {
-                                            f(args);
-                                        }
-                                    }
-                                }
-                            },
-                            _ => {}
-                        }
-                    },
-                    _ => {}
-                }
-            },
-            _ => {}
-        }
+    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
+        self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|_args, prop_ident| {
+            prop_ident.sym = "rec".into();
+        })
     }
 
     fn create_hint_object(&self, hint: &str) -> Expr {
@@ -290,18 +271,18 @@ impl TransformVisitor {
     }
 
     fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) {
-        self.apply_to_tap(&mut arg.expr, argrec_ident_name, &|args| {
+        self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
             let value = &mut args[0];
             // let mut pos = &args[1];
             match value.expr.as_mut() {
                 Expr::Bin(BinExpr { left, right, .. }) => {
-                    self.apply_to_tap(left, argrec_ident_name, &|args| {
+                    self.find_and_apply_to_tap(left, argrec_ident_name, &|args, _prop_ident| {
                         args.push(ExprOrSpread {
                             spread: None,
                             expr: Box::new(self.create_hint_object("left"))
                         });
                     });
-                    self.apply_to_tap(right, argrec_ident_name, &|args| {
+                    self.find_and_apply_to_tap(right, argrec_ident_name, &|args, _prop_ident| {
                         args.push(ExprOrSpread {
                             spread: None,
                             expr: Box::new(self.create_hint_object("right"))
