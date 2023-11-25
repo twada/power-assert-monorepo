@@ -708,9 +708,7 @@ impl VisitMut for TransformVisitor {
 
         // callexp outside assertion
 
-        let mut prop_name: Option<String> = None;
-        let mut obj_name: Option<String> = None;
-        match n.callee {
+        let (prop_name, obj_name): (Option<String>, Option<String>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop, obj, .. }) => {
@@ -719,38 +717,33 @@ impl VisitMut for TransformVisitor {
                                 match obj.as_ref() {
                                     Expr::Ident(ref obj_ident) => {
                                         if self.target_variables.contains(&obj_ident.sym) {
-                                            prop_name = Some(prop_ident.sym.to_string());
-                                            obj_name = Some(obj_ident.sym.to_string());
+                                            (Some(prop_ident.sym.to_string()), Some(obj_ident.sym.to_string()))
+                                        } else {
+                                            (None, None)
                                         }
                                     },
-                                    _ => {
-                                        n.visit_mut_children_with(self);
-                                    }
+                                    _ => (None, None)
                                 }
                             },
-                            _ => {
-                                n.visit_mut_children_with(self);
-                            }
+                            _ => (None, None)
                         }
                     },
                     Expr::Ident(ref ident) => {
                         if self.target_variables.contains(&ident.sym) {
-                            prop_name = Some(ident.sym.to_string());
+                            (Some(ident.sym.to_string()), None)
                         } else {
-                            n.visit_mut_children_with(self);
+                            (None, None)
                         }
                     },
-                    _ => {
-                        n.visit_mut_children_with(self);
-                    }
+                    _ => (None, None)
                 }
             },
-            _ => {
-                n.visit_mut_children_with(self);
-            }
-        }
+            _ => (None, None)
+        };
         if prop_name.is_some() {
             self.capture_assertion(n, prop_name.unwrap(), obj_name);
+        } else {
+            n.visit_mut_children_with(self);
         }
     }
 
