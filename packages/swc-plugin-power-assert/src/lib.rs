@@ -229,17 +229,11 @@ impl TransformVisitor {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
-                    Expr::Member(MemberExpr { obj, prop, .. }) => {
+                    Expr::Member(MemberExpr { obj, prop: MemberProp::Ident(prop_ident), .. }) => {
                         match obj.as_ref() {
-                            Expr::Ident(ident) => {
-                                if ident.sym == *argrec_ident_name {
-                                    if let MemberProp::Ident(prop_ident) = prop {
-                                        if prop_ident.sym == "tap" {
-                                            f(args, prop_ident);
-                                            return true;
-                                        }
-                                    }
-                                }
+                            Expr::Ident(obj_ident) if obj_ident.sym == *argrec_ident_name && prop_ident.sym == "tap" => {
+                                f(args, prop_ident);
+                                return true;
                             },
                             _ => {}
                         }
