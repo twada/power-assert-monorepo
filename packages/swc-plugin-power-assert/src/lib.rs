@@ -701,6 +701,13 @@ impl VisitMut for TransformVisitor {
     }
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
+        if self.assertion_metadata.is_some() { // callexp inside assertion
+            n.visit_mut_children_with(self);
+            return;
+        }
+
+        // callexp outside assertion
+
         let mut prop_name: Option<String> = None;
         let mut obj_name: Option<String> = None;
         match n.callee {
@@ -709,58 +716,28 @@ impl VisitMut for TransformVisitor {
                     Expr::Member(MemberExpr{ prop, obj, .. }) => {
                         match prop {
                             MemberProp::Ident(prop_ident) => {
-                                if self.assertion_metadata.is_some() { // callexp inside assertion
-                                    // memo: do not visit and wrap prop if prop is Ident
-                                    // e.g. do not capture method of obj.method()
-                                    obj.visit_mut_with(self);
-                                    for arg in n.args.iter_mut() {
-                                        arg.visit_mut_with(self);
-                                    }
-                                } else { // callexp outside assertion
-                                    match obj.as_ref() {
-                                        Expr::Ident(ref obj_ident) => {
-                                            if self.target_variables.contains(&obj_ident.sym) {
-                                                prop_name = Some(prop_ident.sym.to_string());
-                                                obj_name = Some(obj_ident.sym.to_string());
-                                            }
-                                        },
-                                        _ => {
-                                            n.visit_mut_children_with(self);
+                                match obj.as_ref() {
+                                    Expr::Ident(ref obj_ident) => {
+                                        if self.target_variables.contains(&obj_ident.sym) {
+                                            prop_name = Some(prop_ident.sym.to_string());
+                                            obj_name = Some(obj_ident.sym.to_string());
                                         }
+                                    },
+                                    _ => {
+                                        n.visit_mut_children_with(self);
                                     }
                                 }
                             },
-                            MemberProp::Computed(ComputedPropName{ ref mut expr, .. }) => {
-                                if self.assertion_metadata.is_some() { // callexp inside assertion
-                                    // memo: do not visit and wrap prop if prop is computed
-                                    // e.g. do not capture `[]` of obj[methodName]() but capture methodName
-                                    expr.visit_mut_with(self);
-                                    obj.visit_mut_with(self);
-                                    for arg in n.args.iter_mut() {
-                                        arg.visit_mut_with(self);
-                                    }
-                                } else { // callexp outside assertion
-                                    n.visit_mut_children_with(self);
-                                }
-                            }
                             _ => {
                                 n.visit_mut_children_with(self);
                             }
                         }
                     },
                     Expr::Ident(ref ident) => {
-                        if self.assertion_metadata.is_some() { // callexp inside assertion
-                            // memo: do not wrap callee if callee is Ident
-                            // e.g. do not capture func of func()
-                            for arg in n.args.iter_mut() {
-                                arg.visit_mut_with(self);
-                            }
-                        } else { // callexp outside assertion
-                            if self.target_variables.contains(&ident.sym) {
-                                prop_name = Some(ident.sym.to_string());
-                            } else {
-                                n.visit_mut_children_with(self);
-                            }
+                        if self.target_variables.contains(&ident.sym) {
+                            prop_name = Some(ident.sym.to_string());
+                        } else {
+                            n.visit_mut_children_with(self);
                         }
                     },
                     _ => {
@@ -796,6 +773,16 @@ impl VisitMut for TransformVisitor {
         self.do_not_capture_immediate_child = false;
     }
 
+    fn visit_mut_callee(&mut self, n: &mut Callee) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        self.do_not_capture_immediate_child = true;
+        n.visit_mut_children_with(self);
+        self.do_not_capture_immediate_child = false;
+    }
+
     fn visit_mut_expr(&mut self, n: &mut Expr) {
         if self.argument_metadata.is_none() {
             n.visit_mut_children_with(self);
@@ -814,10 +801,10 @@ impl VisitMut for TransformVisitor {
         // save expr position here
         let expr_pos = self.calculate_pos(&n);
         n.visit_mut_children_with(self);
-        let arg_rec = self.argument_metadata.as_ref().unwrap();
         if do_not_capture_current_expr {
             return;
         }
+        let arg_rec = self.argument_metadata.as_ref().unwrap();
         *n = self.wrap_with_tap(n, &arg_rec.ident_name, &expr_pos);
         // println!("############ leave expr: {:?}", n);
     }
