@@ -705,35 +705,21 @@ impl VisitMut for TransformVisitor {
             n.visit_mut_children_with(self);
             return;
         }
-
         // callexp outside assertion
-
         let (prop_name, obj_name): (Option<String>, Option<String>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
-                    Expr::Member(MemberExpr{ prop, obj, .. }) => {
-                        match prop {
-                            MemberProp::Ident(prop_ident) => {
-                                match obj.as_ref() {
-                                    Expr::Ident(ref obj_ident) => {
-                                        if self.target_variables.contains(&obj_ident.sym) {
-                                            (Some(prop_ident.sym.to_string()), Some(obj_ident.sym.to_string()))
-                                        } else {
-                                            (None, None)
-                                        }
-                                    },
-                                    _ => (None, None)
-                                }
+                    Expr::Member(MemberExpr{ prop: MemberProp::Ident(prop_ident), obj, .. }) => {
+                        match obj.as_ref() {
+                            Expr::Ident(ref obj_ident) if self.target_variables.contains(&obj_ident.sym) => {
+                                (Some(prop_ident.sym.to_string()), Some(obj_ident.sym.to_string()))
                             },
+                            // Expr::Member
                             _ => (None, None)
                         }
                     },
-                    Expr::Ident(ref ident) => {
-                        if self.target_variables.contains(&ident.sym) {
-                            (Some(ident.sym.to_string()), None)
-                        } else {
-                            (None, None)
-                        }
+                    Expr::Ident(ref ident) if self.target_variables.contains(&ident.sym) => {
+                        (Some(ident.sym.to_string()), None)
                     },
                     _ => (None, None)
                 }
