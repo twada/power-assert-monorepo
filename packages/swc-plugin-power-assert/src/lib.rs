@@ -711,6 +711,7 @@ impl VisitMut for TransformVisitor {
                             MemberProp::Ident(prop_ident) => {
                                 if self.assertion_metadata.is_some() { // callexp inside assertion
                                     // memo: do not visit and wrap prop if prop is Ident
+                                    // e.g. do not capture method of obj.method()
                                     obj.visit_mut_with(self);
                                     for arg in n.args.iter_mut() {
                                         arg.visit_mut_with(self);
@@ -729,6 +730,19 @@ impl VisitMut for TransformVisitor {
                                     }
                                 }
                             },
+                            MemberProp::Computed(ComputedPropName{ ref mut expr, .. }) => {
+                                if self.assertion_metadata.is_some() { // callexp inside assertion
+                                    // memo: do not visit and wrap prop if prop is computed
+                                    // e.g. do not capture `[]` of obj[methodName]() but capture methodName
+                                    expr.visit_mut_with(self);
+                                    obj.visit_mut_with(self);
+                                    for arg in n.args.iter_mut() {
+                                        arg.visit_mut_with(self);
+                                    }
+                                } else { // callexp outside assertion
+                                    n.visit_mut_children_with(self);
+                                }
+                            }
                             _ => {
                                 n.visit_mut_children_with(self);
                             }
@@ -737,6 +751,7 @@ impl VisitMut for TransformVisitor {
                     Expr::Ident(ref ident) => {
                         if self.assertion_metadata.is_some() { // callexp inside assertion
                             // memo: do not wrap callee if callee is Ident
+                            // e.g. do not capture func of func()
                             for arg in n.args.iter_mut() {
                                 arg.visit_mut_with(self);
                             }

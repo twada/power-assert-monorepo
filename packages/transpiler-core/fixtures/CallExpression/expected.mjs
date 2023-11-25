@@ -16,4 +16,13 @@ describe('description', () => {
     };
     _pasrt2.run(_parg2.rec(_parg2.tap(obj, 7).method(), 17));
   });
+  it('computed method', () => {
+    const _pasrt3 = _power_(assert, null, "assert(obj[methodName]())");
+    const _parg3 = _pasrt3.recorder(0);
+    const methodName = 'method';
+    const obj = {
+      method: () => false
+    };
+    _pasrt3.run(_parg3.rec(_parg3.tap(obj, 7)[_parg3.tap(methodName, 11)](), 22));
+  });
 });

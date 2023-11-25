@@ -213,6 +213,22 @@ assert(inner().exact())
 
 false == true
 `);
+    ptest('method callee is computed MemberExpression', (transpiledCode) => {
+      const methodName = 'method';
+      const obj = {
+        method () { return false; }
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(obj[methodName]())
+       |   |          |
+       |   |          false
+       |   "method"
+       Object{method:function@method}
+
+false == true
+`);
   });
 
   describe('ConditionalExpression', () => {

@@ -12,4 +12,11 @@ describe('description', () => {
     };
     assert(obj.method());
   });
+  it('computed method', () => {
+    const methodName = 'method';
+    const obj = {
+      method: () => false
+    };
+    assert(obj[methodName]());
+  });
 });
