@@ -215,11 +215,11 @@ impl TransformVisitor {
         // self.metadata_vec.clear();
     }
 
-    fn replace_callee_with_powered_run (&self, powered_ident_name: &String) -> Callee {
+    fn replace_callee_with_powered_run (&self, powered_ident_name: &str) -> Callee {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
-                obj: Box::new(Expr::Ident(Ident::new(powered_ident_name.clone().into(), Span::default()))),
+                obj: Box::new(Expr::Ident(Ident::new(powered_ident_name.into(), Span::default()))),
                 prop: MemberProp::Ident(Ident::new("run".into(), Span::default()))
             })
         ))
@@ -282,13 +282,13 @@ impl TransformVisitor {
         });
     }
 
-    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> Expr {
+    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
                 MemberExpr {
                     span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.clone().into(), Span::default()))),
+                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
                     prop: MemberProp::Ident(Ident::new("rec".into(), Span::default()))
                 }
             ))),
@@ -299,13 +299,13 @@ impl TransformVisitor {
         })
     }
 
-    fn wrap_with_tap(&self, expr: &Expr, argrec_ident_name: &String, pos: &u32) -> Expr {
+    fn wrap_with_tap(&self, expr: &Expr, argrec_ident_name: &str, pos: &u32) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
                 MemberExpr {
                     span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.clone().into(), Span::default()))),
+                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
                     prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
                 }
             ))),
