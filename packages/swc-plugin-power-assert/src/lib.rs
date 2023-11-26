@@ -113,12 +113,12 @@ impl Default for TransformVisitor {
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
-            target_modules: vec![
-                "node:assert".into(),
-                "node:assert/strict".into(),
-                "assert".into(),
-                "assert/strict".into(),
-            ].into_iter().collect(),
+            target_modules: [
+                "node:assert",
+                "node:assert/strict",
+                "assert",
+                "assert/strict",
+            ].into_iter().map(std::convert::Into::into).collect(),
             target_variables: HashSet::new(),
             assertion_metadata_vec: Vec::new(),
             assertion_metadata: None,
