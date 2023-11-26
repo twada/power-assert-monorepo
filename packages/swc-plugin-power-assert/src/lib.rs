@@ -271,16 +271,10 @@ impl TransformVisitor {
             match value.expr.as_mut() {
                 Expr::Bin(BinExpr { left, right, .. }) => {
                     self.find_and_apply_to_tap(left, argrec_ident_name, &|args, _prop_ident| {
-                        args.push(ExprOrSpread {
-                            spread: None,
-                            expr: Box::new(self.create_hint_object("left"))
-                        });
+                        args.push(ExprOrSpread::from(Box::new(self.create_hint_object("left"))));
                     });
                     self.find_and_apply_to_tap(right, argrec_ident_name, &|args, _prop_ident| {
-                        args.push(ExprOrSpread {
-                            spread: None,
-                            expr: Box::new(self.create_hint_object("right"))
-                        });
+                        args.push(ExprOrSpread::from(Box::new(self.create_hint_object("right"))));
                     });
                 },
                 _ => {}
@@ -316,18 +310,8 @@ impl TransformVisitor {
                 }
             ))),
             args: vec![
-                ExprOrSpread {
-                    spread: None,
-                    expr: Box::new(expr.clone()),
-                },
-                ExprOrSpread {
-                    spread: None,
-                    expr: Box::new(Expr::Lit(Lit::Num(Number {
-                        span: Span::default(),
-                        value: *pos as f64,
-                        raw: None
-                    })))
-                }
+                ExprOrSpread::from(Box::new(expr.clone())),
+                ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(*pos as f64)))))
             ],
             type_args: None,
         })
@@ -382,14 +366,7 @@ impl TransformVisitor {
                             }
                         ))),
                         args: vec![
-                            ExprOrSpread {
-                                spread: None,
-                                expr: Box::new(Expr::Lit(Lit::Num(Number {
-                                    span: Span::default(),
-                                    value: argument_metadata.arg_index as f64,
-                                    raw: None
-                                })))
-                            }
+                            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(argument_metadata.arg_index as f64)))))
                         ],
                         type_args: None,
                     }))),
@@ -401,58 +378,46 @@ impl TransformVisitor {
 
     fn create_powered_runner_decl(&self, assertion_metadata: &AssertionMetadata) -> Stmt {
         let mut args = vec![
-            ExprOrSpread {
-                spread: None,
-                expr: Box::new(
-                    match &assertion_metadata.receiver_ident_name {
-                        Some(receiver_ident_name) => {
-                            Expr::Member(
-                                MemberExpr {
-                                    span: Span::default(),
-                                    obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
-                                    prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
-                                }
-                            )
-                        },
-                        None => {
-                            Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
-                        }
+            ExprOrSpread::from(Box::new(
+                match &assertion_metadata.receiver_ident_name {
+                    Some(receiver_ident_name) => {
+                        Expr::Member(
+                            MemberExpr {
+                                span: Span::default(),
+                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
+                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                            }
+                        )
+                    },
+                    None => {
+                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
                     }
-                )
-            },
-            ExprOrSpread {
-                spread: None,
-                expr: Box::new(
-                    match &assertion_metadata.receiver_ident_name {
-                        Some(receiver_ident_name) => {
-                            Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
-                        },
-                        None => {
-                            Expr::Lit(Lit::Null(Null { span: Span::default() }))
-                        }
+                }
+            )),
+            ExprOrSpread::from(Box::new(
+                match &assertion_metadata.receiver_ident_name {
+                    Some(receiver_ident_name) => {
+                        Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
+                    },
+                    None => {
+                        Expr::Lit(Lit::Null(Null { span: Span::default() }))
                     }
-                )
-            },
-            ExprOrSpread {
-                spread: None,
-                expr: Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into())))
-            }
+                }
+            )),
+            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into()))))
         ];
 
         if assertion_metadata.binary_op.is_some() {
             // add object expression { binexp: "===" } to args
-            args.push(ExprOrSpread {
-                spread: None,
-                expr: Box::new(Expr::Object(ObjectLit{
-                    span: Span::default(),
-                    props: vec![
-                        PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                            key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
-                            value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
-                        })))
-                    ]
-                }))
-            });
+            args.push(ExprOrSpread::from(Box::new(Expr::Object(ObjectLit{
+                span: Span::default(),
+                props: vec![
+                    PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
+                        key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
+                        value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
+                    })))
+                ]
+            }))));
         }
 
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
@@ -576,10 +541,7 @@ impl TransformVisitor {
             // wrap argument with arg_recorder
             let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
             if !changed {
-                *arg = ExprOrSpread {
-                    spread: None,
-                    expr: Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name))
-                };
+                *arg = ExprOrSpread::from(Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name)));
             }
 
             // make argument_metadata None then store it to vec for later use
