@@ -734,7 +734,7 @@ impl VisitMut for TransformVisitor {
         let do_not_capture_current_expr = self.do_not_capture_immediate_child;
         self.do_not_capture_immediate_child = false;
         // save expr position here
-        let expr_pos = self.calculate_pos(&n);
+        let expr_pos = self.calculate_pos(n);
         n.visit_mut_children_with(self);
         if do_not_capture_current_expr {
             return;
