@@ -73,9 +73,9 @@ pub struct Options {
 }
 
 struct AssertionMetadata {
-    ident_name: String,
-    callee_ident_name: String,
-    receiver_ident_name: Option<String>,
+    ident_name: JsWord,
+    callee_ident_name: JsWord,
+    receiver_ident_name: Option<JsWord>,
     assertion_code: String,
     binary_op: Option<String>
 }
@@ -84,7 +84,7 @@ struct ArgumentMetadata {
     ident_name: JsWord,
     arg_index: usize,
     assertion_start_pos: u32,
-    powered_ident_name: String
+    powered_ident_name: JsWord
 }
 
 // enum Metadata {
@@ -199,9 +199,9 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
 }
 
 impl TransformVisitor {
-    fn next_powered_runner_variable_name(&mut self) -> String {
+    fn next_powered_runner_variable_name(&mut self) -> JsWord {
         self.powered_var_cnt += 1;
-        format!("_pasrt{}", self.powered_var_cnt)
+        format!("_pasrt{}", self.powered_var_cnt).into()
     }
 
     fn next_argrec_variable_name(&mut self) -> JsWord {
@@ -462,7 +462,7 @@ impl TransformVisitor {
         }))
     }
 
-    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: String, obj_ident_name: Option<String>) {
+    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
         self.is_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = n.span.lo.0;
@@ -476,7 +476,7 @@ impl TransformVisitor {
                 self.assertion_metadata = Some(AssertionMetadata {
                     ident_name: powered_ident_name.clone(),
                     callee_ident_name: prop_ident_name.clone(),
-                    receiver_ident_name: obj_ident_name,
+                    receiver_ident_name: obj_ident_name.clone(),
                     assertion_code: assertion_code,
                     binary_op: if n.args.len() == 1 {
                         match n.args.first().unwrap().expr.as_ref() {
@@ -662,28 +662,28 @@ impl VisitMut for TransformVisitor {
             return;
         }
         // callexp outside assertion
-        let (prop_name, obj_name): (Option<String>, Option<String>) = match n.callee {
+        let (prop_name, obj_name): (Option<JsWord>, Option<JsWord>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop: MemberProp::Ident(prop_ident), obj, .. }) => {
                         match obj.as_ref() {
                             Expr::Ident(ref obj_ident) if self.target_variables.contains(&obj_ident.sym) => {
-                                (Some(prop_ident.sym.to_string()), Some(obj_ident.sym.to_string()))
+                                (Some(prop_ident.sym.clone()), Some(obj_ident.sym.clone()))
                             },
                             // Expr::Member
                             _ => (None, None)
                         }
                     },
                     Expr::Ident(ref ident) if self.target_variables.contains(&ident.sym) => {
-                        (Some(ident.sym.to_string()), None)
+                        (Some(ident.sym.clone()), None)
                     },
                     _ => (None, None)
                 }
             },
             _ => (None, None)
         };
-        if prop_name.is_some() {
-            self.capture_assertion(n, prop_name.unwrap(), obj_name);
+        if let Some(prop_name_value) = prop_name {
+            self.capture_assertion(n, prop_name_value, obj_name);
         } else {
             n.visit_mut_children_with(self);
         }
