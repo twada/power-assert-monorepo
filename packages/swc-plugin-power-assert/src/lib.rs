@@ -282,7 +282,7 @@ impl TransformVisitor {
         });
     }
 
-    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) -> Expr {
+    fn enclose_in_rec_without_pos(&self, arg: &ExprOrSpread, argrec_ident_name: &str) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
