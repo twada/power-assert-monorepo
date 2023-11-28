@@ -340,8 +340,7 @@ impl TransformVisitor {
         let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
         let search_start_pos = span.hi.0 - assertion_start_pos;
         let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        let found_pos = code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos;
-        found_pos
+        code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
