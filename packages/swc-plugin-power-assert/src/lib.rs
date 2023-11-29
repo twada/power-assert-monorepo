@@ -72,6 +72,7 @@ pub struct Options {
     pub variables: Vec<JsWord>,
 }
 
+#[derive(Debug)]
 struct AssertionMetadata {
     ident_name: JsWord,
     callee_ident_name: JsWord,
@@ -80,6 +81,7 @@ struct AssertionMetadata {
     binary_op: Option<String>
 }
 
+#[derive(Debug)]
 struct ArgumentMetadata {
     ident_name: JsWord,
     arg_index: usize,
