@@ -7,6 +7,7 @@ use swc_core::ecma::{
         Program,
         Lit,
         Null,
+        Str,
         Number,
         Stmt,
         Ident,
@@ -354,7 +355,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(argument_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(argument_metadata.ident_name.clone(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -362,7 +363,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone().into(), Span::default()))),
+                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone(), Span::default()))),
                                 prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
                             }
                         ))),
@@ -385,27 +386,27 @@ impl TransformVisitor {
                         Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))),
+                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
                             }
                         )
                     },
                     None => {
-                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
                     }
                 }
             )),
             ExprOrSpread::from(Box::new(
                 match &assertion_metadata.receiver_ident_name {
                     Some(receiver_ident_name) => {
-                        Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
+                        Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))
                     },
                     None => {
                         Expr::Lit(Lit::Null(Null { span: Span::default() }))
                     }
                 }
             )),
-            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into()))))
+            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(Str::from(assertion_metadata.assertion_code.clone())))))
         ];
 
         if assertion_metadata.binary_op.is_some() {
@@ -429,7 +430,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(assertion_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(assertion_metadata.ident_name.clone(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
