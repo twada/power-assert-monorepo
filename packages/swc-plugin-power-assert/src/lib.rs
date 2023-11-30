@@ -479,7 +479,7 @@ impl TransformVisitor {
                     ident_name: powered_ident_name.clone(),
                     callee_ident_name: prop_ident_name.clone(),
                     receiver_ident_name: obj_ident_name.clone(),
-                    assertion_code: assertion_code,
+                    assertion_code,
                     binary_op: if n.args.len() == 1 {
                         match n.args.first().unwrap().expr.as_ref() {
                             Expr::Bin(BinExpr{ op, .. }) => {
