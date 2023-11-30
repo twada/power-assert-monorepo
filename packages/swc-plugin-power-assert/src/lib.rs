@@ -520,10 +520,7 @@ impl TransformVisitor {
                 ExprOrSpread { spread: None, expr } => {
                     match expr.as_ref() {
                         Expr::Bin(BinExpr{ op, .. }) => {
-                            match op.as_str() {
-                                "==" | "===" | "!=" | "!==" => true,
-                                _ => false
-                            }
+                            matches!(op.as_str(), "==" | "===" | "!=" | "!==")
                         },
                         _ => false
                     }
@@ -624,10 +621,7 @@ impl VisitMut for TransformVisitor {
             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
         }
         let end_of_import_position = n.iter().position(|item| {
-            match item {
-                ModuleItem::ModuleDecl(ModuleDecl::Import(_)) => false,
-                _ => true
-            }
+            !matches!(item, ModuleItem::ModuleDecl(ModuleDecl::Import(_)))
         }).unwrap_or(0);
         let idx = end_of_import_position;
         n.splice(idx..idx, new_items);
