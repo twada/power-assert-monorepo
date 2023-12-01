@@ -7,6 +7,7 @@ use swc_core::ecma::{
         Program,
         Lit,
         Null,
+        Str,
         Number,
         Stmt,
         Ident,
@@ -72,19 +73,21 @@ pub struct Options {
     pub variables: Vec<JsWord>,
 }
 
+#[derive(Debug)]
 struct AssertionMetadata {
-    ident_name: String,
-    callee_ident_name: String,
-    receiver_ident_name: Option<String>,
+    ident_name: JsWord,
+    callee_ident_name: JsWord,
+    receiver_ident_name: Option<JsWord>,
     assertion_code: String,
     binary_op: Option<String>
 }
 
+#[derive(Debug)]
 struct ArgumentMetadata {
-    ident_name: String,
+    ident_name: JsWord,
     arg_index: usize,
     assertion_start_pos: u32,
-    powered_ident_name: String
+    powered_ident_name: JsWord
 }
 
 // enum Metadata {
@@ -199,14 +202,14 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
 }
 
 impl TransformVisitor {
-    fn next_powered_runner_variable_name(&mut self) -> String {
+    fn next_powered_runner_variable_name(&mut self) -> JsWord {
         self.powered_var_cnt += 1;
-        format!("_pasrt{}", self.powered_var_cnt)
+        format!("_pasrt{}", self.powered_var_cnt).into()
     }
 
-    fn next_argrec_variable_name(&mut self) -> String {
+    fn next_argrec_variable_name(&mut self) -> JsWord {
         self.argrec_var_cnt += 1;
-        format!("_parg{}", self.argrec_var_cnt)
+        format!("_parg{}", self.argrec_var_cnt).into()
     }
 
     fn clear_transformations(&mut self) {
@@ -225,7 +228,7 @@ impl TransformVisitor {
         ))
     }
 
-    fn find_and_apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &String, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
+    fn find_and_apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -246,7 +249,7 @@ impl TransformVisitor {
         false
     }
 
-    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) -> bool {
+    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) -> bool {
         self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|_args, prop_ident| {
             prop_ident.sym = "rec".into();
         })
@@ -264,7 +267,7 @@ impl TransformVisitor {
         })
     }
 
-    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &String) {
+    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) {
         self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
             let value = &mut args[0];
             // let mut pos = &args[1];
@@ -282,7 +285,7 @@ impl TransformVisitor {
         });
     }
 
-    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) -> Expr {
+    fn enclose_in_rec_without_pos(&self, arg: &ExprOrSpread, argrec_ident_name: &str) -> Expr {
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
@@ -340,8 +343,7 @@ impl TransformVisitor {
         let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
         let search_start_pos = span.hi.0 - assertion_start_pos;
         let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        let found_pos = code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos;
-        found_pos
+        code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
@@ -353,7 +355,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(argument_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(argument_metadata.ident_name.clone(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -361,7 +363,7 @@ impl TransformVisitor {
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone().into(), Span::default()))),
+                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone(), Span::default()))),
                                 prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
                             }
                         ))),
@@ -384,27 +386,27 @@ impl TransformVisitor {
                         Expr::Member(
                             MemberExpr {
                                 span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))),
+                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
                             }
                         )
                     },
                     None => {
-                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone().into(), Span::default()))
+                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
                     }
                 }
             )),
             ExprOrSpread::from(Box::new(
                 match &assertion_metadata.receiver_ident_name {
                     Some(receiver_ident_name) => {
-                        Expr::Ident(Ident::new(receiver_ident_name.clone().into(), Span::default()))
+                        Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))
                     },
                     None => {
                         Expr::Lit(Lit::Null(Null { span: Span::default() }))
                     }
                 }
             )),
-            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(assertion_metadata.assertion_code.clone().into()))))
+            ExprOrSpread::from(Box::new(Expr::Lit(Lit::Str(Str::from(assertion_metadata.assertion_code.clone())))))
         ];
 
         if assertion_metadata.binary_op.is_some() {
@@ -428,7 +430,7 @@ impl TransformVisitor {
                 VarDeclarator {
                     span: Span::default(),
                     name: Pat::Ident(BindingIdent{
-                        id: Ident::new(assertion_metadata.ident_name.clone().into(), Span::default()),
+                        id: Ident::new(assertion_metadata.ident_name.clone(), Span::default()),
                         type_ann: None
                     }),
                     init: Some(Box::new(Expr::Call(CallExpr {
@@ -462,7 +464,7 @@ impl TransformVisitor {
         }))
     }
 
-    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: String, obj_ident_name: Option<String>) {
+    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
         self.is_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = n.span.lo.0;
@@ -476,8 +478,8 @@ impl TransformVisitor {
                 self.assertion_metadata = Some(AssertionMetadata {
                     ident_name: powered_ident_name.clone(),
                     callee_ident_name: prop_ident_name.clone(),
-                    receiver_ident_name: obj_ident_name,
-                    assertion_code: assertion_code,
+                    receiver_ident_name: obj_ident_name.clone(),
+                    assertion_code,
                     binary_op: if n.args.len() == 1 {
                         match n.args.first().unwrap().expr.as_ref() {
                             Expr::Bin(BinExpr{ op, .. }) => {
@@ -519,10 +521,7 @@ impl TransformVisitor {
                 ExprOrSpread { spread: None, expr } => {
                     match expr.as_ref() {
                         Expr::Bin(BinExpr{ op, .. }) => {
-                            match op.as_str() {
-                                "==" | "===" | "!=" | "!==" => true,
-                                _ => false
-                            }
+                            matches!(op.as_str(), "==" | "===" | "!=" | "!==")
                         },
                         _ => false
                     }
@@ -623,10 +622,7 @@ impl VisitMut for TransformVisitor {
             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
         }
         let end_of_import_position = n.iter().position(|item| {
-            match item {
-                ModuleItem::ModuleDecl(ModuleDecl::Import(_)) => false,
-                _ => true
-            }
+            !matches!(item, ModuleItem::ModuleDecl(ModuleDecl::Import(_)))
         }).unwrap_or(0);
         let idx = end_of_import_position;
         n.splice(idx..idx, new_items);
@@ -662,28 +658,28 @@ impl VisitMut for TransformVisitor {
             return;
         }
         // callexp outside assertion
-        let (prop_name, obj_name): (Option<String>, Option<String>) = match n.callee {
+        let (prop_name, obj_name): (Option<JsWord>, Option<JsWord>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop: MemberProp::Ident(prop_ident), obj, .. }) => {
                         match obj.as_ref() {
                             Expr::Ident(ref obj_ident) if self.target_variables.contains(&obj_ident.sym) => {
-                                (Some(prop_ident.sym.to_string()), Some(obj_ident.sym.to_string()))
+                                (Some(prop_ident.sym.clone()), Some(obj_ident.sym.clone()))
                             },
                             // Expr::Member
                             _ => (None, None)
                         }
                     },
                     Expr::Ident(ref ident) if self.target_variables.contains(&ident.sym) => {
-                        (Some(ident.sym.to_string()), None)
+                        (Some(ident.sym.clone()), None)
                     },
                     _ => (None, None)
                 }
             },
             _ => (None, None)
         };
-        if prop_name.is_some() {
-            self.capture_assertion(n, prop_name.unwrap(), obj_name);
+        if let Some(prop_name_value) = prop_name {
+            self.capture_assertion(n, prop_name_value, obj_name);
         } else {
             n.visit_mut_children_with(self);
         }
