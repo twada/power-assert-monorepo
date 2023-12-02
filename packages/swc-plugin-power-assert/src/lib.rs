@@ -271,16 +271,13 @@ impl TransformVisitor {
         self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
             let value = &mut args[0];
             // let mut pos = &args[1];
-            match value.expr.as_mut() {
-                Expr::Bin(BinExpr { left, right, .. }) => {
-                    self.find_and_apply_to_tap(left, argrec_ident_name, &|args, _prop_ident| {
-                        args.push(ExprOrSpread::from(Box::new(self.create_hint_object("left"))));
-                    });
-                    self.find_and_apply_to_tap(right, argrec_ident_name, &|args, _prop_ident| {
-                        args.push(ExprOrSpread::from(Box::new(self.create_hint_object("right"))));
-                    });
-                },
-                _ => {}
+            if let Expr::Bin(BinExpr { left, right, .. }) = value.expr.as_mut() {
+                self.find_and_apply_to_tap(left, argrec_ident_name, &|args, _prop_ident| {
+                    args.push(ExprOrSpread::from(Box::new(self.create_hint_object("left"))));
+                });
+                self.find_and_apply_to_tap(right, argrec_ident_name, &|args, _prop_ident| {
+                    args.push(ExprOrSpread::from(Box::new(self.create_hint_object("right"))));
+                });
             };
         });
     }
