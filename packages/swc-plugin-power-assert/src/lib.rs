@@ -90,11 +90,6 @@ struct ArgumentMetadata {
     powered_ident_name: JsWord
 }
 
-// enum Metadata {
-//     Assertion(AssertionMetadata),
-//     Argument(ArgumentMetadata)
-// }
-
 pub struct TransformVisitor {
     is_captured: bool,
     powered_var_cnt: usize,
@@ -106,7 +101,6 @@ pub struct TransformVisitor {
     argument_metadata_vec: Vec<ArgumentMetadata>,
     argument_metadata: Option<ArgumentMetadata>,
     do_not_capture_immediate_child: bool,
-    // metadata_vec: Vec<Metadata>,
     code: Option<Arc<String>>
 }
 
@@ -215,7 +209,6 @@ impl TransformVisitor {
     fn clear_transformations(&mut self) {
         self.assertion_metadata_vec.clear();
         self.argument_metadata_vec.clear();
-        // self.metadata_vec.clear();
     }
 
     fn replace_callee_with_powered_run (&self, powered_ident_name: &str) -> Callee {
@@ -542,7 +535,6 @@ impl TransformVisitor {
 
             // make argument_metadata None then store it to vec for later use
             self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
-            // self.metadata_vec.push(Metadata::Argument(self.argument_metadata.take().unwrap()));
         }
 
         //TODO: if is_captured {
@@ -550,7 +542,6 @@ impl TransformVisitor {
 
         // make assertion_metadata None then store it to vec for later use
         self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
-        // self.metadata_vec.push(Metadata::Assertion(self.assertion_metadata.take().unwrap()));
 
         self.is_captured = false;
     }
@@ -602,16 +593,6 @@ impl VisitMut for TransformVisitor {
         n.visit_mut_children_with(self);
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
-        // for metadata in self.metadata_vec.iter() {
-        //     match metadata {
-        //         Metadata::Assertion(assertion_metadata) => {
-        //             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
-        //         },
-        //         Metadata::Argument(argument_metadata) => {
-        //             new_items.push(ModuleItem::Stmt(self.create_argrec_decl(argument_metadata)));
-        //         }
-        //     }
-        // }
         for assertion_metadata in self.assertion_metadata_vec.iter() {
             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
         }
@@ -629,16 +610,6 @@ impl VisitMut for TransformVisitor {
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
         let mut new_items: Vec<Stmt> = Vec::new();
-        // for metadata in self.metadata_vec.iter() {
-        //     match metadata {
-        //         Metadata::Assertion(assertion_metadata) => {
-        //             new_items.push(self.create_powered_runner_decl(assertion_metadata));
-        //         },
-        //         Metadata::Argument(argument_metadata) => {
-        //             new_items.push(self.create_argrec_decl(argument_metadata));
-        //         }
-        //     }
-        // }
         for assertion_metadata in self.assertion_metadata_vec.iter() {
             new_items.push(self.create_powered_runner_decl(assertion_metadata));
         }
