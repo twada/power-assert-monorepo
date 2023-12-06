@@ -15,7 +15,6 @@ type CapturedValueMetadata = {
 
 type CapturedValue = {
   value: unknown;
-  // espath: string;
   left: number;
   metadata?: CapturedValueMetadata;
 };
@@ -26,8 +25,6 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  // tap(value: unknown, espath: string, left: number): unknown;
-  // rec(value: unknown, espath: string, left: number): ArgumentRecorder;
   tap(value: unknown, left: number): unknown;
   rec(value: unknown, left?: number): ArgumentRecorder;
 }
@@ -91,7 +88,6 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  // tap (value: unknown, espath: string, left: number): unknown {
   tap (value: unknown, left: number, metadata?: CapturedValueMetadata): unknown {
     this.#capturedValues.push({
       value: wrap(value),
@@ -102,7 +98,6 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  // rec (value: unknown, espath: string, left?: number): ArgumentRecorder {
   rec (value: unknown, left?: number): ArgumentRecorder {
     try {
       if (typeof left === 'undefined') {
@@ -217,7 +212,6 @@ class PowerAssertImpl implements PowerAssert {
           for (const cap of rec.capturedValues) {
             logs.push({
               value: cap.value,
-              // espath: cap.espath,
               leftIndex: cap.left,
               metadata: cap.metadata
             });
