@@ -11,7 +11,12 @@
   "type": "module",
   "main": "dist/esm-loader.mjs",
   "exports": {
-    ".": "./dist/esm-loader.mjs",
+    ".": {
+      "import": {
+        "types": "./dist/esm-loader.d.mts",
+        "default": "./dist/esm-loader.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
