@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::collections::HashSet;
+use std::collections::HashMap;
 use std::sync::Arc;
 use swc_core::ecma::{
     ast::{
@@ -95,7 +96,7 @@ pub struct TransformVisitor {
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: HashSet<JsWord>,
-    target_modules: HashSet<JsWord>,
+    target_modules: HashMap<JsWord, HashSet<JsWord>>,
     assertion_metadata_vec: Vec<AssertionMetadata>,
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
@@ -106,24 +107,29 @@ pub struct TransformVisitor {
 
 impl Default for TransformVisitor {
     fn default() -> Self {
-        TransformVisitor {
+        let mut visitor = TransformVisitor {
             is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
-            target_modules: [
-                "node:assert",
-                "node:assert/strict",
-                "assert",
-                "assert/strict",
-            ].into_iter().map(std::convert::Into::into).collect(),
             target_variables: HashSet::new(),
+            target_modules: HashMap::new(),
             assertion_metadata_vec: Vec::new(),
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
             do_not_capture_immediate_child: false,
             code: None
+        };
+        for module_name in [
+            "node:assert",
+            "node:assert/strict",
+            "assert",
+            "assert/strict",
+        ].iter() {
+            visitor.target_modules.insert(JsWord::from(*module_name), HashSet::new());
         }
+        visitor.target_modules.insert(JsWord::from("vitest"), HashSet::from([JsWord::from("assert")]));
+        visitor
     }
 }
 
@@ -555,7 +561,8 @@ impl VisitMut for TransformVisitor {
     // https://rustdoc.swc.rs/swc_ecma_visit/trait.VisitMut.html
 
     fn visit_mut_import_decl(&mut self, n: &mut ImportDecl) {
-        if self.target_modules.contains(&n.src.value) {
+        if self.target_modules.contains_key(&n.src.value) {
+            let module_name = &n.src.value;
             for s in &mut n.specifiers {
                 match s {
                     ImportSpecifier::Default(ImportDefaultSpecifier { local, .. }) => {
@@ -568,18 +575,25 @@ impl VisitMut for TransformVisitor {
                         match imported {
                             Some(imported_name) => {
                                 match imported_name {
-                                    ModuleExportName::Ident(_ident) => {
-                                        // self.target_variables.insert(ident.sym.clone());
-                                        self.target_variables.insert(local.sym.clone());
+                                    ModuleExportName::Ident(imported_ident) => {
+                                        let allow_list = self.target_modules.get(module_name).unwrap();
+                                        if allow_list.is_empty() || allow_list.contains(&imported_ident.sym) {
+                                            self.target_variables.insert(local.sym.clone());
+                                        }
                                     },
-                                    ModuleExportName::Str(_ecma_lit_str) => {
-                                        // self.target_variables.insert(ecma_lit_str.value.clone());
-                                        self.target_variables.insert(local.sym.clone());
+                                    ModuleExportName::Str(_imported_ecma_lit_str) => {
+                                        let allow_list = self.target_modules.get(module_name).unwrap();
+                                        if allow_list.is_empty() || allow_list.contains(&_imported_ecma_lit_str.value) {
+                                            self.target_variables.insert(local.sym.clone());
+                                        }
                                     }
                                 }
                             },
                             None => {
-                                self.target_variables.insert(local.sym.clone());
+                                let allow_list = self.target_modules.get(module_name).unwrap();
+                                if allow_list.is_empty() || allow_list.contains(&local.sym) {
+                                    self.target_variables.insert(local.sym.clone());
+                                }
                             }
                         }
                     }
