@@ -41,6 +41,7 @@ use swc_core::ecma::{
         Prop,
         KeyValueProp,
         PropName,
+        Function,
         Callee
     },
     atoms::JsWord,
@@ -85,6 +86,7 @@ struct AssertionMetadata {
 
 #[derive(Debug)]
 struct ArgumentMetadata {
+    is_captured: bool,
     ident_name: JsWord,
     arg_index: usize,
     assertion_start_pos: u32,
@@ -92,7 +94,6 @@ struct ArgumentMetadata {
 }
 
 pub struct TransformVisitor {
-    is_captured: bool,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: HashSet<JsWord>,
@@ -108,7 +109,6 @@ pub struct TransformVisitor {
 impl Default for TransformVisitor {
     fn default() -> Self {
         let mut visitor = TransformVisitor {
-            is_captured: false,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
             target_variables: HashSet::new(),
@@ -212,6 +212,10 @@ impl TransformVisitor {
         format!("_parg{}", self.argrec_var_cnt).into()
     }
 
+    fn unset_argrec_variable_name(&mut self) {
+        self.argrec_var_cnt -= 1;
+    }
+
     fn clear_transformations(&mut self) {
         self.assertion_metadata_vec.clear();
         self.argument_metadata_vec.clear();
@@ -298,13 +302,16 @@ impl TransformVisitor {
         })
     }
 
-    fn wrap_with_tap(&self, expr: &Expr, argrec_ident_name: &str, pos: &u32) -> Expr {
+    fn wrap_with_tap(&mut self, expr: &Expr, pos: &u32) -> Expr {
+        let arg_rec = self.argument_metadata.as_mut().unwrap();
+        arg_rec.is_captured = true;
+        let argrec_ident_name = &arg_rec.ident_name;
         Expr::Call(CallExpr {
             span: Span::default(),
             callee: Callee::Expr(Box::new(Expr::Member(
                 MemberExpr {
                     span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
+                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.to_owned(), Span::default()))),
                     prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
                 }
             ))),
@@ -461,7 +468,7 @@ impl TransformVisitor {
     }
 
     fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
-        self.is_captured = false;
+        let mut is_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = n.span.lo.0;
 
@@ -506,6 +513,7 @@ impl TransformVisitor {
             // const _parg1 = _pasrt1.recorder(0);
             let argrec_ident_name = self.next_argrec_variable_name();
             self.argument_metadata = Some(ArgumentMetadata {
+                is_captured: false,
                 ident_name: argrec_ident_name.clone(),
                 arg_index: idx,
                 assertion_start_pos,
@@ -533,23 +541,29 @@ impl TransformVisitor {
                 self.apply_binexp_hint(arg, &argrec_ident_name);
             }
 
-            // wrap argument with arg_recorder
-            let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
-            if !changed {
-                *arg = ExprOrSpread::from(Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name)));
+            let arg_rec = self.argument_metadata.take().unwrap();
+            if arg_rec.is_captured {
+                // wrap argument with arg_recorder
+                let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
+                if !changed {
+                    *arg = ExprOrSpread::from(Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name)));
+                }
+                // make argument_metadata None then store it to vec for later use
+                self.argument_metadata_vec.push(arg_rec);
+                is_captured = true;
+            } else {
+                // unset argrec variable name
+                // just for compatibility with original power-assert
+                self.unset_argrec_variable_name();
             }
-
-            // make argument_metadata None then store it to vec for later use
-            self.argument_metadata_vec.push(self.argument_metadata.take().unwrap());
         }
 
-        //TODO: if is_captured {
-        n.callee = self.replace_callee_with_powered_run(&powered_ident_name);
+        if is_captured {
+            n.callee = self.replace_callee_with_powered_run(&powered_ident_name);
+        }
 
         // make assertion_metadata None then store it to vec for later use
         self.assertion_metadata_vec.push(self.assertion_metadata.take().unwrap());
-
-        self.is_captured = false;
     }
 
 }
@@ -667,6 +681,14 @@ impl VisitMut for TransformVisitor {
         }
     }
 
+    fn visit_mut_function(&mut self, n: &mut Function) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        // skip function
+    }
+
     fn visit_mut_assign_expr(&mut self, n: &mut AssignExpr) {
         if self.argument_metadata.is_none() {
             n.visit_mut_children_with(self);
@@ -702,7 +724,7 @@ impl VisitMut for TransformVisitor {
             return;
         }
         match n {
-            Expr::Seq(_) | Expr::Paren(_) => {
+            Expr::Seq(_) | Expr::Paren(_) | Expr::Fn(_) => {
                 n.visit_mut_children_with(self);
                 return;
             },
@@ -717,8 +739,7 @@ impl VisitMut for TransformVisitor {
         if do_not_capture_current_expr {
             return;
         }
-        let arg_rec = self.argument_metadata.as_ref().unwrap();
-        *n = self.wrap_with_tap(n, &arg_rec.ident_name, &expr_pos);
+        *n = self.wrap_with_tap(n, &expr_pos);
         // println!("############ leave expr: {:?}", n);
     }
 }
