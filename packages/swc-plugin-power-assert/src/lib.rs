@@ -724,8 +724,12 @@ impl VisitMut for TransformVisitor {
             return;
         }
         match n {
-            Expr::Seq(_) | Expr::Paren(_) | Expr::Fn(_) => {
+            Expr::Seq(_) | Expr::Paren(_) => {
                 n.visit_mut_children_with(self);
+                return;
+            },
+            Expr::Fn(_) => {
+                // skip function body
                 return;
             },
             _ => {}
