@@ -94,6 +94,7 @@ struct ArgumentMetadata {
 }
 
 pub struct TransformVisitor {
+    span_offset: usize,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: HashSet<JsWord>,
@@ -109,6 +110,7 @@ pub struct TransformVisitor {
 impl Default for TransformVisitor {
     fn default() -> Self {
         let mut visitor = TransformVisitor {
+            span_offset: 0,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
             target_variables: HashSet::new(),
@@ -474,8 +476,8 @@ impl TransformVisitor {
 
         match self.code {
             Some(ref code) => {
-                let start = (n.span.lo.0 - 1) as usize;
-                let end = (n.span.hi.0 - 1) as usize;
+                let start = (n.span.lo.0 as usize) - self.span_offset - 1;
+                let end = (n.span.hi.0 as usize) - self.span_offset - 1;
                 let assertion_code = code[start..end].to_string();
 
                 self.assertion_metadata = Some(AssertionMetadata {
@@ -573,6 +575,18 @@ impl VisitMut for TransformVisitor {
     // Implement necessary visit_mut_* methods for actual custom transform.
     // A comprehensive list of possible visitor methods can be found here:
     // https://rustdoc.swc.rs/swc_ecma_visit/trait.VisitMut.html
+
+    fn visit_mut_program(&mut self, n: &mut Program) {
+        // store span as offset at the start of Program node due to SWC issue https://github.com/swc-project/swc/issues/1366
+        self.span_offset = (n.span_lo().0 - 1) as usize;
+        n.visit_mut_children_with(self);
+    }
+
+    fn visit_mut_module(&mut self, n: &mut swc_core::ecma::ast::Module) {
+        // store span as offset at the start of Module node due to SWC issue https://github.com/swc-project/swc/issues/1366
+        self.span_offset = (n.span_lo().0 - 1) as usize;
+        n.visit_mut_children_with(self);
+    }
 
     fn visit_mut_import_decl(&mut self, n: &mut ImportDecl) {
         if self.target_modules.contains_key(&n.src.value) {
