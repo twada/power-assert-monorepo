@@ -165,7 +165,7 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 .get_transform_plugin_config()
                 .expect("failed to get plugin config for power-assert"),
         );
-        println!("config: {:?}", config);
+        // println!("config: {:?}", config);
 
         let code = match metadata.source_map.source_file.get() {
             Some(source_file) => {
@@ -175,12 +175,12 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 let filename = metadata
                     .get_context(&TransformPluginMetadataContextKind::Filename)
                     .expect("filename should exist");
-                println!("filename: {:?}", filename);
+                // println!("filename: {:?}", filename);
 
                 let cwd = metadata
                     .get_context(&TransformPluginMetadataContextKind::Cwd)
                     .expect("cwd should exist");
-                println!("cwd: {:?}", cwd);
+                // println!("cwd: {:?}", cwd);
 
                 // let env = metadata
                 //     .get_context(&TransformPluginMetadataContextKind::Env)
@@ -190,7 +190,7 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 // /cwd is the root of sandbox
                 // https://github.com/swc-project/swc/discussions/4997
                 let path_in_sandbox = resolve_path_in_sandbox(&filename, &cwd);
-                println!("path_in_sandbox: {:?}", path_in_sandbox);
+                // println!("path_in_sandbox: {:?}", path_in_sandbox);
                 // read all file contens into string
                 let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
                 Some(Arc::new(code))
