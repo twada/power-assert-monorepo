@@ -223,6 +223,10 @@ impl TransformVisitor {
         self.argument_metadata_vec.clear();
     }
 
+    fn has_metadata_to_be_inserted(&mut self) -> bool {
+        !self.assertion_metadata_vec.is_empty() || !self.argument_metadata_vec.is_empty()
+    }
+
     fn replace_callee_with_powered_run (&self, powered_ident_name: &str) -> Callee {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
@@ -651,15 +655,17 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
-        let mut new_items: Vec<Stmt> = Vec::new();
-        for assertion_metadata in self.assertion_metadata_vec.iter() {
-            new_items.push(self.create_powered_runner_decl(assertion_metadata));
+        if self.has_metadata_to_be_inserted() {
+            let mut new_items: Vec<Stmt> = Vec::new();
+            for assertion_metadata in self.assertion_metadata_vec.iter() {
+                new_items.push(self.create_powered_runner_decl(assertion_metadata));
+            }
+            for argument_metadata in self.argument_metadata_vec.iter() {
+                new_items.push(self.create_argrec_decl(argument_metadata));
+            }
+            stmts.splice(0..0, new_items);
+            self.clear_transformations();
         }
-        for argument_metadata in self.argument_metadata_vec.iter() {
-            new_items.push(self.create_argrec_decl(argument_metadata));
-        }
-        stmts.splice(0..0, new_items);
-        self.clear_transformations();
     }
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
