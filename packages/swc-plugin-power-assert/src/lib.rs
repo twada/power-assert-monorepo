@@ -160,7 +160,7 @@ impl From<&String> for TransformVisitor {
 
 impl From<TransformPluginProgramMetadata> for TransformVisitor {
     fn from(metadata: TransformPluginProgramMetadata) -> Self {
-        let config = serde_json::from_str::<Option<Config>>(
+        let _config = serde_json::from_str::<Option<Config>>(
             &metadata
                 .get_transform_plugin_config()
                 .expect("failed to get plugin config for power-assert"),
