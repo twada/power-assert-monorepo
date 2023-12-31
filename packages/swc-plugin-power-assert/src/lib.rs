@@ -22,6 +22,7 @@ use swc_core::ecma::{
         VarDecl,
         VarDeclKind,
         VarDeclarator,
+        Module,
         ModuleItem,
         ModuleDecl,
         ImportDecl,
@@ -593,7 +594,7 @@ impl VisitMut for TransformVisitor {
         n.visit_mut_children_with(self);
     }
 
-    fn visit_mut_module(&mut self, n: &mut swc_core::ecma::ast::Module) {
+    fn visit_mut_module(&mut self, n: &mut Module) {
         // store span as offset at the start of Module node due to SWC issue https://github.com/swc-project/swc/issues/1366
         self.span_offset = (n.span_lo().0 - 1) as usize;
         n.visit_mut_children_with(self);
