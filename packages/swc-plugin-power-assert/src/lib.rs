@@ -103,6 +103,7 @@ pub struct TransformVisitor {
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
     argument_metadata: Option<ArgumentMetadata>,
+    is_runtime_imported: bool,
     do_not_capture_immediate_child: bool,
     code: Option<Arc<String>>
 }
@@ -120,6 +121,7 @@ impl Default for TransformVisitor {
             argument_metadata_vec: Vec::new(),
             argument_metadata: None,
             do_not_capture_immediate_child: false,
+            is_runtime_imported: false,
             code: None
         };
         for module_name in [
@@ -223,8 +225,12 @@ impl TransformVisitor {
         self.argument_metadata_vec.clear();
     }
 
-    fn has_metadata_to_be_inserted(&mut self) -> bool {
+    fn has_declarations_to_be_inserted(&mut self) -> bool {
         !self.assertion_metadata_vec.is_empty() || !self.argument_metadata_vec.is_empty()
+    }
+
+    fn has_declarations_and_imports_to_be_inserted(&mut self) -> bool {
+        !self.is_runtime_imported || self.has_declarations_to_be_inserted()
     }
 
     fn replace_callee_with_powered_run (&self, powered_ident_name: &str) -> Callee {
@@ -456,7 +462,8 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_power_import_decl(&self) -> ModuleItem {
+    fn create_power_import_decl(&mut self) -> ModuleItem {
+        self.is_runtime_imported = true;
         ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
             span: Span::default(),
             specifiers: vec![
@@ -637,6 +644,9 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_module_items(&mut self, n: &mut Vec<ModuleItem>) {
         n.visit_mut_children_with(self);
+        if !self.has_declarations_and_imports_to_be_inserted() {
+            return;
+        }
         let mut new_items: Vec<ModuleItem> = Vec::new();
         new_items.push(self.create_power_import_decl());
         for assertion_metadata in self.assertion_metadata_vec.iter() {
@@ -655,17 +665,18 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
         stmts.visit_mut_children_with(self);
-        if self.has_metadata_to_be_inserted() {
-            let mut new_items: Vec<Stmt> = Vec::new();
-            for assertion_metadata in self.assertion_metadata_vec.iter() {
-                new_items.push(self.create_powered_runner_decl(assertion_metadata));
-            }
-            for argument_metadata in self.argument_metadata_vec.iter() {
-                new_items.push(self.create_argrec_decl(argument_metadata));
-            }
-            stmts.splice(0..0, new_items);
-            self.clear_transformations();
+        if !self.has_declarations_to_be_inserted() {
+            return;
         }
+        let mut new_items: Vec<Stmt> = Vec::new();
+        for assertion_metadata in self.assertion_metadata_vec.iter() {
+            new_items.push(self.create_powered_runner_decl(assertion_metadata));
+        }
+        for argument_metadata in self.argument_metadata_vec.iter() {
+            new_items.push(self.create_argrec_decl(argument_metadata));
+        }
+        stmts.splice(0..0, new_items);
+        self.clear_transformations();
     }
 
     fn visit_mut_call_expr(&mut self, n: &mut CallExpr) {
