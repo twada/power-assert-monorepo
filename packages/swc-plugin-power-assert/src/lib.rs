@@ -468,7 +468,7 @@ impl TransformVisitor {
         })))
     }
 
-    fn create_power_import_decl(&mut self) -> ModuleItem {
+    fn create_power_assert_runtime_import_decl(&mut self) -> ModuleItem {
         self.is_runtime_imported = true;
         ModuleItem::ModuleDecl(ModuleDecl::Import(ImportDecl {
             span: Span::default(),
@@ -654,7 +654,7 @@ impl VisitMut for TransformVisitor {
             return;
         }
         let mut new_items: Vec<ModuleItem> = Vec::new();
-        new_items.push(self.create_power_import_decl());
+        new_items.push(self.create_power_assert_runtime_import_decl());
         for assertion_metadata in self.assertion_metadata_vec.iter() {
             new_items.push(ModuleItem::Stmt(self.create_powered_runner_decl(assertion_metadata)));
         }
