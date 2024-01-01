@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use swc_core::common::util::take::Take;
 use std::collections::HashSet;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -298,42 +299,46 @@ impl TransformVisitor {
         });
     }
 
-    fn enclose_in_rec_without_pos(&self, arg: &ExprOrSpread, argrec_ident_name: &str) -> Expr {
-        Expr::Call(CallExpr {
-            span: Span::default(),
-            callee: Callee::Expr(Box::new(Expr::Member(
-                MemberExpr {
-                    span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
-                    prop: MemberProp::Ident(Ident::new("rec".into(), Span::default()))
-                }
-            ))),
-            args: vec![
-                arg.clone()
-            ],
-            type_args: None,
-        })
+    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) {
+        arg.expr.as_mut().map_with_mut(|ex: Expr| {
+            Expr::Call(CallExpr {
+                span: Span::default(),
+                callee: Callee::Expr(Box::new(Expr::Member(
+                    MemberExpr {
+                        span: Span::default(),
+                        obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
+                        prop: MemberProp::Ident(Ident::new("rec".into(), Span::default()))
+                    }
+                ))),
+                args: vec![
+                    ExprOrSpread::from(Box::new(ex))
+                ],
+                type_args: None,
+            })
+        });
     }
 
-    fn wrap_with_tap(&mut self, expr: &Expr, pos: &u32) -> Expr {
+    fn wrap_with_tap(&mut self, expr: &mut Expr, pos: &u32) {
         let arg_rec = self.argument_metadata.as_mut().unwrap();
         arg_rec.is_captured = true;
         let argrec_ident_name = &arg_rec.ident_name;
-        Expr::Call(CallExpr {
-            span: Span::default(),
-            callee: Callee::Expr(Box::new(Expr::Member(
-                MemberExpr {
-                    span: Span::default(),
-                    obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.to_owned(), Span::default()))),
-                    prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
-                }
-            ))),
-            args: vec![
-                ExprOrSpread::from(Box::new(expr.clone())),
-                ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(*pos as f64)))))
-            ],
-            type_args: None,
-        })
+        expr.map_with_mut(|ex: Expr| {
+            Expr::Call(CallExpr {
+                span: Span::default(),
+                callee: Callee::Expr(Box::new(Expr::Member(
+                    MemberExpr {
+                        span: Span::default(),
+                        obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.to_owned(), Span::default()))),
+                        prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
+                    }
+                ))),
+                args: vec![
+                    ExprOrSpread::from(Box::new(ex)),
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(*pos as f64)))))
+                ],
+                type_args: None,
+            })
+        });
     }
 
     fn calculate_pos(&self, expr: &Expr) -> u32 {
@@ -560,7 +565,7 @@ impl TransformVisitor {
                 // wrap argument with arg_recorder
                 let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
                 if !changed {
-                    *arg = ExprOrSpread::from(Box::new(self.enclose_in_rec_without_pos(arg, &argrec_ident_name)));
+                    self.enclose_in_rec_without_pos(arg, &argrec_ident_name);
                 }
                 // make argument_metadata None then store it to vec for later use
                 self.argument_metadata_vec.push(arg_rec);
@@ -775,7 +780,8 @@ impl VisitMut for TransformVisitor {
         if do_not_capture_current_expr {
             return;
         }
-        *n = self.wrap_with_tap(n, &expr_pos);
+        // *n = self.wrap_with_tap(n, &expr_pos);
+        self.wrap_with_tap(n, &expr_pos);
         // println!("############ leave expr: {:?}", n);
     }
 }
