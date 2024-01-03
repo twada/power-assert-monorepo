@@ -487,7 +487,7 @@ impl TransformVisitor {
     }
 
     fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
-        let mut is_captured = false;
+        let mut is_some_arg_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = n.span.lo.0;
 
@@ -569,7 +569,7 @@ impl TransformVisitor {
                 }
                 // make argument_metadata None then store it to vec for later use
                 self.argument_metadata_vec.push(arg_rec);
-                is_captured = true;
+                is_some_arg_captured = true;
             } else {
                 // unset argrec variable name
                 // just for compatibility with original power-assert
@@ -577,7 +577,7 @@ impl TransformVisitor {
             }
         }
 
-        if is_captured {
+        if is_some_arg_captured {
             n.callee = self.replace_callee_with_powered_run(&powered_ident_name);
         }
 
