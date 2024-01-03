@@ -669,8 +669,8 @@ impl VisitMut for TransformVisitor {
         self.clear_transformations();
     }
 
-    fn visit_mut_stmts(&mut self, stmts: &mut Vec<Stmt>) {
-        stmts.visit_mut_children_with(self);
+    fn visit_mut_stmts(&mut self, n: &mut Vec<Stmt>) {
+        n.visit_mut_children_with(self);
         if !self.has_declarations_to_be_inserted() {
             return;
         }
@@ -681,7 +681,7 @@ impl VisitMut for TransformVisitor {
         for argument_metadata in self.argument_metadata_vec.iter() {
             new_items.push(self.create_argrec_decl(argument_metadata));
         }
-        stmts.splice(0..0, new_items);
+        n.splice(0..0, new_items);
         self.clear_transformations();
     }
 
