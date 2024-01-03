@@ -626,9 +626,9 @@ impl VisitMut for TransformVisitor {
                                             self.target_variables.insert(local.sym.clone());
                                         }
                                     },
-                                    ModuleExportName::Str(_imported_ecma_lit_str) => {
+                                    ModuleExportName::Str(imported_ecma_lit_str) => {
                                         let allow_list = self.target_modules.get(module_name).unwrap();
-                                        if allow_list.is_empty() || allow_list.contains(&_imported_ecma_lit_str.value) {
+                                        if allow_list.is_empty() || allow_list.contains(&imported_ecma_lit_str.value) {
                                             self.target_variables.insert(local.sym.clone());
                                         }
                                     }
