@@ -299,7 +299,7 @@ impl TransformVisitor {
         });
     }
 
-    fn enclose_in_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) {
+    fn wrap_with_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) {
         arg.expr.as_mut().map_with_mut(|ex: Expr| {
             Expr::Call(CallExpr {
                 span: Span::default(),
@@ -565,7 +565,7 @@ impl TransformVisitor {
                 // wrap argument with arg_recorder
                 let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
                 if !changed {
-                    self.enclose_in_rec_without_pos(arg, &argrec_ident_name);
+                    self.wrap_with_rec_without_pos(arg, &argrec_ident_name);
                 }
                 // make argument_metadata None then store it to vec for later use
                 self.argument_metadata_vec.push(arg_rec);
