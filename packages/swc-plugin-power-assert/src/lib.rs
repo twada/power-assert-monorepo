@@ -691,6 +691,11 @@ impl VisitMut for TransformVisitor {
             return;
         }
         // callexp outside assertion
+        // if there are no variables that we care about, skip the following transformation logic
+        if self.target_variables.is_empty() {
+            n.visit_mut_children_with(self);
+            return;
+        }
         let (prop_name, obj_name): (Option<JsWord>, Option<JsWord>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
