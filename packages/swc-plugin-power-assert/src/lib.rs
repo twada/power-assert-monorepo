@@ -6,6 +6,7 @@ use std::sync::Arc;
 use swc_core::ecma::{
     ast::{
         // op,
+        Id,
         Program,
         Lit,
         Null,
@@ -99,7 +100,7 @@ pub struct TransformVisitor {
     span_offset: usize,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
-    target_variables: HashSet<JsWord>,
+    target_variables: HashSet<Id>,
     target_modules: HashMap<JsWord, HashSet<JsWord>>,
     assertion_metadata_vec: Vec<AssertionMetadata>,
     assertion_metadata: Option<AssertionMetadata>,
@@ -607,29 +608,29 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_import_decl(&mut self, n: &mut ImportDecl) {
         if self.target_modules.contains_key(&n.src.value) {
-            let module_name = &n.src.value;
             for s in &mut n.specifiers {
                 match s {
                     ImportSpecifier::Default(ImportDefaultSpecifier { local, .. }) => {
-                        self.target_variables.insert(local.sym.clone());
+                        self.target_variables.insert(local.to_id());
                     },
                     ImportSpecifier::Namespace(ImportStarAsSpecifier { local, .. }) => {
-                        self.target_variables.insert(local.sym.clone());
+                        self.target_variables.insert(local.to_id());
                     },
                     ImportSpecifier::Named(ImportNamedSpecifier { local, imported, .. }) => {
+                        let module_name = &n.src.value;
                         match imported {
                             Some(imported_name) => {
                                 match imported_name {
                                     ModuleExportName::Ident(imported_ident) => {
                                         let allow_list = self.target_modules.get(module_name).unwrap();
                                         if allow_list.is_empty() || allow_list.contains(&imported_ident.sym) {
-                                            self.target_variables.insert(local.sym.clone());
+                                            self.target_variables.insert(local.to_id());
                                         }
                                     },
                                     ModuleExportName::Str(imported_ecma_lit_str) => {
                                         let allow_list = self.target_modules.get(module_name).unwrap();
                                         if allow_list.is_empty() || allow_list.contains(&imported_ecma_lit_str.value) {
-                                            self.target_variables.insert(local.sym.clone());
+                                            self.target_variables.insert(local.to_id());
                                         }
                                     }
                                 }
@@ -637,7 +638,7 @@ impl VisitMut for TransformVisitor {
                             None => {
                                 let allow_list = self.target_modules.get(module_name).unwrap();
                                 if allow_list.is_empty() || allow_list.contains(&local.sym) {
-                                    self.target_variables.insert(local.sym.clone());
+                                    self.target_variables.insert(local.to_id());
                                 }
                             }
                         }
@@ -701,14 +702,14 @@ impl VisitMut for TransformVisitor {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop: MemberProp::Ident(prop_ident), obj, .. }) => {
                         match obj.as_ref() {
-                            Expr::Ident(ref obj_ident) if self.target_variables.contains(&obj_ident.sym) => {
+                            Expr::Ident(ref obj_ident) if self.target_variables.contains(&obj_ident.to_id()) => {
                                 (Some(prop_ident.sym.clone()), Some(obj_ident.sym.clone()))
                             },
                             // Expr::Member
                             _ => (None, None)
                         }
                     },
-                    Expr::Ident(ref ident) if self.target_variables.contains(&ident.sym) => {
+                    Expr::Ident(ref ident) if self.target_variables.contains(&ident.to_id()) => {
                         (Some(ident.sym.clone()), None)
                     },
                     _ => (None, None)
