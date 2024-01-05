@@ -1598,6 +1598,7 @@ dependencies = [
 name = "swc_plugin_power_assert"
 version = "0.1.1"
 dependencies = [
+ "rustc-hash",
  "serde",
  "serde_json",
  "swc_core",

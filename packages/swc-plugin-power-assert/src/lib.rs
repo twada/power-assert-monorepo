@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use swc_core::common::util::take::Take;
-use std::collections::HashSet;
-use std::collections::HashMap;
+use rustc_hash::FxHashSet;
+use rustc_hash::FxHashMap;
 use std::sync::Arc;
 use swc_core::ecma::{
     ast::{
@@ -100,8 +100,8 @@ pub struct TransformVisitor {
     span_offset: usize,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
-    target_variables: HashSet<Id>,
-    target_modules: HashMap<JsWord, HashSet<JsWord>>,
+    target_variables: FxHashSet<Id>,
+    target_modules: FxHashMap<JsWord, FxHashSet<JsWord>>,
     assertion_metadata_vec: Vec<AssertionMetadata>,
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
@@ -117,8 +117,8 @@ impl Default for TransformVisitor {
             span_offset: 0,
             powered_var_cnt: 0,
             argrec_var_cnt: 0,
-            target_variables: HashSet::new(),
-            target_modules: HashMap::new(),
+            target_variables: FxHashSet::default(),
+            target_modules: FxHashMap::default(),
             assertion_metadata_vec: Vec::new(),
             assertion_metadata: None,
             argument_metadata_vec: Vec::new(),
@@ -133,9 +133,13 @@ impl Default for TransformVisitor {
             "assert",
             "assert/strict",
         ].iter() {
-            visitor.target_modules.insert(JsWord::from(*module_name), HashSet::new());
+            visitor.target_modules.insert(JsWord::from(*module_name), FxHashSet::default());
         }
-        visitor.target_modules.insert(JsWord::from("vitest"), HashSet::from([JsWord::from("assert")]));
+        {
+            let mut vitest_allowlist = FxHashSet::default();
+            vitest_allowlist.insert(JsWord::from("assert"));
+            visitor.target_modules.insert(JsWord::from("vitest"), vitest_allowlist);
+        }
         visitor
     }
 }
