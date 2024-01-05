@@ -1,67 +1,69 @@
-use serde::Deserialize;
-use swc_core::common::util::take::Take;
-use rustc_hash::FxHashSet;
-use rustc_hash::FxHashMap;
 use std::sync::Arc;
-use swc_core::ecma::{
-    ast::{
-        // op,
-        Id,
-        Program,
-        Lit,
-        Null,
-        Str,
-        Number,
-        Stmt,
-        Ident,
-        BindingIdent,
-        CallExpr,
-        BinExpr,
-        Expr,
-        ExprOrSpread,
-        Pat,
-        Decl,
-        VarDecl,
-        VarDeclKind,
-        VarDeclarator,
-        Module,
-        ModuleItem,
-        ModuleDecl,
-        ImportDecl,
-        ImportSpecifier,
-        ImportDefaultSpecifier,
-        ImportStarAsSpecifier,
-        ImportNamedSpecifier,
-        ModuleExportName,
-        MemberExpr,
-        MemberProp,
-        ComputedPropName,
-        AssignExpr,
-        AwaitExpr,
-        CondExpr,
-        ObjectLit,
-        PropOrSpread,
-        Prop,
-        KeyValueProp,
-        PropName,
-        Function,
-        Callee
-    },
-    atoms::JsWord,
-    visit::{
-        as_folder,
-        FoldWith,
-        VisitMut,
-        VisitMutWith
-    },
+use serde::Deserialize;
+use rustc_hash::{
+    FxHashSet,
+    FxHashMap
+};
+use swc_core::ecma::ast::{
+    // op,
+    Id,
+    Program,
+    Lit,
+    Null,
+    Str,
+    Number,
+    Stmt,
+    Ident,
+    BindingIdent,
+    CallExpr,
+    BinExpr,
+    Expr,
+    ExprOrSpread,
+    Pat,
+    Decl,
+    VarDecl,
+    VarDeclKind,
+    VarDeclarator,
+    Module,
+    ModuleItem,
+    ModuleDecl,
+    ImportDecl,
+    ImportSpecifier,
+    ImportDefaultSpecifier,
+    ImportStarAsSpecifier,
+    ImportNamedSpecifier,
+    ModuleExportName,
+    MemberExpr,
+    MemberProp,
+    ComputedPropName,
+    AssignExpr,
+    AwaitExpr,
+    CondExpr,
+    ObjectLit,
+    PropOrSpread,
+    Prop,
+    KeyValueProp,
+    PropName,
+    Function,
+    Callee
+};
+use swc_core::ecma::atoms::JsWord;
+use swc_core::ecma::visit::{
+    as_folder,
+    FoldWith,
+    VisitMut,
+    VisitMutWith
 };
 use swc_core::common::{
     Span,
     Spanned
 };
+use swc_core::common::util::take::Take;
 use swc_core::plugin::plugin_transform;
-use swc_core::plugin::metadata::TransformPluginProgramMetadata;
-use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
+use swc_core::plugin::metadata::{
+    TransformPluginProgramMetadata,
+    TransformPluginMetadataContextKind
+};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
