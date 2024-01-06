@@ -39,6 +39,7 @@ use swc_core::ecma::ast::{
     AssignExpr,
     AwaitExpr,
     CondExpr,
+    UpdateExpr,
     ObjectLit,
     PropOrSpread,
     Prop,
@@ -745,6 +746,16 @@ impl VisitMut for TransformVisitor {
         }
         // skip left side of assignment
         n.right.visit_mut_with(self);
+    }
+
+    fn visit_mut_update_expr(&mut self, n: &mut UpdateExpr) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        self.do_not_capture_immediate_child = true;
+        n.visit_mut_children_with(self);
+        self.do_not_capture_immediate_child = false;
     }
 
     fn visit_mut_await_expr(&mut self, n: &mut AwaitExpr) {
