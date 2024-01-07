@@ -16,3 +16,13 @@ import {_power_} from "@power-assert/runtime";
   const _parg4 = _pasrt3.recorder(1);
   _pasrt3.run(_parg3.rec(++foo, 19), _parg4.rec(bar--, 26));
 }
+{
+  const _pasrt4 = _power_(assert, null, "assert(obj.prop++)");
+  const _parg5 = _pasrt4.recorder(0);
+  _pasrt4.run(_parg5.rec(_parg5.tap(obj, 7).prop++, 7));
+}
+{
+  const _pasrt5 = _power_(assert, null, "assert([a,b][1]++)");
+  const _parg6 = _pasrt5.recorder(0);
+  _pasrt5.run(_parg6.rec(_parg6.tap([_parg6.tap(a, 8), _parg6.tap(b, 10)], 7)[_parg6.tap(1, 13)]++, 7));
+}

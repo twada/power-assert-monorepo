@@ -57,11 +57,6 @@ const isShorthandedValueOfObjectLiteral = (parentNode: Node, currentKey: NodeKey
   return isObjectLiteralValue(parentNode, currentKey) && parentNode.shorthand;
 };
 
-const isChildOfUpdateExpression = (parentNode: Node) => {
-  // Just wrap UpdateExpression, not digging in.
-  return parentNode.type === 'UpdateExpression';
-};
-
 const isCallExpressionWithNonComputedMemberExpression = (currentNode: Node, parentNode: Node, currentKey: NodeKey) => {
   // Do not instrument non-computed property of MemberExpression within CallExpression.
   return currentNode.type === 'Identifier' && parentNode.type === 'MemberExpression' && !parentNode.computed && currentKey === 'property';
@@ -78,7 +73,6 @@ const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node
         isLeftHandSideOfAssignment(parentNode, currentKey) ||
         isNonComputedObjectLiteralKey(parentNode, currentKey) ||
         isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
-        isChildOfUpdateExpression(parentNode) ||
         isCallExpressionWithNonComputedMemberExpression(currentNode, parentNode, currentKey) ||
         isTypeOfOrDeleteUnaryExpression(currentNode, parentNode, currentKey);
 };

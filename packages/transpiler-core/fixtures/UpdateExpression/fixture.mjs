@@ -8,3 +8,9 @@ import assert from 'node:assert/strict';
 {
   assert.strictEqual(++foo, bar--);
 }
+{
+  assert(obj.prop++);
+}
+{
+  assert([a,b][1]++);
+}

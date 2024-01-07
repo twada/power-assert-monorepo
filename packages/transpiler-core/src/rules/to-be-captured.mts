@@ -44,12 +44,21 @@ const isYieldOrAwaitArgument = (parentNode: Node, currentKey: NodeKey) => {
   return (parentNode.type === 'YieldExpression' || parentNode.type === 'AwaitExpression') && currentKey === 'argument';
 };
 
+const isChildOfUpdateExpression = (parentNode: Node) => {
+  return parentNode.type === 'UpdateExpression';
+};
+
+const shouldNotCaptureImmediateNode = (currentNode: Node, parentNode: Node, currentKey: NodeKey) => {
+  return isYieldOrAwaitArgument(parentNode, currentKey) ||
+    isChildOfUpdateExpression(parentNode) ||
+    isCalleeOfCallExpression(currentNode, parentNode, currentKey) ||
+    isChildOfTaggedTemplateExpression(parentNode);
+};
+
 const toBeCaptured = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
   assert(parentNode, 'Parent node must exist');
   return isCaputuringTargetNode(currentNode) &&
-        !isYieldOrAwaitArgument(parentNode, currentKey) &&
-        !isCalleeOfCallExpression(currentNode, parentNode, currentKey) &&
-        !isChildOfTaggedTemplateExpression(parentNode);
+    !shouldNotCaptureImmediateNode(currentNode, parentNode, currentKey);
 };
 
 export {
