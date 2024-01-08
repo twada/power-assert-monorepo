@@ -364,6 +364,13 @@ impl TransformVisitor {
             Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span()),
             Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span()),
             Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span()),
+            Expr::Update(UpdateExpr{ arg, op, prefix, .. }) => {
+                if *prefix {
+                    expr.span_lo().0 - assertion_start_pos
+                } else {
+                    self.search_pos_for(op.as_str(), &arg.span())
+                }
+            },
             _ => expr.span_lo().0 - assertion_start_pos
         }
     }
