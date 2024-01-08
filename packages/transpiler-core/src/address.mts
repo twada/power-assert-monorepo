@@ -6,6 +6,7 @@ import type {
   BinaryExpression,
   LogicalExpression,
   ConditionalExpression,
+  UpdateExpression,
   AssignmentExpression
 } from 'estree';
 import { strict as assert } from 'node:assert';
@@ -52,6 +53,12 @@ function calculateAddressOf (currentNode: Node, offset: Position | number, code:
       return infixOperatorAddressOf(currentNode, offset, code);
     case 'ConditionalExpression':
       return questionMarkAddressOf(currentNode, offset, code);
+    case 'UpdateExpression':
+      if (currentNode.prefix) {
+        return startAddressOf(currentNode, offset);
+      } else {
+        return suffixOperatorAddressOf(currentNode, offset, code);
+      }
     default:
       break;
   }
@@ -72,6 +79,10 @@ function questionMarkAddressOf (conditionalExpression: ConditionalExpression, of
 
 function openingParenAddressOf (callExpression: CallExpression, offset: Position | number, code: string): number {
   return searchFor('(', callExpression.callee, offset, code);
+}
+
+function suffixOperatorAddressOf (expression: UpdateExpression, offset: Position | number, code: string): number {
+  return searchFor(expression.operator, expression.argument, offset, code);
 }
 
 // calculate address of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
