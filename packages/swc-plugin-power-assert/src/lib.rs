@@ -575,15 +575,14 @@ impl TransformVisitor {
                 self.apply_binexp_hint(arg, &argrec_ident_name);
             }
 
-            let arg_rec = self.argument_metadata.take().unwrap();
-            if arg_rec.is_captured {
-                // wrap argument with arg_recorder
+            let arg_meta = self.argument_metadata.take().unwrap();
+            if arg_meta.is_captured {
                 let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
                 if !changed {
                     self.wrap_with_rec_without_pos(arg, &argrec_ident_name);
                 }
                 // make argument_metadata None then store it to vec for later use
-                self.argument_metadata_vec.push(arg_rec);
+                self.argument_metadata_vec.push(arg_meta);
                 is_some_arg_captured = true;
             } else {
                 // unset argrec variable name
