@@ -253,7 +253,7 @@ impl TransformVisitor {
         ))
     }
 
-    fn find_and_apply_to_tap(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
+    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -274,8 +274,8 @@ impl TransformVisitor {
         false
     }
 
-    fn replace_tap_right_under_the_arg_to_rec(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) -> bool {
-        self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|_args, prop_ident| {
+    fn replace_with_rec_if_tap_exists_directly_under_the_arg(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) -> bool {
+        self.apply_to_tap_if_exists_directly_under_the_current_node(&mut arg.expr, argrec_ident_name, &|_args, prop_ident| {
             prop_ident.sym = "rec".into();
         })
     }
@@ -293,14 +293,14 @@ impl TransformVisitor {
     }
 
     fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) {
-        self.find_and_apply_to_tap(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
+        self.apply_to_tap_if_exists_directly_under_the_current_node(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
             let value = &mut args[0];
             // let mut pos = &args[1];
             if let Expr::Bin(BinExpr { left, right, .. }) = value.expr.as_mut() {
-                self.find_and_apply_to_tap(left, argrec_ident_name, &|args, _prop_ident| {
+                self.apply_to_tap_if_exists_directly_under_the_current_node(left, argrec_ident_name, &|args, _prop_ident| {
                     args.push(ExprOrSpread::from(Box::new(self.create_hint_object("left"))));
                 });
-                self.find_and_apply_to_tap(right, argrec_ident_name, &|args, _prop_ident| {
+                self.apply_to_tap_if_exists_directly_under_the_current_node(right, argrec_ident_name, &|args, _prop_ident| {
                     args.push(ExprOrSpread::from(Box::new(self.create_hint_object("right"))));
                 });
             };
@@ -575,13 +575,14 @@ impl TransformVisitor {
                 self.apply_binexp_hint(arg, &argrec_ident_name);
             }
 
+            // make argument_metadata None
             let arg_meta = self.argument_metadata.take().unwrap();
             if arg_meta.is_captured {
-                let changed = self.replace_tap_right_under_the_arg_to_rec(arg, &argrec_ident_name);
-                if !changed {
+                let replaced_with_rec = self.replace_with_rec_if_tap_exists_directly_under_the_arg(arg, &argrec_ident_name);
+                if !replaced_with_rec {
                     self.wrap_with_rec_without_pos(arg, &argrec_ident_name);
                 }
-                // make argument_metadata None then store it to vec for later use
+                // store argument_metadata to vec for later use
                 self.argument_metadata_vec.push(arg_meta);
                 is_some_arg_captured = true;
             } else {
