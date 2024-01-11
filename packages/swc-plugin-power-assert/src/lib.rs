@@ -148,6 +148,8 @@ impl Default for TransformVisitor {
     }
 }
 
+// /cwd is the root of sandbox
+// https://github.com/swc-project/swc/discussions/4997
 fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
     if filename.starts_with("file://") {
         let abs_path_like = filename.replace("file://", "");
@@ -156,8 +158,6 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
             return format!("/cwd{}", relative_path_from_cwd);
         }
     }
-    // /cwd is the root of sandbox
-    // https://github.com/swc-project/swc/discussions/4997
     let path_in_sandbox = format!("/cwd/{}", filename);
     path_in_sandbox
 }
