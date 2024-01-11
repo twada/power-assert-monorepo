@@ -139,6 +139,7 @@ impl Default for TransformVisitor {
             visitor.target_modules.insert(JsWord::from(*module_name), FxHashSet::default());
         }
         {
+            // allowlist for vitest
             let mut vitest_allowlist = FxHashSet::default();
             vitest_allowlist.insert(JsWord::from("assert"));
             visitor.target_modules.insert(JsWord::from("vitest"), vitest_allowlist);
