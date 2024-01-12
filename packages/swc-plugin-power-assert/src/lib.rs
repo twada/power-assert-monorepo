@@ -802,18 +802,17 @@ impl VisitMut for TransformVisitor {
             },
             _ => {}
         }
-        // println!("############ enter expr: {:?}", n);
         let do_not_capture_current_expr = self.do_not_capture_immediate_child;
         self.do_not_capture_immediate_child = false;
-        // save expr position here
+        // calculate expr position before entering children
         let expr_pos = self.calculate_pos(n);
+        // enter children
         n.visit_mut_children_with(self);
         if do_not_capture_current_expr {
             return;
+        } else {
+            self.wrap_with_tap(n, &expr_pos);
         }
-        // *n = self.wrap_with_tap(n, &expr_pos);
-        self.wrap_with_tap(n, &expr_pos);
-        // println!("############ leave expr: {:?}", n);
     }
 }
 
