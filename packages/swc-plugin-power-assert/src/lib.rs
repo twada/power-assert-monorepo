@@ -39,6 +39,8 @@ use swc_core::ecma::ast::{
     AssignExpr,
     AwaitExpr,
     CondExpr,
+    UnaryExpr,
+    UnaryOp,
     UpdateExpr,
     ObjectLit,
     PropOrSpread,
@@ -753,6 +755,20 @@ impl VisitMut for TransformVisitor {
         }
         // skip left side of assignment
         n.right.visit_mut_with(self);
+    }
+
+    fn visit_mut_unary_expr(&mut self, n: &mut UnaryExpr) {
+        if self.argument_metadata.is_none() {
+            n.visit_mut_children_with(self);
+            return;
+        }
+        if n.op == UnaryOp::TypeOf || n.op == UnaryOp::Delete {
+            if let Expr::Ident(_) = *n.arg {
+                // 'typeof Ident' or 'delete Ident' is not instrumented
+                return;
+            }
+        }
+        n.visit_mut_children_with(self);
     }
 
     fn visit_mut_update_expr(&mut self, n: &mut UpdateExpr) {
