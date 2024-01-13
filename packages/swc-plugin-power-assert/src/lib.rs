@@ -158,8 +158,7 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
             return format!("/cwd{}", relative_path_from_cwd);
         }
     }
-    let path_in_sandbox = format!("/cwd/{}", filename);
-    path_in_sandbox
+    format!("/cwd/{}", filename)
 }
 
 impl From<&String> for TransformVisitor {
