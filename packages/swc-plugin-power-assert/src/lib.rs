@@ -823,9 +823,7 @@ impl VisitMut for TransformVisitor {
         let expr_pos = self.calculate_pos(n);
         // enter children
         n.visit_mut_children_with(self);
-        if do_not_capture_current_expr {
-            return;
-        } else {
+        if !do_not_capture_current_expr {
             self.wrap_with_tap(n, &expr_pos);
         }
     }
