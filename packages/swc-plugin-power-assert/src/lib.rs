@@ -891,4 +891,19 @@ mod tests {
         let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
         assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/truth.test.mts");
     }
+
+    #[test]
+    fn test_utf16_and_utf8_length() {
+        let input = "かxに";
+        let mut iter = input.chars();
+        let first_char = iter.next().unwrap();
+        assert_eq!(first_char.len_utf16(), 1);
+        assert_eq!(first_char.len_utf8(), 3);
+        let second_char = iter.next().unwrap();
+        assert_eq!(second_char.len_utf16(), 1);
+        assert_eq!(second_char.len_utf8(), 1);
+        let third_char  = iter.next().unwrap();
+        assert_eq!(third_char.len_utf16(), 1);
+        assert_eq!(third_char.len_utf8(), 3);
+    }
 }
