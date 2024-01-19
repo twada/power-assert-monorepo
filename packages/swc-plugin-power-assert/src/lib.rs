@@ -351,7 +351,28 @@ impl TransformVisitor {
         });
     }
 
-    fn calculate_pos(&self, expr: &Expr) -> u32 {
+    fn calculate_utf16_pos(&self, expr: &Expr) -> u32 {
+        let pos_utf8: usize = self.calculate_utf8_pos(expr) as usize;
+        let assertion_code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
+        let utf16_len = assertion_code.encode_utf16().count();
+        let utf8_len = assertion_code.len();
+        let contains_multibyte_char = utf16_len < utf8_len;
+        if contains_multibyte_char {
+            let mut iter = assertion_code.chars();
+            let mut pos_utf16: usize = 0;
+            let mut current_utf8: usize = 0;
+            while current_utf8 < pos_utf8 {
+                let c = iter.next().unwrap();
+                pos_utf16 += c.len_utf16();
+                current_utf8 += c.len_utf8();
+            }
+            pos_utf16 as u32
+        } else {
+            pos_utf8 as u32
+        }
+    }
+
+    fn calculate_utf8_pos(&self, expr: &Expr) -> u32 {
         let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
@@ -820,7 +841,7 @@ impl VisitMut for TransformVisitor {
         let do_not_capture_current_expr = self.do_not_capture_immediate_child;
         self.do_not_capture_immediate_child = false;
         // calculate expr position before entering children
-        let expr_pos = self.calculate_pos(n);
+        let expr_pos = self.calculate_utf16_pos(n);
         // enter children
         n.visit_mut_children_with(self);
         if !do_not_capture_current_expr {
