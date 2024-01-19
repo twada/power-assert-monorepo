@@ -89,6 +89,7 @@ struct AssertionMetadata {
     callee_ident_name: JsWord,
     receiver_ident_name: Option<JsWord>,
     assertion_code: String,
+    assertion_start_pos: u32,
     contains_multibyte_char: bool,
     binary_op: Option<String>
 }
@@ -98,7 +99,6 @@ struct ArgumentMetadata {
     is_captured: bool,
     ident_name: JsWord,
     arg_index: usize,
-    assertion_start_pos: u32,
     powered_ident_name: JsWord
 }
 
@@ -353,8 +353,9 @@ impl TransformVisitor {
     }
 
     fn calculate_utf16_pos(&self, expr: &Expr) -> u32 {
-        let pos_utf8: usize = self.calculate_utf8_pos(expr) as usize;
         let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
+        let assertion_start_pos = assertion_metadata.assertion_start_pos;
+        let pos_utf8: usize = self.calculate_utf8_pos(expr, assertion_start_pos) as usize;
         if assertion_metadata.contains_multibyte_char {
             let assertion_code = &assertion_metadata.assertion_code;
             let mut iter = assertion_code.chars();
@@ -371,8 +372,7 @@ impl TransformVisitor {
         }
     }
 
-    fn calculate_utf8_pos(&self, expr: &Expr) -> u32 {
-        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+    fn calculate_utf8_pos(&self, expr: &Expr, assertion_start_pos: u32) -> u32 {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
@@ -381,24 +381,23 @@ impl TransformVisitor {
                     _ => expr.span_lo().0 - assertion_start_pos
                 }
             },
-            Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span()),
+            Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span(), assertion_start_pos),
             // estree's LogicalExpression is mapped to BinaryExpression in swc
-            Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span()),
-            Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span()),
-            Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span()),
+            Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span(), assertion_start_pos),
+            Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span(), assertion_start_pos),
+            Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span(), assertion_start_pos),
             Expr::Update(UpdateExpr{ arg, op, prefix, .. }) => {
                 if *prefix {
                     expr.span_lo().0 - assertion_start_pos
                 } else {
-                    self.search_pos_for(op.as_str(), &arg.span())
+                    self.search_pos_for(op.as_str(), &arg.span(), assertion_start_pos)
                 }
             },
             _ => expr.span_lo().0 - assertion_start_pos
         }
     }
 
-    fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span) -> u32 {
-        let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
+    fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span, assertion_start_pos: u32) -> u32 {
         let search_start_pos = search_start_span.hi.0 - assertion_start_pos;
         let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
         code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos
@@ -542,6 +541,7 @@ impl TransformVisitor {
                     callee_ident_name: prop_ident_name.clone(),
                     receiver_ident_name: obj_ident_name.clone(),
                     assertion_code,
+                    assertion_start_pos,
                     contains_multibyte_char,
                     binary_op: if n.args.len() == 1 {
                         match n.args.first().unwrap().expr.as_ref() {
@@ -576,7 +576,6 @@ impl TransformVisitor {
                 is_captured: false,
                 ident_name: argrec_ident_name.clone(),
                 arg_index: idx,
-                assertion_start_pos,
                 powered_ident_name: powered_ident_name.clone()
             });
 
