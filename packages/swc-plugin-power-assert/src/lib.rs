@@ -89,6 +89,7 @@ struct AssertionMetadata {
     callee_ident_name: JsWord,
     receiver_ident_name: Option<JsWord>,
     assertion_code: String,
+    contains_multibyte_char: bool,
     binary_op: Option<String>
 }
 
@@ -353,11 +354,9 @@ impl TransformVisitor {
 
     fn calculate_utf16_pos(&self, expr: &Expr) -> u32 {
         let pos_utf8: usize = self.calculate_utf8_pos(expr) as usize;
-        let assertion_code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        let utf16_len = assertion_code.encode_utf16().count();
-        let utf8_len = assertion_code.len();
-        let contains_multibyte_char = utf16_len < utf8_len;
-        if contains_multibyte_char {
+        let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
+        if assertion_metadata.contains_multibyte_char {
+            let assertion_code = &assertion_metadata.assertion_code;
             let mut iter = assertion_code.chars();
             let mut pos_utf16: usize = 0;
             let mut current_utf8: usize = 0;
@@ -534,12 +533,16 @@ impl TransformVisitor {
                 let start = (n.span.lo.0 as usize) - self.span_offset - 1;
                 let end = (n.span.hi.0 as usize) - self.span_offset - 1;
                 let assertion_code = code[start..end].to_string();
+                let utf16_len = assertion_code.encode_utf16().count();
+                let utf8_len = assertion_code.len();
+                let contains_multibyte_char = utf16_len < utf8_len;
 
                 self.assertion_metadata = Some(AssertionMetadata {
                     ident_name: powered_ident_name.clone(),
                     callee_ident_name: prop_ident_name.clone(),
                     receiver_ident_name: obj_ident_name.clone(),
                     assertion_code,
+                    contains_multibyte_char,
                     binary_op: if n.args.len() == 1 {
                         match n.args.first().unwrap().expr.as_ref() {
                             Expr::Bin(BinExpr{ op, .. }) => {
