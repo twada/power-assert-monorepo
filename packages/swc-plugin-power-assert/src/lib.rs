@@ -397,9 +397,9 @@ impl TransformVisitor {
         }
     }
 
-    fn search_pos_for(&self, search_target_str: &str, span: &Span) -> u32 {
+    fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span) -> u32 {
         let assertion_start_pos = self.argument_metadata.as_ref().unwrap().assertion_start_pos;
-        let search_start_pos = span.hi.0 - assertion_start_pos;
+        let search_start_pos = search_start_span.hi.0 - assertion_start_pos;
         let code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
         code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos
     }
