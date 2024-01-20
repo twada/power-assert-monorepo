@@ -47,6 +47,7 @@ describe('espowerAst', () => {
     'FunctionExpression',
     'Identifier',
     'Literal',
+    'MultibyteStringLiteral',
     'LogicalExpression',
     'MemberExpression',
     'NewExpression',
