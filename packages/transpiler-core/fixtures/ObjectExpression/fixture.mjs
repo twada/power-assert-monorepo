@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 
-assert({foo: bar, hoge: fuga});
-
-assert(!({ foo: bar.baz, name: nameOf({firstName: first, lastName: last}) }));
-
-assert.deepEqual({foo: bar, hoge: fuga}, {hoge: fuga, foo: bar});
+{
+  assert({foo: bar, hoge: fuga});
+}
+{
+  assert(!({ foo: bar.baz, name: nameOf({firstName: first, lastName: last}) }));
+}
+{
+  assert.deepEqual({foo: bar, hoge: fuga}, {hoge: fuga, foo: bar});
+}
