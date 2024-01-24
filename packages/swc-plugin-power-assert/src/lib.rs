@@ -901,6 +901,24 @@ mod tests {
         );
     }
 
+    #[testing::fixture("tests/fixtures/*/fixture.cond.mjs")]
+    fn test_with_fixtures_for_swc(input: PathBuf) {
+        let output = input.with_file_name("expected.swc.mjs");
+        let code = fs::read_to_string(&input).unwrap();
+        test_fixture(
+            Syntax::Es(EsConfig::default()),
+            &|_t| {
+                as_folder(TransformVisitor::from(&code))
+            },
+            &input,
+            &output,
+            FixtureTestConfig {
+                allow_error: true,
+                ..Default::default()
+            },
+        );
+    }
+
     #[test]
     fn test_relative_path() {
         let input = "examples/bowling.test.mjs".to_string();
