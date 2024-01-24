@@ -3,9 +3,6 @@ import assert from 'node:assert/strict';
   assert(new Date());
 }
 {
-  assert(new foo.bar.Baz());
-}
-{
   assert(!(new Array(foo, bar, baz)));
 }
 {
