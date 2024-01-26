@@ -85,12 +85,18 @@ pub struct Options {
 }
 
 #[derive(Debug)]
+struct Utf8Pos(u32);
+
+#[derive(Debug)]
+struct Utf16Pos(u32);
+
+#[derive(Debug)]
 struct AssertionMetadata {
     ident_name: JsWord,
     callee_ident_name: JsWord,
     receiver_ident_name: Option<JsWord>,
     assertion_code: String,
-    assertion_start_pos: u32,
+    assertion_start_pos: Utf8Pos,
     contains_multibyte_char: bool,
     binary_op: Option<String>
 }
@@ -330,7 +336,7 @@ impl TransformVisitor {
         });
     }
 
-    fn wrap_with_tap(&mut self, expr: &mut Expr, pos: &u32) {
+    fn wrap_with_tap(&mut self, expr: &mut Expr, pos: &Utf16Pos) {
         let arg_rec = self.argument_metadata.as_mut().unwrap();
         arg_rec.is_captured = true;
         let argrec_ident_name = &arg_rec.ident_name;
@@ -346,17 +352,17 @@ impl TransformVisitor {
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(*pos as f64)))))
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.0 as f64)))))
                 ],
                 type_args: None,
             })
         });
     }
 
-    fn calculate_utf16_pos(&self, expr: &Expr) -> u32 {
+    fn calculate_utf16_pos(&self, expr: &Expr) -> Utf16Pos {
         let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
-        let assertion_start_pos = assertion_metadata.assertion_start_pos;
-        let pos_utf8: usize = self.calculate_utf8_pos(expr, assertion_start_pos) as usize;
+        let assertion_start_pos = &assertion_metadata.assertion_start_pos;
+        let pos_utf8: usize = self.calculate_utf8_pos(expr, assertion_start_pos).0 as usize;
         if assertion_metadata.contains_multibyte_char {
             let assertion_code = &assertion_metadata.assertion_code;
             let mut iter = assertion_code.chars();
@@ -367,19 +373,19 @@ impl TransformVisitor {
                 pos_utf16 += c.len_utf16();
                 current_utf8 += c.len_utf8();
             }
-            pos_utf16 as u32
+            Utf16Pos(pos_utf16 as u32)
         } else {
-            pos_utf8 as u32
+            Utf16Pos(pos_utf8 as u32)
         }
     }
 
-    fn calculate_utf8_pos(&self, expr: &Expr, assertion_start_pos: u32) -> u32 {
+    fn calculate_utf8_pos(&self, expr: &Expr, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
-                    MemberProp::Computed(ComputedPropName{ span, .. }) => span.lo.0 - assertion_start_pos,
-                    MemberProp::Ident(Ident { span, .. }) => span.lo.0 - assertion_start_pos,
-                    _ => expr.span_lo().0 - assertion_start_pos
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.0 - assertion_start_pos.0),
+                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.0 - assertion_start_pos.0),
+                    _ => Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
                 }
             },
             Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span(), assertion_start_pos),
@@ -389,19 +395,19 @@ impl TransformVisitor {
             Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span(), assertion_start_pos),
             Expr::Update(UpdateExpr{ arg, op, prefix, .. }) => {
                 if *prefix {
-                    expr.span_lo().0 - assertion_start_pos
+                    Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
                 } else {
                     self.search_pos_for(op.as_str(), &arg.span(), assertion_start_pos)
                 }
             },
-            _ => expr.span_lo().0 - assertion_start_pos
+            _ => Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
         }
     }
 
-    fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span, assertion_start_pos: u32) -> u32 {
-        let search_start_pos = search_start_span.hi.0 - assertion_start_pos;
+    fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
+        let search_start_pos = search_start_span.hi.0 - assertion_start_pos.0;
         let assertion_code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        assertion_code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos
+        Utf8Pos(assertion_code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos)
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
@@ -526,7 +532,7 @@ impl TransformVisitor {
     fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
         let mut is_some_arg_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
-        let assertion_start_pos = n.span.lo.0;
+        let assertion_start_pos = Utf8Pos(n.span.lo.0);
 
         match self.code {
             Some(ref code) => {
