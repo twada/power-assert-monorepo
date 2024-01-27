@@ -84,10 +84,10 @@ pub struct Options {
     pub variables: Vec<JsWord>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 struct Utf8Pos(u32);
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 struct Utf16Pos(u32);
 
 #[derive(Debug)]
