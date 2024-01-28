@@ -362,21 +362,21 @@ impl TransformVisitor {
     fn calculate_utf16_pos(&self, expr: &Expr) -> Utf16Pos {
         let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
         let assertion_start_pos = &assertion_metadata.assertion_start_pos;
-        let pos_utf8: usize = self.calculate_utf8_pos(expr, assertion_start_pos).0 as usize;
-        if assertion_metadata.contains_multibyte_char {
-            let assertion_code = &assertion_metadata.assertion_code;
-            let mut iter = assertion_code.chars();
-            let mut pos_utf16: usize = 0;
-            let mut current_utf8: usize = 0;
-            while current_utf8 < pos_utf8 {
-                let c = iter.next().unwrap();
-                pos_utf16 += c.len_utf16();
-                current_utf8 += c.len_utf8();
-            }
-            Utf16Pos(pos_utf16 as u32)
-        } else {
-            Utf16Pos(pos_utf8 as u32)
+        let utf8_pos = self.calculate_utf8_pos(expr, assertion_start_pos);
+        if !assertion_metadata.contains_multibyte_char {
+            return Utf16Pos(utf8_pos.0)
         }
+        let utf8_pos_usize = utf8_pos.0 as usize;
+        let assertion_code = &assertion_metadata.assertion_code;
+        let mut iter = assertion_code.chars();
+        let mut current_utf16_pos = 0;
+        let mut current_utf8_pos = 0;
+        while current_utf8_pos < utf8_pos_usize {
+            let c = iter.next().unwrap();
+            current_utf8_pos += c.len_utf8();
+            current_utf16_pos += c.len_utf16();
+        }
+        Utf16Pos(current_utf16_pos as u32)
     }
 
     fn calculate_utf8_pos(&self, expr: &Expr, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
