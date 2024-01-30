@@ -62,6 +62,7 @@ use swc_core::common::{
     Span,
     Spanned
 };
+use swc_core::common::source_map::Pos;
 use swc_core::common::util::take::Take;
 use swc_core::plugin::plugin_transform;
 use swc_core::plugin::metadata::{
@@ -110,7 +111,7 @@ struct ArgumentMetadata {
 }
 
 pub struct TransformVisitor {
-    span_offset: usize,
+    span_offset: u32,
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: FxHashSet<Id>,
@@ -383,9 +384,9 @@ impl TransformVisitor {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
-                    MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.0 - assertion_start_pos.0),
-                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.0 - assertion_start_pos.0),
-                    _ => Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.0),
+                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.0),
+                    _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
                 }
             },
             Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span(), assertion_start_pos),
@@ -395,19 +396,20 @@ impl TransformVisitor {
             Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span(), assertion_start_pos),
             Expr::Update(UpdateExpr{ arg, op, prefix, .. }) => {
                 if *prefix {
-                    Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
+                    Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
                 } else {
                     self.search_pos_for(op.as_str(), &arg.span(), assertion_start_pos)
                 }
             },
-            _ => Utf8Pos(expr.span_lo().0 - assertion_start_pos.0)
+            _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
         }
     }
 
     fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
-        let search_start_pos = search_start_span.hi.0 - assertion_start_pos.0;
+        let search_start_pos = search_start_span.hi.to_usize() - assertion_start_pos.0 as usize;
         let assertion_code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        Utf8Pos(assertion_code[search_start_pos as usize..].find(search_target_str).unwrap_or(0) as u32 + search_start_pos)
+        let found = assertion_code[search_start_pos as usize..].find(search_target_str).unwrap_or(0);
+        Utf8Pos(found as u32 + search_start_pos as u32)
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
@@ -532,13 +534,13 @@ impl TransformVisitor {
     fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
         let mut is_some_arg_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
-        let assertion_start_pos = Utf8Pos(n.span.lo.0);
+        let assertion_start_pos = Utf8Pos(n.span.lo.to_u32());
 
         match self.code {
             Some(ref code) => {
-                let start = (n.span.lo.0 as usize) - self.span_offset - 1;
-                let end = (n.span.hi.0 as usize) - self.span_offset - 1;
-                let assertion_code = code[start..end].to_string();
+                let start = n.span.lo.to_u32() - self.span_offset - 1;
+                let end = n.span.hi.to_u32() - self.span_offset - 1;
+                let assertion_code = code[start as usize..end as usize].to_string();
                 let utf16_len = assertion_code.encode_utf16().count();
                 let utf8_len = assertion_code.len();
                 let contains_multibyte_char = utf16_len < utf8_len;
@@ -642,13 +644,13 @@ impl VisitMut for TransformVisitor {
 
     fn visit_mut_program(&mut self, n: &mut Program) {
         // store span as offset at the start of Program node due to SWC issue https://github.com/swc-project/swc/issues/1366
-        self.span_offset = (n.span_lo().0 - 1) as usize;
+        self.span_offset = n.span_lo().to_u32() - 1;
         n.visit_mut_children_with(self);
     }
 
     fn visit_mut_module(&mut self, n: &mut Module) {
         // store span as offset at the start of Module node due to SWC issue https://github.com/swc-project/swc/issues/1366
-        self.span_offset = (n.span_lo().0 - 1) as usize;
+        self.span_offset = n.span_lo().to_u32() - 1;
         n.visit_mut_children_with(self);
     }
 
