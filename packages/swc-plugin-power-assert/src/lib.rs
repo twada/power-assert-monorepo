@@ -88,8 +88,52 @@ pub struct Options {
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf8Pos(u32);
 
+impl Pos for Utf8Pos {
+    #[inline(always)]
+    fn from_usize(n: usize) -> Utf8Pos {
+        Utf8Pos(n as u32)
+    }
+
+    #[inline(always)]
+    fn to_usize(&self) -> usize {
+        self.0 as usize
+    }
+
+    #[inline(always)]
+    fn from_u32(n: u32) -> Utf8Pos {
+        Utf8Pos(n)
+    }
+
+    #[inline(always)]
+    fn to_u32(&self) -> u32 {
+        self.0
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf16Pos(u32);
+
+impl Pos for Utf16Pos {
+    #[inline(always)]
+    fn from_usize(n: usize) -> Utf16Pos {
+        Utf16Pos(n as u32)
+    }
+
+    #[inline(always)]
+    fn to_usize(&self) -> usize {
+        self.0 as usize
+    }
+
+    #[inline(always)]
+    fn from_u32(n: u32) -> Utf16Pos {
+        Utf16Pos(n)
+    }
+
+    #[inline(always)]
+    fn to_u32(&self) -> u32 {
+        self.0
+    }
+}
 
 #[derive(Debug)]
 struct AssertionMetadata {
@@ -353,7 +397,7 @@ impl TransformVisitor {
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.0 as f64)))))
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.to_u32() as f64)))))
                 ],
                 type_args: None,
             })
@@ -365,9 +409,9 @@ impl TransformVisitor {
         let assertion_start_pos = &assertion_metadata.assertion_start_pos;
         let utf8_pos = self.calculate_utf8_pos(expr, assertion_start_pos);
         if !assertion_metadata.contains_multibyte_char {
-            return Utf16Pos(utf8_pos.0)
+            return Utf16Pos(utf8_pos.to_u32())
         }
-        let utf8_pos_usize = utf8_pos.0 as usize;
+        let utf8_pos_usize = utf8_pos.to_usize();
         let assertion_code = &assertion_metadata.assertion_code;
         let mut iter = assertion_code.chars();
         let mut current_utf16_pos = 0;
@@ -384,9 +428,9 @@ impl TransformVisitor {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
-                    MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.0),
-                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.0),
-                    _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
+                    MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
                 }
             },
             Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span(), assertion_start_pos),
@@ -396,20 +440,20 @@ impl TransformVisitor {
             Expr::Cond(CondExpr{ test, .. }) => self.search_pos_for("?", &test.span(), assertion_start_pos),
             Expr::Update(UpdateExpr{ arg, op, prefix, .. }) => {
                 if *prefix {
-                    Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
+                    Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
                 } else {
                     self.search_pos_for(op.as_str(), &arg.span(), assertion_start_pos)
                 }
             },
-            _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.0)
+            _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
         }
     }
 
     fn search_pos_for(&self, search_target_str: &str, search_start_span: &Span, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
-        let search_start_pos = search_start_span.hi.to_usize() - assertion_start_pos.0 as usize;
+        let search_start_pos = search_start_span.hi.to_usize() - assertion_start_pos.to_usize();
         let assertion_code: &String = &self.assertion_metadata.as_ref().unwrap().assertion_code;
-        let found = assertion_code[search_start_pos as usize..].find(search_target_str).unwrap_or(0);
-        Utf8Pos(found as u32 + search_start_pos as u32)
+        let found = assertion_code[search_start_pos..].find(search_target_str).unwrap_or(0);
+        Utf8Pos((found + search_start_pos) as u32)
     }
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
