@@ -7,6 +7,13 @@
     "email": "takuto.wada@gmail.com",
     "url": "https://github.com/twada"
   },
+  "homepage": "https://github.com/twada/power-assert-monorepo",
+  "bugs": "https://github.com/twada/power-assert-monorepo/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twada/power-assert-monorepo.git",
+    "directory": "packages/swc-plugin-power-assert"
+  },
   "license": "MIT",
   "keywords": [
     "swc-plugin",
