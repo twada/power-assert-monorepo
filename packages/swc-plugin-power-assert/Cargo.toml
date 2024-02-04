@@ -1,6 +1,6 @@
 [package]
 name = "swc_plugin_power_assert"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["Takuto WADA <takuto.wada@gmail.com>"]
 include = ["Cargo.toml", "src/**/*.rs"]
