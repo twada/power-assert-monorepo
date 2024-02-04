@@ -571,7 +571,8 @@ impl TransformVisitor {
             ],
             src: Box::new("@power-assert/runtime".into()),
             type_only: false,
-            with: None
+            with: None,
+            phase: Default::default()
         }))
     }
 
