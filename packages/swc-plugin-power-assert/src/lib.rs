@@ -583,9 +583,9 @@ impl TransformVisitor {
 
         match self.code {
             Some(ref code) => {
-                let start = n.span.lo.to_u32() - self.span_offset - 1;
-                let end = n.span.hi.to_u32() - self.span_offset - 1;
-                let assertion_code = code[start as usize..end as usize].to_string();
+                let start_pos_usize = (n.span.lo.to_u32() - self.span_offset - 1) as usize;
+                let end_pos_usize = (n.span.hi.to_u32() - self.span_offset - 1) as usize;
+                let assertion_code = code[start_pos_usize..end_pos_usize].to_string();
                 let utf16_len = assertion_code.encode_utf16().count();
                 let utf8_len = assertion_code.len();
                 let contains_multibyte_char = utf16_len < utf8_len;
