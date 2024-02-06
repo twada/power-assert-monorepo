@@ -4,7 +4,6 @@ import { AssertionVisitor, extractArea } from '../assertion-visitor.mjs';
 import { parseExpressionAt } from 'acorn';
 import type { Options as AcornOptions } from 'acorn';
 
-import type { Controller } from 'estraverse';
 import type { Node, CallExpression, Identifier, ImportDeclaration, VariableDeclaration } from 'estree';
 import type { Transformation } from '../transformation.mjs';
 
@@ -124,30 +123,14 @@ assert.ok(truthy);
   });
 
   describe('after #leaveArgument', () => {
-    let controller: Controller;
     let resultNode: CallExpression;
     let currentNode: Node;
 
     beforeEach(() => {
-      controller = {
-        path: () => ['body', 2, 'expression', 'arguments', 0],
-        current: () => callexp.arguments[0]
-      } as Controller;
       currentNode = callexp.arguments[0];
       assertionVisitor.enterArgument(currentNode);
-
-      // controller = {
-      //   path: () => ['body', 2, 'expression', 'arguments', 0],
-      //   current: () => callexp.arguments[0]
-      // } as Controller;
       assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
-      // controller = {
-      //   // parents: () => [callexp, expstmt, program],
-      //   parents: () => [callexp],
-      //   path: () => ['body', 2, 'expression', 'arguments', 0],
-      //   current: () => callexp.arguments[0]
-      // } as Controller;
       currentNode = callexp.arguments[0];
       const controllerLike = {
         currentNode,
@@ -189,7 +172,7 @@ assert.ok(truthy);
         // (truthy, 'arguments/0', 10)
         const args = resultNode.arguments;
         assert.equal(args.length, 2);
-        assert.equal(args[0], controller.current());
+        assert.equal(args[0], currentNode);
         assert.equal(args[1].type, 'Literal');
         assert.equal(args[1].value, 10);
       });
@@ -197,31 +180,15 @@ assert.ok(truthy);
   });
 
   describe('after #leave', () => {
-    // let controller: Controller;
     let resultNode: CallExpression;
     let currentNode: Node;
 
     beforeEach(() => {
-      // controller = {
-      //   path: () => ['body', 2, 'expression', 'arguments', 0],
-      //   current: () => callexp.arguments[0]
-      // } as Controller;
       currentNode = callexp.arguments[0];
       assertionVisitor.enterArgument(currentNode);
 
-      // controller = {
-      //   path: () => ['body', 2, 'expression', 'arguments', 0],
-      //   current: () => callexp.arguments[0]
-      // } as Controller;
       assertionVisitor.enterNodeToBeCaptured(callexp.arguments[0]);
 
-      // controller = {
-      //   // parents: () => [callexp, expstmt, program],
-      //   parents: () => [callexp],
-      //   path: () => ['body', 2, 'expression', 'arguments', 0],
-      //   current: () => callexp.arguments[0]
-      // } as Controller;
-      // assertionVisitor.leaveArgument(controller);
       currentNode = callexp.arguments[0];
       const controllerLike = {
         currentNode,
@@ -231,10 +198,6 @@ assert.ok(truthy);
       const astPath = ['body', 2, 'expression', 'arguments', 0];
       assertionVisitor.leaveArgument(controllerLike, astPath);
 
-      // controller = {
-      //   path: () => ['body', 2, 'expression'],
-      //   current: () => callexp
-      // } as Controller;
       currentNode = callexp;
       resultNode = assertionVisitor.leave(currentNode) as CallExpression;
     });

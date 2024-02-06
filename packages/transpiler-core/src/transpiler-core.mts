@@ -1,9 +1,7 @@
-// import { replace } from 'estraverse';
 import { Transformation } from './transformation.mjs';
 import { AssertionVisitor } from './assertion-visitor.mjs';
 import { nodeFactory, isScoped } from './node-factory.mjs';
 import { strict as assert } from 'node:assert';
-// import type { Visitor, VisitorOption, Controller } from 'estraverse';
 import { walk } from 'estree-walker';
 
 import type {
@@ -212,7 +210,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   const transformation = new Transformation(blockStack);
   let decoratorFunctionIdent: Identifier | null = null;
   let assertionVisitor: AssertionVisitor | null = null;
-  // let skipping = false;
 
   function popNodePathStackAndBlockStack (currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined): void {
     if (parentNode && index !== null && typeof key === 'string' && isLastChild(parentNode, key, index)) {
@@ -241,7 +238,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
   }
 
   return {
-    // enter: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
     enter: function (this: WalkerContext, currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined): void {
       const currentKey = index !== null ? index : key;
       if (index !== null && index === 0) {
@@ -249,10 +245,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         nodePathStack.push(key);
       }
       nodePathStack.push(currentKey);
-      // const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-      // const astPath = controller.path();
       const astPath = ([] as NodeKey[]).concat(nodePathStack);
-      // const currentKey = astPath ? astPath[astPath.length - 1] : null;
       const controllerLike = {
         currentNode,
         parentNode,
@@ -265,11 +258,8 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
 
       if (assertionVisitor) {
         if (assertionVisitor.isNodeToBeSkipped(controllerLike)) {
-          // skipping = true;
-          // console.log(`##### skipping ${this.path().join('/')} #####`);
           // estree-walker MEMO: leave() will not be called when skip() is called
           skip(this, currentNode, parentNode, key, index);
-          // this.skip();
           return;
         }
         if (!assertionVisitor.isCapturingArgument() && !isCalleeOfParentCallExpression(parentNode, currentKey)) {
@@ -291,7 +281,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
               return undefined;
             }
             skip(this, currentNode, parentNode, key, index);
-            // this.skip();
             // register local identifier(s) as assertion variable
             handleImportSpecifiers(currentNode);
             break;
@@ -299,7 +288,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
           case 'VariableDeclarator': {
             if (isEnhanceTargetRequire(currentNode.id, currentNode.init)) {
               skip(this, currentNode, parentNode, key, index);
-              // this.skip();
               // register local identifier(s) as assertion variable
               registerAssertionVariables(currentNode.id);
             }
@@ -311,7 +299,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
             }
             if (isEnhanceTargetRequire(currentNode.left, currentNode.right)) {
               skip(this, currentNode, parentNode, key, index);
-              // this.skip();
               // register local identifier(s) as assertion variable
               registerAssertionVariables(currentNode.left);
             }
@@ -339,8 +326,6 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
               // start capturing
               assert(astPath !== null, 'astPath should not be null');
               assertionVisitor = new AssertionVisitor(currentNode, astPath, transformation, decoratorFunctionIdent, config.code);
-              // assertionVisitor.enter(controller, config.code);
-              // console.log(`##### enter assertion ${this.path().join('/')} #####`);
             }
             break;
           }
@@ -348,21 +333,15 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
       }
       return undefined;
     },
-    // leave: function (this: Controller, currentNode: Node, parentNode: Node | null): VisitorOption | Node | void {
     leave: function (this: WalkerContext, currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined): void {
       try {
-        // const controller = this; // eslint-disable-line @typescript-eslint/no-this-alias
-        // const astPath = controller.path();
         const astPath = ([] as NodeKey[]).concat(nodePathStack);
-        // const currentKey = astPath ? astPath[astPath.length - 1] : null;
         const currentKey = index !== null ? index : key;
         const controllerLike = {
           currentNode,
           parentNode,
           currentKey
         };
-        // const espath = path ? path.join('/') : '';
-        // if (transformation.isTarget(espath, currentNode)) {
         if (transformation.isTarget(currentNode)) {
           // apply transformation to currentNode (Scope)
           transformation.apply(currentNode);
@@ -373,18 +352,11 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         if (!assertionVisitor) {
           return undefined;
         }
-        // if (skipping) {
-        //   skipping = false;
-        //   return undefined;
-        // }
-        // console.log(`##### leave ${this.path().join('/')} #####`);
         if (nodeToCapture.has(currentNode)) {
           // leaving assertion
           // stop capturing
-          // console.log(`##### leave assertion ${this.path().join('/')} #####`);
           const resultTree = assertionVisitor.leave(currentNode);
           assertionVisitor = null;
-          // return resultTree;
           this.replace(resultTree);
           return;
         }
@@ -394,14 +366,11 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
         if (assertionVisitor.isLeavingArgument(currentNode)) {
           // capturing whole argument on leaving argument
           assert(astPath !== null, 'astPath should not be null');
-          // return assertionVisitor.leaveArgument(controllerLike, astPath);
           this.replace(assertionVisitor.leaveArgument(controllerLike, astPath));
           return;
         } else if (assertionVisitor.isNodeToBeCaptured(controllerLike)) {
           // capturing intermediate Node
-          // console.log(`##### capture value ${this.path().join('/')} #####`);
           assert(astPath !== null, 'astPath should not be null');
-          // return assertionVisitor.leaveNodeToBeCaptured(currentNode, astPath);
           this.replace(assertionVisitor.leaveNodeToBeCaptured(currentNode, astPath));
           return;
         }
@@ -433,7 +402,6 @@ export function espowerAst (ast: Node, options: EspowerOptions): Node {
   const modifiedAst = walk(ast, createVisitor(ast, options));
   assert(modifiedAst !== null, 'modifiedAst should not be null');
   return modifiedAst;
-  // return replace(ast, createVisitor(ast, options));
 }
 
 export type DefaultEspowerOptions = {
