@@ -28,6 +28,7 @@
   },
   "scripts": {
     "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
+    "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=_test.mjs",
     "clean:all": "npm run build:clean --workspaces --if-present",
     "lint:all": "npm run lint --workspaces --if-present",
     "build:all": "tsc --build tsconfig.build.json",
