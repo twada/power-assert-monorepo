@@ -95,6 +95,17 @@ describe('stringify Array with indentation', () => {
   });
 });
 
+describe('stringify Object', () => {
+  it('symbol as object key', () => {
+    const id = Symbol.for('id');
+    const user = {
+      name: 'John',
+      [id]: 123
+    };
+    assert.strictEqual(stringify(user), 'Object{name:"John",Symbol(id):123}');
+  });
+});
+
 describe('stringify Object with indentation', () => {
   it('empty object', () => {
     const input = {};
