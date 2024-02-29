@@ -16,9 +16,9 @@ export type StringifyConfig = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValueStore = { [key: string | number]: any };
+type KeyValueStore = { [key: string | number | symbol]: any };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValuePair = { key: string | number, value: any };
+type KeyValuePair = { key: string | number | symbol, value: any };
 
 export type CollectorFunc = (str: string) => void;
 
@@ -199,7 +199,7 @@ function decorateArray (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push(']');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, _key: string | number, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, _key: string | number | symbol, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
       });
       acc.context.afterEachChild((_state: State, afterEachChildState: State) => {
@@ -220,7 +220,7 @@ function decorateSet (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, _key: string | number, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, _key: string | number | symbol, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
       });
       acc.context.afterEachChild((_state: State, afterEachChildState: State) => {
@@ -242,7 +242,7 @@ function decorateMap (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, key: string | number, beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, key: string | number | symbol, beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
         const keyStr = stringifyMapKey(key, beforeEachChildState);
         acc.push(keyStr + (acc.options.indent ? '=> ' : '=>'));
@@ -265,7 +265,7 @@ function decorateObject (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, key: string | number, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, key: string | number | symbol, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
         acc.push(sanitizeKey(key) + (acc.options.indent ? ': ' : ':'));
       });
@@ -277,9 +277,13 @@ function decorateObject (): Composable {
   };
 }
 
-function sanitizeKey (key: string | number): string {
-  const skey = String(key);
-  return /^[A-Za-z_]+$/.test(skey) ? skey : JSON.stringify(skey);
+function sanitizeKey (key: string | number | symbol): string {
+  if (typeof key === 'symbol') {
+    return key.toString();
+  } else {
+    const skey = String(key);
+    return /^[A-Za-z_]+$/.test(skey) ? skey : JSON.stringify(skey);
+  }
 }
 
 function afterAllChildren (context: State, push: CollectorFunc, options: StringifyConfig) {
