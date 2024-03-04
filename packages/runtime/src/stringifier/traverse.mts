@@ -1,17 +1,19 @@
 // minimal port of substack's traverse with Map / Set support
 import { strict as assert } from 'node:assert';
 
+export type PropKey = string | number | symbol;
+
 /* eslint-disable no-use-before-define */
 export type State = {
   node: unknown,
-  path: Array<string | number | symbol>,
+  path: Array<PropKey>,
   parent: State,
   parents: Array<State>,
-  key: string | number | symbol,
+  key: PropKey,
   isRoot: boolean,
   level: number,
   circular: State | null,
-  keys: Array<string | number | symbol> | null,
+  keys: Array<PropKey> | null,
   size: number | null,
   isLast?: boolean,
   beforeAllChildren: (f: BeforeAllChildrenCallback) => void,
@@ -24,12 +26,12 @@ export type State = {
 /* eslint-ensable no-use-before-define */
 
 export type BeforeAllChildrenCallback = (state: State, node: unknown) => void;
-export type BeforeEachChildCallback = (state: State, childNode: unknown, key: string | number | symbol, beforeEachChildState: State) => void;
+export type BeforeEachChildCallback = (state: State, childNode: unknown, key: PropKey, beforeEachChildState: State) => void;
 export type AfterEachChildCallback = (state: State, afterEachChildState: State) => void;
 export type AfterAllChildrenCallback = (state: State, node: unknown) => void;
 
 export type InitialState = {
-  path: Array<string | number | symbol>,
+  path: Array<PropKey>,
   parents: Array<State>
 };
 
@@ -52,7 +54,7 @@ export function traverseAny (root: unknown, cb: TraverseCallback): void {
 
 class BailOut extends Error {}
 
-type PropKeyAccessible = { [key: string | number | symbol]: unknown };
+type PropKeyAccessible = { [key: PropKey]: unknown };
 
 function hasChildren (node: unknown): node is object & PropKeyAccessible {
   return typeof node === 'object' && node !== null;
@@ -136,12 +138,12 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
       if (hasChildren(state.node) && !state.circular) {
         parents.push(state);
 
-        const handleChild = function (key: string | number | symbol, value: unknown, index: number) {
+        const handleChild = function (key: PropKey, value: unknown, index: number) {
           path.push(key);
           const childNode = value;
           const beforeEachChildState = Object.assign({}, state, {
             node: childNode,
-            path: ([] as (string|number|symbol)[]).concat(path),
+            path: ([] as PropKey[]).concat(path),
             parent: parents[parents.length - 1],
             parents: ([] as State[]).concat(parents),
             key: path.slice(-1)[0],
