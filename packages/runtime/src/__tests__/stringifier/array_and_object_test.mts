@@ -95,6 +95,28 @@ describe('stringify Array with indentation', () => {
   });
 });
 
+describe('stringify Object', () => {
+  it('symbol as object key', () => {
+    const id = Symbol.for('id');
+    const user = {
+      name: 'John',
+      [id]: 123
+    };
+    assert.strictEqual(stringify(user), 'Object{name:"John",Symbol(id):123}');
+  });
+  it('order of properties in output: strings then enumerable symbols', () => {
+    const tata = Symbol.for('tata');
+    const toto = Symbol.for('toto');
+    const obj = {
+      [tata]: 'tata',
+      foo: 'foo',
+      [toto]: 'toto',
+      bar: 'bar'
+    };
+    assert.strictEqual(stringify(obj), 'Object{foo:"foo",bar:"bar",Symbol(tata):"tata",Symbol(toto):"toto"}');
+  });
+});
+
 describe('stringify Object with indentation', () => {
   it('empty object', () => {
     const input = {};
