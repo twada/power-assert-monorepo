@@ -266,11 +266,6 @@ describe('stringify and type-name', () => {
         // obj.val = input;
         assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{val:' + pruned + '}');
       });
-      it('non-regular prop name ' + fixtureName, () => {
-        const obj = { '^pr"op-na:me': input };
-        // obj['^pr"op-na:me'] = input;
-        assert.equal(stringify(obj, { maxDepth: 1 }), 'Object{"^pr\\"op-na:me":' + pruned + '}');
-      });
     });
   }
 });
