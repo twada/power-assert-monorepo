@@ -115,6 +115,14 @@ describe('stringify Object', () => {
     };
     assert.strictEqual(stringify(obj), 'Object{foo:"foo",bar:"bar",Symbol(tata):"tata",Symbol(toto):"toto"}');
   });
+  it('quote prop name if necessary', () => {
+    const obj: { [key: string]: unknown } = {};
+    obj['^pr"op-na:me'] = 'foo';
+    obj['a'] = 'a'; // eslint-disable-line dot-notation
+    obj['a2'] = 'a2'; // eslint-disable-line dot-notation
+    obj['1a'] = '1a'; // eslint-disable-line dot-notation
+    assert.strictEqual(stringify(obj), 'Object{"^pr\\"op-na:me":"foo",a:"a",a2:"a2","1a":"1a"}');
+  });
 });
 
 describe('stringify Object with indentation', () => {

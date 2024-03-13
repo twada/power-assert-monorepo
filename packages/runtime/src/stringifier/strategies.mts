@@ -282,7 +282,7 @@ function sanitizeKey (key: PropKey): string {
     return key.toString();
   } else {
     const skey = String(key);
-    return /^[A-Za-z_]+$/.test(skey) ? skey : JSON.stringify(skey);
+    return /^(?!\d)[\w$]*$/.test(skey) ? skey : JSON.stringify(skey);
   }
 }
 
