@@ -28,7 +28,7 @@
     "source-map": "^0.7.4"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.1.0"
+    "@power-assert/runtime": "^0.2.0"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
