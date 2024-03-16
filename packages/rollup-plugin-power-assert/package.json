@@ -23,7 +23,7 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler-core": "^0.1.0",
+    "@power-assert/transpiler-core": "^0.2.0",
     "astring": "^1.8.6",
     "source-map": "^0.7.4"
   },
