@@ -22,6 +22,7 @@
   "main": "./swc_plugin_power_assert.wasm",
   "files": [
     "swc_plugin_power_assert.wasm",
+    "CHANGELOG.md",
     "src",
     "Cargo.toml",
     "package.json"
