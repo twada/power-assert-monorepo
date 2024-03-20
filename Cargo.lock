@@ -1165,6 +1165,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "swc-plugin-power-assert"
+version = "0.2.0"
+dependencies = [
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "swc_core",
+ "swc_ecma_parser",
+ "swc_ecma_transforms_testing",
+ "testing",
+]
+
+[[package]]
 name = "swc_atoms"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1448,19 +1461,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.48",
-]
-
-[[package]]
-name = "swc_plugin_power_assert"
-version = "0.2.0"
-dependencies = [
- "rustc-hash",
- "serde",
- "serde_json",
- "swc_core",
- "swc_ecma_parser",
- "swc_ecma_transforms_testing",
- "testing",
 ]
 
 [[package]]
