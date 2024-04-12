@@ -12,19 +12,20 @@
   "license": "MIT",
   "type": "module",
   "devDependencies": {
+    "@eslint/eslintrc": "^3.0.2",
+    "@eslint/js": "^9.0.0",
     "@twada/benchmark-commits": "^0.3.1",
     "@types/convert-source-map": "^2.0.0",
     "@types/estree": "^1.0.1",
     "@types/multi-stage-sourcemap": "^0.3.0",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "depcheck": "^1.4.7",
     "eslint": "^8.39.0",
     "eslint-config-semistandard": "^17.0.0",
     "rimraf": "^5.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "typescript-eslint": "^7.6.0"
   },
   "scripts": {
     "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
