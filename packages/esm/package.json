@@ -39,7 +39,7 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "lint": "eslint src --ext .mts",
+    "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
     "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run power:example",

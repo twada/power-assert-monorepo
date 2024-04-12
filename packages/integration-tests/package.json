@@ -7,7 +7,7 @@
   "devDependencies": {},
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "lint": "eslint src --ext .mts",
+    "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
     "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"
   },
