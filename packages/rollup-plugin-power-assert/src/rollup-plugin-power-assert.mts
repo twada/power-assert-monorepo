@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import type { Plugin, TransformResult, TransformPluginContext } from 'rollup';
+// import type { ProgramNode } from 'rollup';
 import type { Node } from 'estree';
 
 export function powerAssertPlugin (): Plugin {
@@ -29,7 +30,7 @@ export function powerAssertPlugin (): Plugin {
         // this.warn(transpiledCode);
         return {
           code: transpiledCode,
-          // ast: modifiedAst,
+          // ast: modifiedAst as ProgramNode,
           // [!] Error: Character is out of bounds
           // at MagicString.remove (./node_modules/rollup/dist/shared/rollup.js:2500:54)
           // at Program.parseNode (./node_modules/rollup/dist/shared/rollup.js:6116:50)
