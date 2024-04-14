@@ -5,7 +5,9 @@ import { powerAssertPlugin } from './src/vitest-plugin-power-assert.mjs';
 
 export default defineConfig({
   plugins: [
-    powerAssertPlugin(),
+    powerAssertPlugin({
+      include: ['examples/**/*.test.mjs'],
+    }),
   ],
   test: {
     // ...
