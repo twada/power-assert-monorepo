@@ -8,6 +8,7 @@ export default {
     format: 'es',
     entryFileNames: '[name].js',
     // entryFileNames: '[name].cjs',
+    sourcemap: 'inline',
     // create a module for each module in the input, instead of trying to chunk them together.
     preserveModules: true,
     // do not add `Object.defineProperty(exports, '__esModule', { value: true })`
@@ -22,6 +23,12 @@ export default {
     //   // strip 'node:' prefix
     //   builtinsPrefix: 'strip'
     // }),
-    powerAssertPlugin(),
+    powerAssertPlugin({
+      include: ['examples/**/*.test.mjs'],
+      modules: [
+        'node:assert/strict',
+        { source: 'vitest', imported: ['assert'] }
+      ]
+    }),
   ]
 };
