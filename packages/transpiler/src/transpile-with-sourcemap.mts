@@ -53,11 +53,7 @@ type CodeWithSourceMapConverter = {
 };
 
 async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSourceMapConverter> {
-  const mine = {
-    code
-  };
-  const config = { ...mine, ...options };
-
+  const config = { ...options };
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
@@ -65,7 +61,7 @@ async function transpile (code: string, options?: TranspileWithSourceMapOptions)
     ranges: false,
     sourceFile: config.file
   }) as Node;
-  const modifiedAst = espowerAst(ast, config);
+  const modifiedAst = espowerAst(ast, code, config);
   const smg = new SourceMapGenerator({
     file: config.file
   });
