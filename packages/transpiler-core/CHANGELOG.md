@@ -1,4 +1,20 @@
-## 0.2.0
+## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.3.0) (2024-04-17)
+
+
+#### Features
+
+* make `originalCode` argument mandatory ([b4c3b82b](https://github.com/twada/power-assert-monorepo/commit/b4c3b82b3ecb257d0f9b5d4254bf5c4010dd7f87))
+
+#### Breaking Changes
+
+* now `options.code` is not optional so move `options.code` to `originalCode` argument
+
+ ([b4c3b82b](https://github.com/twada/power-assert-monorepo/commit/b4c3b82b3ecb257d0f9b5d4254bf5c4010dd7f87))
+
+
+
+## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.2.0) (2024-03-16)
+
 
 #### Bug Fixes
 
