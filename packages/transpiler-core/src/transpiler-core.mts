@@ -6,13 +6,10 @@ import { walk } from 'estree-walker';
 
 import type {
   Node,
-  Literal,
   SimpleLiteral,
   Identifier,
   MemberExpression,
-  CallExpression,
   ImportDeclaration,
-  ObjectPattern,
   SpreadElement
 } from 'estree';
 import type { Scoped } from './node-factory.mjs';
@@ -48,23 +45,14 @@ interface StringLiteral extends SimpleLiteral {
   value: string;
 }
 
-function isLiteral (node: Node | null | undefined): node is Literal {
-  return !!node && node.type === 'Literal';
-}
 function isStringLiteral (node: Node | null | undefined): node is StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string';
 }
 function isIdentifier (node: Node | null | undefined): node is Identifier {
   return !!node && node.type === 'Identifier';
 }
-function isObjectPattern (node: Node | null | undefined): node is ObjectPattern {
-  return !!node && node.type === 'ObjectPattern';
-}
 function isMemberExpression (node: Node | null | undefined): node is MemberExpression {
   return !!node && node.type === 'MemberExpression';
-}
-function isCallExpression (node: Node | null| undefined): node is CallExpression {
-  return !!node && node.type === 'CallExpression';
 }
 function isSpreadElement (node: Node | null | undefined): node is SpreadElement {
   return !!node && node.type === 'SpreadElement';
@@ -121,21 +109,6 @@ function createVisitor (ast: Node, originalCode: string, options: EspowerOptions
     }
   }
 
-  function handleDestructuredAssertionAssignment (objectPattern: ObjectPattern) {
-    for (const prop of objectPattern.properties) {
-      switch (prop.type) {
-        case 'Property': {
-          registerIdentifierAsAssertionVariable(prop.value);
-          break;
-        }
-        case 'RestElement': {
-          registerIdentifierAsAssertionVariable(prop.argument);
-          break;
-        }
-      }
-    }
-  }
-
   function handleImportSpecifiers (importDeclaration: ImportDeclaration) {
     const source = importDeclaration.source;
     if (!isStringLiteral(source)) {
@@ -152,47 +125,6 @@ function createVisitor (ast: Node, originalCode: string, options: EspowerOptions
         registerIdentifierAsAssertionVariable(specifier.local);
       }
     }
-  }
-
-  function registerAssertionVariables (node: Node) {
-    if (isIdentifier(node)) {
-      registerIdentifierAsAssertionVariable(node);
-    } else if (isObjectPattern(node)) {
-      handleDestructuredAssertionAssignment(node);
-    }
-  }
-
-  function isRequireAssert (id: Node, init: Node | null | undefined): boolean {
-    if (!isCallExpression(init)) {
-      return false;
-    }
-    const callee = init.callee;
-    if (!isIdentifier(callee) || callee.name !== 'require') {
-      return false;
-    }
-    const arg = init.arguments[0];
-    if (!isLiteral(arg) || !isAssertionModuleName(arg)) {
-      return false;
-    }
-    return isIdentifier(id) || isObjectPattern(id);
-  }
-
-  function isRequireAssertDotStrict (id: Node, init: Node | null | undefined): boolean {
-    if (!isMemberExpression(init)) {
-      return false;
-    }
-    if (!isRequireAssert(id, init.object)) {
-      return false;
-    }
-    const prop = init.property;
-    if (!isIdentifier(prop)) {
-      return false;
-    }
-    return prop.name === 'strict';
-  }
-
-  function isEnhanceTargetRequire (id: Node, init: Node | null | undefined): boolean {
-    return isRequireAssert(id, init) || isRequireAssertDotStrict(id, init);
   }
 
   function isCaptureTargetAssertion (callee: Node): boolean {
@@ -284,25 +216,6 @@ function createVisitor (ast: Node, originalCode: string, options: EspowerOptions
             handleImportSpecifiers(currentNode);
             break;
           }
-          case 'VariableDeclarator': {
-            if (isEnhanceTargetRequire(currentNode.id, currentNode.init)) {
-              skip(this, currentNode, parentNode, key, index);
-              // register local identifier(s) as assertion variable
-              registerAssertionVariables(currentNode.id);
-            }
-            break;
-          }
-          case 'AssignmentExpression': {
-            if (currentNode.operator !== '=') {
-              return undefined;
-            }
-            if (isEnhanceTargetRequire(currentNode.left, currentNode.right)) {
-              skip(this, currentNode, parentNode, key, index);
-              // register local identifier(s) as assertion variable
-              registerAssertionVariables(currentNode.left);
-            }
-            break;
-          }
           case 'CallExpression': {
             const callee = currentNode.callee;
             if (isCaptureTargetAssertion(callee)) {
@@ -389,7 +302,6 @@ function isLastChild (parentNode: Node, currentKey: string, index: number | null
 function createPowerAssertImports ({ transformation, currentNode, runtime }: { transformation: Transformation, currentNode: Node, runtime: string }): Identifier {
   const types = nodeFactory(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
-  // TODO: CJS support?
   const decl = types.importDeclaration([
     types.importSpecifier(decoratorFunctionIdent)
   ], types.stringLiteral(runtime));
