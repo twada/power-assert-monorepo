@@ -81,9 +81,8 @@ describe('espowerAst', () => {
               const actualFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, `actual${suffix ?? ''}.mjs`);
               const expected = readFileSync(expectedFilepath).toString();
               const ast = parseFixture(fixtureFilepath, loc, range);
-              const powerAssertConfig: EspowerOptions = {
-                code: readFileSync(fixtureFilepath).toString()
-              };
+              const originalCode = readFileSync(fixtureFilepath).toString();
+              const powerAssertConfig: EspowerOptions = {};
               if (fixtureName === 'VitestConfig') {
                 powerAssertConfig.modules = [
                   {
@@ -92,7 +91,7 @@ describe('espowerAst', () => {
                   }
                 ];
               }
-              const modifiedAst = espowerAst(ast, powerAssertConfig);
+              const modifiedAst = espowerAst(ast, originalCode, powerAssertConfig);
               const actual = generate(modifiedAst);
               if (actual !== expected) {
                 writeFileSync(actualFilepath, actual);

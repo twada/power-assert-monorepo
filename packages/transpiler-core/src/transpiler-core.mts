@@ -40,7 +40,6 @@ export type TargetImportSpecifier = {
 export type EspowerOptions = {
   runtime?: string,
   modules?: (string | TargetImportSpecifier)[],
-  code: string,
   variables?: string[]
 };
 
@@ -87,7 +86,7 @@ function handleModuleSettings (modules?: (string | TargetImportSpecifier)[]): Ma
   return map;
 }
 
-function createVisitor (ast: Node, options: EspowerOptions): Visitor {
+function createVisitor (ast: Node, originalCode: string, options: EspowerOptions): Visitor {
   const config = Object.assign(defaultOptions(), options);
   const targetModules = handleModuleSettings(config.modules);
   const targetVariables = new Set<string>(config.variables);
@@ -325,7 +324,7 @@ function createVisitor (ast: Node, options: EspowerOptions): Visitor {
               // entering target assertion
               // start capturing
               assert(astPath !== null, 'astPath should not be null');
-              assertionVisitor = new AssertionVisitor(currentNode, astPath, transformation, decoratorFunctionIdent, config.code);
+              assertionVisitor = new AssertionVisitor(currentNode, astPath, transformation, decoratorFunctionIdent, originalCode);
             }
             break;
           }
@@ -398,16 +397,15 @@ function createPowerAssertImports ({ transformation, currentNode, runtime }: { t
   return decoratorFunctionIdent;
 }
 
-export function espowerAst (ast: Node, options: EspowerOptions): Node {
-  const modifiedAst = walk(ast, createVisitor(ast, options));
+export function espowerAst (ast: Node, originalCode: string, options: EspowerOptions): Node {
+  const modifiedAst = walk(ast, createVisitor(ast, originalCode, options));
   assert(modifiedAst !== null, 'modifiedAst should not be null');
   return modifiedAst;
 }
 
 export type DefaultEspowerOptions = {
   runtime: string,
-  modules?: (string | TargetImportSpecifier)[],
-  variables?: string[]
+  modules: (string | TargetImportSpecifier)[]
 };
 
 export function defaultOptions (): DefaultEspowerOptions {
