@@ -34,7 +34,7 @@
     "assertion"
   ],
   "dependencies": {
-    "@power-assert/transpiler-core": "^0.2.0",
+    "@power-assert/transpiler-core": "^0.3.0",
     "acorn": "^8.10.0",
     "astring": "^1.8.6",
     "convert-source-map": "^2.0.0",
