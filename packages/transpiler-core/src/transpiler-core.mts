@@ -34,9 +34,11 @@ export type TargetImportSpecifier = {
   imported: string[]
 };
 
+export type ModuleSpecifier = string | TargetImportSpecifier;
+
 export type EspowerOptions = {
   runtime?: string,
-  modules?: (string | TargetImportSpecifier)[],
+  modules?: ModuleSpecifier[],
   variables?: string[]
 };
 
@@ -58,7 +60,7 @@ function isSpreadElement (node: Node | null | undefined): node is SpreadElement 
   return !!node && node.type === 'SpreadElement';
 }
 
-function handleModuleSettings (modules?: (string | TargetImportSpecifier)[]): Map<string, string[]> {
+function handleModuleSettings (modules?: ModuleSpecifier[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
   if (!modules) {
     return map;
@@ -74,7 +76,7 @@ function handleModuleSettings (modules?: (string | TargetImportSpecifier)[]): Ma
   return map;
 }
 
-function createVisitor (ast: Node, originalCode: string, options: EspowerOptions): Visitor {
+function createVisitor (ast: Node, originalCode: string, options?: EspowerOptions): Visitor {
   const config = Object.assign(defaultOptions(), options);
   const targetModules = handleModuleSettings(config.modules);
   const targetVariables = new Set<string>(config.variables);
@@ -309,7 +311,7 @@ function createPowerAssertImports ({ transformation, currentNode, runtime }: { t
   return decoratorFunctionIdent;
 }
 
-export function espowerAst (ast: Node, originalCode: string, options: EspowerOptions): Node {
+export function espowerAst (ast: Node, originalCode: string, options?: EspowerOptions): Node {
   const modifiedAst = walk(ast, createVisitor(ast, originalCode, options));
   assert(modifiedAst !== null, 'modifiedAst should not be null');
   return modifiedAst;
@@ -317,7 +319,7 @@ export function espowerAst (ast: Node, originalCode: string, options: EspowerOpt
 
 export type DefaultEspowerOptions = {
   runtime: string,
-  modules: (string | TargetImportSpecifier)[]
+  modules: ModuleSpecifier[]
 };
 
 export function defaultOptions (): DefaultEspowerOptions {
