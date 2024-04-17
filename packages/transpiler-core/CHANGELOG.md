@@ -9,8 +9,8 @@
 
 #### Breaking Changes
 
-* Move `options.code` to `originalCode` argument. ([b4c3b82b](https://github.com/twada/power-assert-monorepo/commit/b4c3b82b3ecb257d0f9b5d4254bf5c4010dd7f87))
-* new transpiler only supports ESM -> ESM transformation. For CJS support, use [babel-preset-power-assert](https://github.com/power-assert-js/babel-preset-power-assert). ([7b3ad51c](https://github.com/twada/power-assert-monorepo/commit/7b3ad51c74ad267ea31f6ee4b9db8c81bc70d4f2))
+* `options.code` is removed. Move `options.code` to `originalCode` argument. ([b4c3b82b](https://github.com/twada/power-assert-monorepo/commit/b4c3b82b3ecb257d0f9b5d4254bf5c4010dd7f87))
+* New transpiler only supports ESM -> ESM transformation. For CJS support, use [babel-preset-power-assert](https://github.com/power-assert-js/babel-preset-power-assert). ([7b3ad51c](https://github.com/twada/power-assert-monorepo/commit/7b3ad51c74ad267ea31f6ee4b9db8c81bc70d4f2))
 
 
 ## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.2.0) (2024-03-16)
