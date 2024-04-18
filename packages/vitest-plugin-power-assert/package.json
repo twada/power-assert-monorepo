@@ -24,7 +24,7 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.2.0",
+    "@power-assert/transpiler": "^0.3.0",
     "@rollup/pluginutils": "^5.1.0"
   },
   "peerDependencies": {

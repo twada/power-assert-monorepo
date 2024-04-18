@@ -32,7 +32,7 @@
     "power-assert"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.2.0"
+    "@power-assert/transpiler": "^0.3.0"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.2.0"
