@@ -28,6 +28,7 @@
   "files": [
     "src",
     "dist",
+    "!**/__tests__",
     "package.json"
   ],
   "dependencies": {
@@ -45,7 +46,6 @@
   "scripts": {
     "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
-    "preversion": "rimraf dist/__tests__",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
     "test": "node --no-warnings --test --test-reporter=spec 'dist/**/*test.mjs'"
