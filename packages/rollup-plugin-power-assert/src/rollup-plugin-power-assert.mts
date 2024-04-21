@@ -19,7 +19,7 @@ export function powerAssertPlugin (options: PowerAssertPluginOptions = {}): Plug
       if (!filter(id)) {
         return;
       }
-      const modules = options.modules ?? defaultOptions().modules;
+      const modules = options.modules ?? defaultOptions().modules.concat([{ source: 'vitest', imported: ['assert'] }]);
       const transpiled = await transpileWithSeparatedSourceMap(code, {
         file: id,
         modules

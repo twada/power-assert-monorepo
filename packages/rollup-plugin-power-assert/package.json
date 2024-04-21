@@ -17,7 +17,8 @@
   "license": "MIT",
   "keywords": [
     "power-assert",
-    "rollup-plugin"
+    "rollup-plugin",
+    "vite-plugin"
   ],
   "type": "module",
   "main": "./dist/rollup-plugin-power-assert.mjs",
