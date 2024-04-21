@@ -42,10 +42,12 @@
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
-    "rollup": "^4.2.0"
+    "rollup": "^4.2.0",
+    "vitest": "^1.0.0"
   },
   "scripts": {
     "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
+    "vitest": "vitest run",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
