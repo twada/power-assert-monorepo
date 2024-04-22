@@ -11,7 +11,7 @@ export type PowerAssertPluginOptions = {
   modules?: (string | TargetImportSpecifier)[],
 };
 
-export function powerAssertPlugin (options: PowerAssertPluginOptions = {}): Plugin {
+export function powerAssert (options: PowerAssertPluginOptions = {}): Plugin {
   const filter = createFilter(options.include, options.exclude);
   return {
     name: 'power-assert',

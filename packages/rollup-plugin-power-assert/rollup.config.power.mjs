@@ -1,5 +1,5 @@
 import { globSync } from 'glob';
-import { powerAssertPlugin } from 'rollup-plugin-power-assert';
+import { powerAssert } from 'rollup-plugin-power-assert';
 
 export default {
   input: globSync('examples/**/*.mjs'),
@@ -23,7 +23,7 @@ export default {
     //   // strip 'node:' prefix
     //   builtinsPrefix: 'strip'
     // }),
-    powerAssertPlugin({
+    powerAssert({
       include: ['examples/**/*.test.mjs'],
       modules: [
         'node:assert/strict',
