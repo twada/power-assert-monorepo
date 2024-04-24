@@ -27,6 +27,8 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "README.md",
+    "CHANGELOG.md",
     "src",
     "dist",
     "!**/__tests__",
