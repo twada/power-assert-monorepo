@@ -7,9 +7,18 @@
     "email": "takuto.wada@gmail.com",
     "url": "https://github.com/twada"
   },
+  "homepage": "https://github.com/twada/power-assert-monorepo",
+  "bugs": "https://github.com/twada/power-assert-monorepo/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twada/power-assert-monorepo.git",
+    "directory": "packages/rollup-plugin-power-assert"
+  },
   "license": "MIT",
   "keywords": [
-    "power-assert"
+    "power-assert",
+    "rollup-plugin",
+    "vite-plugin"
   ],
   "type": "module",
   "main": "./dist/rollup-plugin-power-assert.mjs",
@@ -18,27 +27,32 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "README.md",
+    "CHANGELOG.md",
     "src",
     "dist",
+    "!**/__tests__",
     "package.json"
   ],
   "dependencies": {
+    "@power-assert/transpiler": "^0.3.0",
     "@power-assert/transpiler-core": "^0.3.0",
-    "@rollup/pluginutils": "^5.1.0",
-    "astring": "^1.8.6",
-    "source-map": "^0.7.4"
+    "@rollup/pluginutils": "^5.1.0"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.2.0"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",
-    "rollup": "^4.2.0"
+    "rollup": "^4.2.0",
+    "vitest": "^1.0.0"
   },
   "scripts": {
     "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
+    "vitest": "vitest run",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src",
-    "fix": "npm run lint:src -- --fix"
+    "fix": "npm run lint:src -- --fix",
+    "test": "node --no-warnings --test --test-reporter=spec 'dist/**/*test.mjs'"
   }
 }

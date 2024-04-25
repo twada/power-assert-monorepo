@@ -5,7 +5,6 @@
     { "path": "packages/transpiler" },
     { "path": "packages/runtime" },
     { "path": "packages/esm" },
-    { "path": "packages/vitest-plugin-power-assert" },
     { "path": "packages/esbuild-plugin-power-assert" },
     { "path": "packages/rollup-plugin-power-assert" },
     { "path": "packages/integration-tests" }

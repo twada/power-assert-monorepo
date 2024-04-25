@@ -1,15 +1,17 @@
 import { describe, it, assert } from 'vitest';
-// import { describe, it, beforeEach } from 'node:test';
-// import assert from 'node:assert/strict';
 
-const isStrike = (rolls, index) => (rolls[index] === 10);
-const isSpare = (rolls, index) => (rolls[index] + rolls[index + 1]) === 10;
-const strikeBonus = (rolls, index) => rolls[index + 1] + rolls[index + 2];
-const spareBonus = (rolls, index) => rolls[index + 2];
-const twoBallsInFrame = (rolls, index) => rolls[index] + rolls[index + 1];
+type Rolls = number[];
+type Frame = number[];
+type Frames = Frame[];
+
+const isStrike = (rolls: Rolls, index: number) => (rolls[index] === 10);
+const isSpare = (rolls: Rolls, index: number) => (rolls[index] + rolls[index + 1]) === 10;
+const strikeBonus = (rolls: Rolls, index: number) => rolls[index + 1] + rolls[index + 2];
+const spareBonus = (rolls: Rolls, index: number) => rolls[index + 2];
+const twoBallsInFrame = (rolls: Rolls, index: number) => rolls[index] + rolls[index + 1];
 
 // rolls -> score
-function scoreOf (rolls) {
+function scoreOf (rolls: Rolls) {
   let score = 0;
   for (let frame = 0, index = 0; frame < 10; frame +=1) {
     if (isStrike(rolls, index)) {
@@ -27,16 +29,16 @@ function scoreOf (rolls) {
 }
 
 // rolls -> frames
-function framesOf(rolls) {
-  const frames = [];
-  rolls.reduce((currentFrame, roll) => {
+function framesOf(rolls: Rolls): Frames {
+  const frames: Frames = [];
+  rolls.reduce((currentFrame: Frame, roll: number) => {
     currentFrame.push(roll);
     if (frames.length === 9) { // prepare for the last frame
       frames.push(currentFrame);
     }
     if ((currentFrame.length === 2 || roll === 10) && frames.length !== 10) {
       frames.push(currentFrame);
-      const nextFrame = [];
+      const nextFrame: Frame = [];
       return nextFrame;
     }
     return currentFrame;
@@ -45,13 +47,13 @@ function framesOf(rolls) {
 }
 
 // frames -> rolls
-function rollsOf(frames) {
+function rollsOf(frames: Frames): Rolls {
   return frames.flat();
   // return frames.reduce((acc, frame) => acc.concat(frame), []);
 }
 
 // frames -> new frames
-function roll (frames, pins) {
+function roll (frames: Frames, pins: number): Frames {
   const newFrames = structuredClone(frames);
   const currentFrame = newFrames[frames.length - 1];
   if (frames.length === 10) { // 10th frame
@@ -397,8 +399,8 @@ describe('Bowling Game', () => {
     });
   });
 
-  const rollMany = (n, pins, acc = []) => {
-    const rolls = [].concat(acc);
+  const rollMany = (n: number, pins: number, acc: number[] = []) => {
+    const rolls = ([] as number[]).concat(acc);
     for (let i = 0; i < n; i += 1) {
       rolls.push(pins);
     }
