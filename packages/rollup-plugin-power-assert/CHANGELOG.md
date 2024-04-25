@@ -1,4 +1,4 @@
-## [0.1.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.1.0) (2024-04-24)
+## [0.1.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.1.0)
 
 
 #### Features
