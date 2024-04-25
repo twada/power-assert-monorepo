@@ -5,6 +5,10 @@ rollup-plugin-power-assert
 
 Note that rollup-plugin-power-assert also supports [Vitest's assert API](https://vitest.dev/api/assert).
 
+[![power-assert][power-assert-banner]][power-assert-url]
+
+[![License][license-image]][license-url]
+
 ```
  FAIL  examples/__tests__/demo.test.mts > power-assert demo > Destructuring and TemplateLiteral
 AssertionError:
@@ -28,10 +32,6 @@ assert(`${alice.name} and ${bob.name}` === `bob and alice`)
 - bob and alice
 + alice and bob
 ```
-
-[![power-assert][power-assert-banner]][power-assert-url]
-
-[![License][license-image]][license-url]
 
 
 INSTALL
