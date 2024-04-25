@@ -44,26 +44,6 @@ $ npm install --save-dev rollup-plugin-power-assert
 USAGE
 ---------------------------------------
 
-### Rollup
-
-Create a `rollup.config.js` [configuration file](https://rollupjs.org/command-line-interface/#configuration-files) and import the plugin:
-
-```js
-import { globSync } from 'glob';
-import { powerAssert } from 'rollup-plugin-power-assert';
-
-export default {
-  input: globSync('**/*.mjs'),
-  plugins: [
-    powerAssert({
-      include: ['**/*.test.mjs']
-    })
-  ]
-};
-```
-
-Then call `rollup` either via the [CLI](https://rollupjs.org/command-line-interface/) or the [API](https://rollupjs.org/javascript-api/).
-
 ### Vite/Vitest usage and example
 
 For given test file `examples/__tests__/demo.test.mts` below,
@@ -185,6 +165,26 @@ assert(`${alice.name} and ${bob.name}` === `bob and alice`)
    Start at  17:16:32
    Duration  198ms (transform 58ms, setup 0ms, collect 52ms, tests 6ms, environment 0ms, prepare 42ms)
 ```
+
+### Rollup usage
+
+Create a `rollup.config.js` [configuration file](https://rollupjs.org/command-line-interface/#configuration-files) and import the plugin:
+
+```js
+import { globSync } from 'glob';
+import { powerAssert } from 'rollup-plugin-power-assert';
+
+export default {
+  input: globSync('**/*.mjs'),
+  plugins: [
+    powerAssert({
+      include: ['**/*.test.mjs']
+    })
+  ]
+};
+```
+
+Then call `rollup` either via the [CLI](https://rollupjs.org/command-line-interface/) or the [API](https://rollupjs.org/javascript-api/).
 
 
 
