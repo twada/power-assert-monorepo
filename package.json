@@ -41,7 +41,6 @@
     "packages/runtime",
     "packages/esm",
     "packages/integration-tests",
-    "packages/vitest-plugin-power-assert",
     "packages/esbuild-plugin-power-assert",
     "packages/rollup-plugin-power-assert",
     "packages/swc-plugin-power-assert"
