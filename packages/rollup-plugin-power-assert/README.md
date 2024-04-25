@@ -20,6 +20,8 @@ $ npm install --save-dev rollup-plugin-power-assert
 USAGE
 ---------------------------------------
 
+### Rollup
+
 Create a `rollup.config.js` [configuration file](https://rollupjs.org/command-line-interface/#configuration-files) and import the plugin:
 
 ```js
@@ -38,6 +40,26 @@ export default {
 
 Then call `rollup` either via the [CLI](https://rollupjs.org/command-line-interface/) or the [API](https://rollupjs.org/javascript-api/).
 
+### Vite/Vitest
+
+Create a `vite.config.js` [configuration file](https://vitejs.dev/guide/using-plugins.html) and import the plugin:
+
+```js
+import { defineConfig } from 'vite';
+import { powerAssert } from 'rollup-plugin-power-assert';
+
+export default defineConfig({
+  plugins: [
+    powerAssert({
+      include: ['**/__test__/**/*test.mts'],
+    }),
+  ],
+  test: {
+    include: ['**/__test__/**/*test.mts'],
+    // ...
+  },
+});
+```
 
 OPTIONS
 ---------------------------------------
