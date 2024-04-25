@@ -40,7 +40,7 @@ export default {
 
 Then call `rollup` either via the [CLI](https://rollupjs.org/command-line-interface/) or the [API](https://rollupjs.org/javascript-api/).
 
-### Vite/Vitest usage
+### Vite/Vitest usage and example
 
 For given test file `examples/__tests__/demo.test.mts` below,
 
@@ -64,7 +64,7 @@ describe('power-assert demo', () => {
 
 Create a `vite.config.js` [configuration file](https://vitejs.dev/guide/using-plugins.html) and import the plugin:
 
-```
+```js
 import { defineConfig } from 'vite';
 import { powerAssert } from 'rollup-plugin-power-assert';
 const testPattern = 'examples/**/__tests__/**/*.test.mts';
