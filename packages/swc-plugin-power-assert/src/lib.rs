@@ -624,6 +624,12 @@ impl TransformVisitor {
 
         // enter arguments
         for (idx, arg) in n.args.iter_mut().enumerate() {
+            if let ExprOrSpread { spread: Some(_), .. } = arg {
+                // skip modifying argument if SpreadElement appears immediately beneath assert
+                // assert(...args) looks like one argument syntactically, however there are two or more arguments actually.
+                // power-assert works at the syntax level so it cannot handle SpreadElement that appears immediately beneath assert.
+                return;
+            }
             // const _parg1 = _pasrt1.recorder(0);
             let argrec_ident_name = self.next_argrec_variable_name();
             self.argument_metadata = Some(ArgumentMetadata {
