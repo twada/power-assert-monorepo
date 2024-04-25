@@ -25,10 +25,6 @@ export default {
     // }),
     powerAssert({
       include: ['examples/**/*.test.mjs'],
-      modules: [
-        'node:assert/strict',
-        { source: 'vitest', imported: ['assert'] }
-      ]
     }),
   ]
 };
