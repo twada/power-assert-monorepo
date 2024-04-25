@@ -17,6 +17,10 @@
   "license": "MIT",
   "keywords": [
     "power-assert",
+    "assert",
+    "assertion",
+    "test",
+    "testing",
     "rollup-plugin",
     "vite-plugin"
   ],
