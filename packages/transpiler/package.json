@@ -33,6 +33,7 @@
     "CHANGELOG.md",
     "src",
     "dist",
+    "!**/__tests__",
     "package.json"
   ],
   "keywords": [
@@ -53,7 +54,6 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "preversion": "rimraf dist/__tests__",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix"
   }
