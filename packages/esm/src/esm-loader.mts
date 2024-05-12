@@ -4,12 +4,16 @@ import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValuePairs = { [key: string]: any };
-
-// start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
+// start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/module.d.ts
+interface ImportAttributes extends NodeJS.Dict<string> {
+    type?: string | undefined;
+}
+/** @deprecated Use `ImportAttributes` instead */
+interface ImportAssertions extends ImportAttributes {}
 type ModuleFormat = 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
 type ModuleSource = string | ArrayBuffer | NodeJS.TypedArray;
+// customization: add 'power-assert' format
+type CustomizedModuleFormat = ModuleFormat | 'power-assert';
 
 interface ResolveHookContext {
     /**
@@ -17,9 +21,13 @@ interface ResolveHookContext {
      */
     conditions: string[];
     /**
+     * @deprecated Use `importAttributes` instead
+     */
+    importAssertions: ImportAssertions;
+    /**
      *  An object whose key-value pairs represent the assertions for the module to import
      */
-    importAssertions: KeyValuePairs;
+    importAttributes: ImportAttributes;
     /**
      * The module importing this one, or undefined if this is the Node.js entry point
      */
@@ -30,11 +38,15 @@ interface ResolveFnOutput {
     /**
      * A hint to the load hook (it might be ignored)
      */
-    format?: string | null | undefined;
+    format?: CustomizedModuleFormat | null | undefined;
     /**
-     * The import assertions to use when caching the module (optional; if excluded the input will be used)
+     * @deprecated Use `importAttributes` instead
      */
-    importAssertions?: KeyValuePairs | undefined;
+    importAssertions?: ImportAssertions | undefined;
+    /**
+     * The import attributes to use when caching the module (optional; if excluded the input will be used)
+     */
+    importAttributes?: ImportAttributes | undefined;
     /**
      * A signal that this hook intends to terminate the chain of `resolve` hooks.
      * @default false
@@ -54,11 +66,15 @@ interface LoadHookContext {
   /**
    * The format optionally supplied by the `resolve` hook chain
    */
-  format: string;
+  format: CustomizedModuleFormat;
+  /**
+   * @deprecated Use `importAttributes` instead
+   */
+  importAssertions: ImportAttributes;
   /**
    *  An object whose key-value pairs represent the assertions for the module to import
    */
-  importAssertions?: KeyValuePairs;
+  importAttributes: ImportAttributes;
 }
 
 interface LoadFnOutput {
@@ -75,8 +91,8 @@ interface LoadFnOutput {
 }
 // end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
 
-type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
-type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
+type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
+type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput | Promise<LoadFnOutput>;
 
 const supportedExts = new Set([
   '.js',
@@ -111,7 +127,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     return nextResolve(specifier, context);
   }
 
-  const { url: nextUrl } = nextResolve(specifier, context);
+  const { url: nextUrl } = await nextResolve(specifier, context);
   const url = nextUrl ?? new URL(specifier, context.parentURL).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
@@ -123,7 +139,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     return nextResolve(specifier, context);
   }
 
-  const resolved = {
+  const resolved: ResolveFnOutput = {
     format: 'power-assert', // Provide a signal to `load`
     shortCircuit: true,
     url
