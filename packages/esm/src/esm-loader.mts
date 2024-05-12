@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 // start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/module.d.ts
 interface ImportAttributes extends NodeJS.Dict<string> {
-    type?: string | undefined;
+  type?: string | undefined;
 }
 /** @deprecated Use `ImportAttributes` instead */
 interface ImportAssertions extends ImportAttributes {}
@@ -16,46 +16,46 @@ type ModuleSource = string | ArrayBuffer | NodeJS.TypedArray;
 type CustomizedModuleFormat = ModuleFormat | 'power-assert';
 
 interface ResolveHookContext {
-    /**
-     * Export conditions of the relevant `package.json`
-     */
-    conditions: string[];
-    /**
-     * @deprecated Use `importAttributes` instead
-     */
-    importAssertions: ImportAssertions;
-    /**
-     *  An object whose key-value pairs represent the assertions for the module to import
-     */
-    importAttributes: ImportAttributes;
-    /**
-     * The module importing this one, or undefined if this is the Node.js entry point
-     */
-    parentURL: string | undefined;
+  /**
+   * Export conditions of the relevant `package.json`
+   */
+  conditions: string[];
+  /**
+   * @deprecated Use `importAttributes` instead
+   */
+  importAssertions: ImportAssertions;
+  /**
+   *  An object whose key-value pairs represent the assertions for the module to import
+   */
+  importAttributes: ImportAttributes;
+  /**
+   * The module importing this one, or undefined if this is the Node.js entry point
+   */
+  parentURL: string | undefined;
 }
 
 interface ResolveFnOutput {
-    /**
-     * A hint to the load hook (it might be ignored)
-     */
-    format?: CustomizedModuleFormat | null | undefined;
-    /**
-     * @deprecated Use `importAttributes` instead
-     */
-    importAssertions?: ImportAssertions | undefined;
-    /**
-     * The import attributes to use when caching the module (optional; if excluded the input will be used)
-     */
-    importAttributes?: ImportAttributes | undefined;
-    /**
-     * A signal that this hook intends to terminate the chain of `resolve` hooks.
-     * @default false
-     */
-    shortCircuit?: boolean | undefined;
-    /**
-     * The absolute URL to which this input resolves
-     */
-    url: string;
+  /**
+   * A hint to the load hook (it might be ignored)
+   */
+  format?: CustomizedModuleFormat | null | undefined;
+  /**
+   * @deprecated Use `importAttributes` instead
+   */
+  importAssertions?: ImportAssertions | undefined;
+  /**
+   * The import attributes to use when caching the module (optional; if excluded the input will be used)
+   */
+  importAttributes?: ImportAttributes | undefined;
+  /**
+   * A signal that this hook intends to terminate the chain of `resolve` hooks.
+   * @default false
+   */
+  shortCircuit?: boolean | undefined;
+  /**
+   * The absolute URL to which this input resolves
+   */
+  url: string;
 }
 
 interface LoadHookContext {
