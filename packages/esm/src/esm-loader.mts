@@ -89,7 +89,7 @@ interface LoadFnOutput {
    */
   source?: ModuleSource;
 }
-// end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65490
+// end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/module.d.ts
 
 type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
 type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput | Promise<LoadFnOutput>;
@@ -114,8 +114,6 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   // 1: Any files explicitly provided by the user are executed.
   // 2: node_modules directories are skipped unless explicitly provided by the user.
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
-  // console.log(`######### resolve ${specifier}`);
-  // console.log(context);
   const isEntryPoint = (context.parentURL === undefined);
   if (!isEntryPoint) {
     // modules that are imported by other modules are not transpiled
@@ -144,7 +142,6 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     shortCircuit: true,
     url
   };
-  // console.log(`######### resolve ${specifier} => format:${resolved.format}, url:${resolved.url}`);
   return resolved;
 }
 
@@ -157,10 +154,9 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  // console.log(`######### load ${url}`);
-  // console.log(context);
   const { format: resolvedFormat } = context;
   if (resolvedFormat !== 'power-assert') {
+    // If the format is not 'power-assert', the default `load` hook should be used
     return nextLoad(url);
   }
   const realFormat = 'module';
@@ -168,17 +164,14 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
-  // console.log(`######### incomingCode: ${incomingCode}`);
   const transpiled = await transpileWithInlineSourceMap(incomingCode, { file: url });
-  // console.log(`######### outgoingCode: ${transpiled.code}`);
-  // console.log(transpiled.code);
   return {
     format: realFormat,
     source: transpiled.code
   };
 }
 
-// start borrowing from https://nodejs.org/api/esm.html#transpiler-loader
+// start borrowing from https://nodejs.org/api/module.html#transpilation
 async function getPackageType (url: string): Promise<string | false> {
   // `url` is only a file path during the first iteration when passed the
   // resolved url from the load() hook
@@ -201,10 +194,10 @@ async function getPackageType (url: string): Promise<string | false> {
     .catch((err) => {
       if (err?.code !== 'ENOENT') console.error(err);
     });
-  // Ff package.json existed and contained a `type` field with a value, voila
+  // If package.json existed and contained a `type` field with a value, voilà
   if (type) return type;
   // Otherwise, (if not at the root) continue checking the next directory up
   // If at the root, stop and return false
   return dir.length > 1 && getPackageType(resolvePath(dir, '..'));
 }
-// end borrowing from https://nodejs.org/api/esm.html#transpiler-loader
+// end borrowing from https://nodejs.org/api/module.html#transpilation
