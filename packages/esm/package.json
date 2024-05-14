@@ -47,10 +47,10 @@
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
     "test": "node --enable-source-maps --import @power-assert/esm --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'",
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --import @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run power:example",
-    "power": "node --enable-source-maps --no-warnings --import @power-assert/esm --test --",
+    "power": "node --enable-source-maps --import @power-assert/esm --test --",
     "power:example": "npm run power examples/bowling.test.mjs",
+    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --import @power-assert/esm --test --test-reporter=spec --",
     "ts-node:power": "npm run test:ts --import @power-assert/esm --",
     "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --import @power-assert/esm examples/spike/spike_test.mts",
     "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
