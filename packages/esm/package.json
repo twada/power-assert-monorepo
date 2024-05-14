@@ -46,7 +46,7 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
-    "test": "node --enable-source-maps --no-warnings --import @power-assert/esm --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7' || echo 'FAIL' && node --enable-source-maps --no-warnings --import @power-assert/esm --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7' || echo 'FAIL'",
+    "test": "node --enable-source-maps --import @power-assert/esm --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'",
     "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --import @power-assert/esm --test --test-reporter=spec --",
     "example": "npm run power:example",
     "power": "node --enable-source-maps --no-warnings --import @power-assert/esm --test --",
