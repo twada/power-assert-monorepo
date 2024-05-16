@@ -4,7 +4,7 @@
     { "path": "packages/transpiler-core" },
     { "path": "packages/transpiler" },
     { "path": "packages/runtime" },
-    { "path": "packages/esm" },
+    { "path": "packages/node" },
     { "path": "packages/esbuild-plugin-power-assert" },
     { "path": "packages/rollup-plugin-power-assert" },
     { "path": "packages/integration-tests" }

@@ -39,7 +39,7 @@
     "packages/transpiler",
     "packages/transpiler-core",
     "packages/runtime",
-    "packages/esm",
+    "packages/node",
     "packages/integration-tests",
     "packages/esbuild-plugin-power-assert",
     "packages/rollup-plugin-power-assert",

@@ -1,4 +1,4 @@
-@power-assert/esm
+@power-assert/node
 ================================
 
 Node.js custom hook for power-assert.
@@ -8,7 +8,7 @@ INSTALL
 ---------------------------------------
 
 ```
-$ npm install --save-dev @power-assert/esm
+$ npm install --save-dev @power-assert/node
 ```
 
 
@@ -28,16 +28,16 @@ test('example', () => {
 });
 ```
 
-use `@power-assert/esm` with `--import` option.
+use `@power-assert/node` with `--import` option.
 
 ```
-node --enable-source-maps --no-warnings --import @power-assert/esm --test test.mjs
+node --enable-source-maps --import @power-assert/node --test test.mjs
 ```
 
 Then you will see the power-assert output.
 
 ```sh
-> node --enable-source-maps --no-warnings --import @power-assert/esm --test test.mjs
+> node --enable-source-maps --import @power-assert/node --test test.mjs
 
 ✖ example (8.599667ms)
   AssertionError [ERR_ASSERTION]:
@@ -62,4 +62,3 @@ Then you will see the power-assert output.
     operator: '==='
   }
 ```
-
