@@ -1,7 +1,7 @@
 @power-assert/esm
 ================================
 
-ESM loader for power-assert.
+Node.js custom hook for power-assert.
 
 
 INSTALL
@@ -28,16 +28,16 @@ test('example', () => {
 });
 ```
 
-use `@power-assert/esm` with `--loader` option.
+use `@power-assert/esm` with `--import` option.
 
 ```
-node --enable-source-maps --no-warnings --loader @power-assert/esm --test test.mjs
+node --enable-source-maps --no-warnings --import @power-assert/esm --test test.mjs
 ```
 
 Then you will see the power-assert output.
 
 ```sh
-> node --enable-source-maps --no-warnings --loader @power-assert/esm --test test.mjs
+> node --enable-source-maps --no-warnings --import @power-assert/esm --test test.mjs
 
 ✖ example (8.599667ms)
   AssertionError [ERR_ASSERTION]:

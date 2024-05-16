@@ -1,7 +1,7 @@
 {
   "name": "@power-assert/esm",
   "version": "0.1.0",
-  "description": "power-assert esm loader",
+  "description": "Node.js custom hook for power-assert",
   "author": {
     "name": "Takuto WADA",
     "email": "takuto.wada@gmail.com",
@@ -9,12 +9,12 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "dist/esm-loader.mjs",
+  "main": "dist/register.mjs",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/esm-loader.d.mts",
-        "default": "./dist/esm-loader.mjs"
+        "types": "./dist/register.d.mts",
+        "default": "./dist/register.mjs"
       }
     },
     "./package.json": "./package.json"
@@ -22,6 +22,7 @@
   "files": [
     "src",
     "dist",
+    "!**/__tests__",
     "README.md",
     "package.json"
   ],
@@ -29,7 +30,11 @@
     "access": "public"
   },
   "keywords": [
-    "power-assert"
+    "power-assert",
+    "assert",
+    "assertion",
+    "test",
+    "testing"
   ],
   "dependencies": {
     "@power-assert/transpiler": "^0.3.0"
@@ -41,13 +46,13 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --loader @power-assert/esm --test --test-reporter=spec --",
+    "test": "node --enable-source-maps --import @power-assert/esm --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'",
     "example": "npm run power:example",
-    "power": "node --enable-source-maps --no-warnings --loader @power-assert/esm --test --",
-    "power:example": "npm run power examples/bowling_test.mjs",
-    "sourcemap": "npm run power:example | grep 'examples/bowling_test.mjs:297:7' || echo 'FAIL'",
-    "ts-node:power": "npm run test:ts --loader @power-assert/esm --",
-    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --loader @power-assert/esm examples/spike/spike_test.mts",
+    "power": "node --enable-source-maps --import @power-assert/esm --test --",
+    "power:example": "npm run power examples/bowling.test.mjs",
+    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/esm --import @power-assert/esm --test --test-reporter=spec --",
+    "ts-node:power": "npm run test:ts --import @power-assert/esm --",
+    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --import @power-assert/esm examples/spike/spike_test.mts",
     "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
   }
 }
