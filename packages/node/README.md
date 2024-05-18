@@ -15,50 +15,97 @@ $ npm install --save-dev @power-assert/node
 EXAMPLE
 ---------------------------------------
 
-For given `test.mjs` below,
+For given `demo.test.mjs` below,
 
 ```javascript
-import { test } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
-test('example', () => {
-  const truthy = 1;
-  const falsy = 0;
-  assert(truthy === falsy);
+describe('power-assert demo', () => {
+  it('Array#indexOf', () => {
+    const ary = [0,1,2];
+    const zero = 0;
+    const two = 2;
+    assert(ary.indexOf(zero) === two);
+  });
+
+  it('Destructuring and TemplateLiteral', () => {
+    let [alice, bob] = [ { name: 'alice' }, { name: 'bob' } ];
+    assert(`${alice.name} and ${bob.name}` === `bob and alice`);
+  });
 });
 ```
 
 use `@power-assert/node` with `--import` option.
 
 ```
-node --enable-source-maps --import @power-assert/node --test test.mjs
+node --enable-source-maps --import @power-assert/node --test demo.test.mjs
 ```
 
 Then you will see the power-assert output.
 
 ```sh
-> node --enable-source-maps --import @power-assert/node --test test.mjs
+> node --enable-source-maps --import @power-assert/node --test demo.test.mjs
 
-✖ example (8.599667ms)
-  AssertionError [ERR_ASSERTION]:
+▶ power-assert demo
+  ✖ Array#indexOf (8.774208ms)
+    AssertionError [ERR_ASSERTION]:
 
-  assert(truthy === falsy)
-         |      |   |
-         |      |   0
-         |      false
-         1
+    assert(ary.indexOf(zero) === two)
+           |          ||     |   |
+           |          ||     |   2
+           |          ||     false
+           |          |0
+           |          0
+           [0,1,2]
 
-  1 === 0
+    0 === 2
 
-      at TestContext.<anonymous> (/path/to/project/test.mjs:7:3)
-      at Test.runInAsyncScope (node:async_hooks:206:9)
-      at Test.run (node:internal/test_runner/test:631:25)
-      at Test.start (node:internal/test_runner/test:542:17)
-      at startSubtest (node:internal/test_runner/harness:216:17) {
-    generatedMessage: false,
-    code: 'ERR_ASSERTION',
-    actual: 1,
-    expected: 0,
-    operator: '==='
-  }
+        at TestContext.<anonymous> (/path/to/demo.test.mjs:9:5)
+        at Test.runInAsyncScope (node:async_hooks:206:9)
+        at Test.run (node:internal/test_runner/test:824:25)
+        at Test.start (node:internal/test_runner/test:721:17)
+        at node:internal/test_runner/test:1181:71
+        at node:internal/per_context/primordials:488:82
+        at new Promise (<anonymous>)
+        at new SafePromise (node:internal/per_context/primordials:456:29)
+        at node:internal/per_context/primordials:488:9
+        at Array.map (<anonymous>) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: 0,
+      expected: 2,
+      operator: '==='
+    }
+
+  ✖ Destructuring and TemplateLiteral (1.033292ms)
+    AssertionError [ERR_ASSERTION]:
+
+    assert(`${alice.name} and ${bob.name}` === `bob and alice`)
+           |  |     |           |   |      |   |
+           |  |     |           |   |      |   "bob and alice"
+           |  |     |           |   |      false
+           |  |     |           |   "bob"
+           |  |     |           Object{name:"bob"}
+           |  |     "alice"
+           |  Object{name:"alice"}
+           "alice and bob"
+
+    "alice and bob" === "bob and alice"
+
+        at TestContext.<anonymous> (/path/to/demo.test.mjs:14:5)
+        at Test.runInAsyncScope (node:async_hooks:206:9)
+        at Test.run (node:internal/test_runner/test:824:25)
+        at Suite.processPendingSubtests (node:internal/test_runner/test:533:18)
+        at Test.postRun (node:internal/test_runner/test:923:19)
+        at Test.run (node:internal/test_runner/test:866:12)
+        at async Promise.all (index 0)
+        at async Suite.run (node:internal/test_runner/test:1183:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:533:7) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: 'alice and bob',
+      expected: 'bob and alice',
+      operator: '==='
+    }
 ```

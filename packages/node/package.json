@@ -54,6 +54,7 @@
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
     "test": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'",
+    "demo": "node --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
     "example": "npm run power:example",
     "power": "node --enable-source-maps --import @power-assert/node --test --",
     "power:example": "npm run power examples/bowling.test.mjs",
