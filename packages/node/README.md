@@ -1,7 +1,25 @@
 @power-assert/node
 ================================
 
-Node.js custom hook for power-assert.
+power-assert custom hook for Node Test Runner: Provides descriptive assertion messages through standard [assert](https://nodejs.org/api/assert.html) interface. No API is the best API.
+
+[![power-assert][power-assert-banner]][power-assert-url]
+
+[![License][license-image]][license-url]
+
+```
+    assert(`${alice.name} and ${bob.name}` === `bob and alice`)
+           |  |     |           |   |      |   |
+           |  |     |           |   |      |   "bob and alice"
+           |  |     |           |   |      false
+           |  |     |           |   "bob"
+           |  |     |           Object{name:"bob"}
+           |  |     "alice"
+           |  Object{name:"alice"}
+           "alice and bob"
+
+    "alice and bob" === "bob and alice"
+```
 
 
 INSTALL
@@ -109,3 +127,18 @@ Then you will see the power-assert output.
       operator: '==='
     }
 ```
+
+AUTHOR
+---------------------------------------
+* [Takuto Wada](https://github.com/twada)
+
+
+LICENSE
+---------------------------------------
+Licensed under the [MIT](https://twada.mit-license.org/) license.
+
+[power-assert-url]: https://github.com/power-assert-js
+[power-assert-banner]: https://raw.githubusercontent.com/power-assert-js/power-assert-js-logo/master/banner/banner-official-fullcolor.png
+
+[license-url]: https://twada.mit-license.org/
+[license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg
