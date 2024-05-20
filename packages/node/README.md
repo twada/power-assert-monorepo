@@ -6,6 +6,7 @@ power-assert custom hook for Node Test Runner: Provides descriptive assertion me
 [![power-assert][power-assert-banner]][power-assert-url]
 
 [![License][license-image]][license-url]
+![Supported Node Version](https://img.shields.io/node/v/%40power-assert%2Fnode)
 
 ```
     assert(`${alice.name} and ${bob.name}` === `bob and alice`)
