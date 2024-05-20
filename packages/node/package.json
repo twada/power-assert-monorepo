@@ -1,7 +1,7 @@
 {
   "name": "@power-assert/node",
   "version": "0.1.0",
-  "description": "Node.js custom hook for power-assert",
+  "description": "power-assert custom hook for Node Test Runner",
   "author": {
     "name": "Takuto WADA",
     "email": "takuto.wada@gmail.com",
@@ -43,6 +43,7 @@
     "power-assert",
     "assert",
     "assertion",
+    "node:test",
     "test",
     "testing"
   ],
