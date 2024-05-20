@@ -1,7 +1,7 @@
 @power-assert/node
 ================================
 
-power-assert custom hook for Node Test Runner: Provides descriptive assertion messages through standard [assert](https://nodejs.org/api/assert.html) interface. No API is the best API.
+power-assert custom hook for Node Test Runner: Provides descriptive assertion messages through [Node Test Runner](https://nodejs.org/api/test.html) and [node:assert](https://nodejs.org/api/assert.html). No API is the best API.
 
 [![power-assert][power-assert-banner]][power-assert-url]
 
@@ -62,7 +62,7 @@ node --enable-source-maps --import @power-assert/node --test demo.test.mjs
 
 Then you will see the power-assert output.
 
-```sh
+```
 > node --enable-source-maps --import @power-assert/node --test demo.test.mjs
 
 ▶ power-assert demo
