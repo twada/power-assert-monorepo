@@ -33,6 +33,7 @@
     "src",
     "dist",
     "!**/__tests__",
+    "CHANGELOG.md",
     "README.md",
     "package.json"
   ],
