@@ -36,8 +36,8 @@
     "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'"
   },
   "workspaces": [
-    "packages/transpiler",
     "packages/transpiler-core",
+    "packages/transpiler",
     "packages/runtime",
     "packages/node",
     "packages/esbuild-plugin-power-assert",
