@@ -639,18 +639,7 @@ impl TransformVisitor {
                 powered_ident_name: powered_ident_name.clone()
             });
 
-            // detect left and right of binaryexpression here
-            let is_binexp_right_under_the_arg = match arg {
-                ExprOrSpread { spread: None, expr } => {
-                    match expr.as_ref() {
-                        Expr::Bin(BinExpr{ op, .. }) => {
-                            matches!(op.as_str(), "==" | "===" | "!=" | "!==")
-                        },
-                        _ => false
-                    }
-                },
-                _ => false
-            };
+            let is_binexp_right_under_the_arg = self.assertion_metadata.is_some() && self.assertion_metadata.as_ref().unwrap().binary_op.is_some();
 
             // enter argument
             arg.visit_mut_with(self);
