@@ -259,7 +259,8 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 let path_in_sandbox = resolve_path_in_sandbox(&filename, &cwd);
                 // println!("path_in_sandbox: {:?}", path_in_sandbox);
                 // read all file contens into string
-                let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
+                let error_message = format!("failed to read file: {}", path_in_sandbox);
+                let code = std::fs::read_to_string(path_in_sandbox).expect(&error_message);
                 Some(Arc::new(code))
             }
         };
