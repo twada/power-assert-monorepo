@@ -208,10 +208,11 @@ impl Default for TransformVisitor {
 fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
     if filename.starts_with("file://") {
         let abs_path_like = filename.replace("file://", "");
-        if abs_path_like.starts_with(cwd_str) {
-            let relative_path_from_cwd = abs_path_like.replace(cwd_str, "");
-            return format!("/cwd{}", relative_path_from_cwd);
-        }
+        return resolve_path_in_sandbox(&abs_path_like, cwd_str);
+    }
+    if filename.starts_with(cwd_str) {
+        let relative_path_from_cwd = filename.replace(cwd_str, "");
+        return format!("/cwd{}", relative_path_from_cwd);
     }
     format!("/cwd/{}", filename)
 }
