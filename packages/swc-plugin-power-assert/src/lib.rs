@@ -987,6 +987,13 @@ mod tests {
     }
 
     #[test]
+    fn test_absolute_path() {
+        let input = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/truth.test.mts".to_string();
+        let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
+        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/truth.test.mts");
+    }
+
+    #[test]
     fn test_absolute_url() {
         let input = "file:///Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/truth.test.mts".to_string();
         let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
