@@ -1,3 +1,10 @@
+## 0.3.0
+
+#### Bug Fixes
+
+  * skip modifying argument if SpreadElement appears immediately beneath assert ([0d69f3b8](https://github.com/twada/power-assert-monorepo/commit/0d69f3b8373d836ad1f7e98b25e89349b18132a7))
+
+
 ## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.2.0)
 
 #### Bug Fixes
