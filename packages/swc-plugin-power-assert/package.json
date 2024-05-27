@@ -39,8 +39,8 @@
   "scripts": {
     "version": "cargo-set-version set-version $(cat ./package.json | jq -r '.version') && git add ./Cargo.toml && git add ../../Cargo.lock",
     "example": "npm run example:cli",
-    "example:cli": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --test --enable-source-maps ./tmp/bowling.test.mjs",
-    "example:loader": "SWCRC=true node --enable-source-maps --no-warnings --loader @swc-node/register/esm --test ./examples/truth.test.mts",
+    "example:cli": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --enable-source-maps --test ./tmp/bowling.test.mjs",
+    "example:import": "SWCRC=true node --enable-source-maps --import @swc-node/register/esm-register --test ./examples/bowling.test.mjs",
     "test": "cargo test",
     "build": "npm run build:release && npm run build:cp",
     "build:release": "cargo build-wasi --release",

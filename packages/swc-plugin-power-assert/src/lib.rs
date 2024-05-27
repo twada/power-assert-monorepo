@@ -208,10 +208,11 @@ impl Default for TransformVisitor {
 fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
     if filename.starts_with("file://") {
         let abs_path_like = filename.replace("file://", "");
-        if abs_path_like.starts_with(cwd_str) {
-            let relative_path_from_cwd = abs_path_like.replace(cwd_str, "");
-            return format!("/cwd{}", relative_path_from_cwd);
-        }
+        return resolve_path_in_sandbox(&abs_path_like, cwd_str);
+    }
+    if filename.starts_with(cwd_str) {
+        let relative_path_from_cwd = filename.replace(cwd_str, "");
+        return format!("/cwd{}", relative_path_from_cwd);
     }
     format!("/cwd/{}", filename)
 }
@@ -259,7 +260,8 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 let path_in_sandbox = resolve_path_in_sandbox(&filename, &cwd);
                 // println!("path_in_sandbox: {:?}", path_in_sandbox);
                 // read all file contens into string
-                let code = std::fs::read_to_string(path_in_sandbox).expect("failed to read file");
+                let error_message = format!("failed to read file: {}", path_in_sandbox);
+                let code = std::fs::read_to_string(path_in_sandbox).expect(&error_message);
                 Some(Arc::new(code))
             }
         };
@@ -979,17 +981,24 @@ mod tests {
     }
 
     #[test]
-    fn test_relative_path() {
+    fn test_relative_path_to_sandbox_path() {
         let input = "examples/bowling.test.mjs".to_string();
         let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
         assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/bowling.test.mjs");
     }
 
     #[test]
-    fn test_absolute_url() {
-        let input = "file:///Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/truth.test.mts".to_string();
+    fn test_absolute_path_to_sandbox_path() {
+        let input = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/bowling.test.mjs".to_string();
         let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
-        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/truth.test.mts");
+        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/bowling.test.mjs");
+    }
+
+    #[test]
+    fn test_file_url_to_sandbox_path() {
+        let input = "file:///Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert/examples/bowling.test.mjs".to_string();
+        let cwd = "/Users/takuto/src/github.com/twada/power-assert-monorepo/packages/swc-plugin-power-assert".to_string();
+        assert_eq!(super::resolve_path_in_sandbox(&input, &cwd), "/cwd/examples/bowling.test.mjs");
     }
 
     #[test]
