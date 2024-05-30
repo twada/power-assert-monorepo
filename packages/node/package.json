@@ -55,17 +55,12 @@
     "@power-assert/runtime": "^0.2.0"
   },
   "scripts": {
-    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
-    "test": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'",
+    "example:ts": "node --enable-source-maps --import tsimp/import --import @power-assert/node --test examples/bowling.test.mts",
+    "example": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs",
     "demo": "node --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
-    "example": "npm run power:example",
-    "power": "node --enable-source-maps --import @power-assert/node --test --",
-    "power:example": "npm run power examples/bowling.test.mjs",
-    "spike": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --no-warnings --enable-source-maps --loader ts-node/node --import @power-assert/node --test --test-reporter=spec --",
-    "ts-node:power": "npm run test:ts --import @power-assert/node --",
-    "ts-node:power:example": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --import @power-assert/node examples/spike/spike_test.mts",
-    "test:ts": "TS_NODE_PROJECT='./tsconfig.tsnode.json' node --test --enable-source-maps --no-warnings --loader ts-node/esm --"
+    "test": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'"
   }
 }

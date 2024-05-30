@@ -129,6 +129,17 @@ Then you will see the power-assert output.
     }
 ```
 
+
+TypeScript Support
+---------------------------------------
+
+For TypeScript, just importing [tsimp](https://github.com/tapjs/tsimp)'s `tsimp/import` hook __BEFORE__ `@power-assert/node` hook works fine.
+
+```
+node --enable-source-maps --import tsimp/import --import @power-assert/node --test some.test.ts
+```
+
+
 AUTHOR
 ---------------------------------------
 * [Takuto Wada](https://github.com/twada)
