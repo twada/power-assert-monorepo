@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.6.0"
   },
   "type": "module",
   "main": "dist/register.mjs",
