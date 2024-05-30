@@ -3,6 +3,11 @@
 #### Bug Fixes
 
   * skip modifying argument if SpreadElement appears immediately beneath assert ([0d69f3b8](https://github.com/twada/power-assert-monorepo/commit/0d69f3b8373d836ad1f7e98b25e89349b18132a7))
+  * [convert absolute path to sandbox path](https://github.com/twada/power-assert-monorepo/pull/10)
+
+#### Features
+
+  * update swc_core to 0.92 ([057a7ad6](https://github.com/twada/power-assert-monorepo/commit/057a7ad6791b56216641fc0a9bfcc7d98b1a8786))
 
 
 ## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.2.0)
