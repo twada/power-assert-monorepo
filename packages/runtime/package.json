@@ -35,9 +35,9 @@
     "package.json"
   ],
   "scripts": {
-    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
-    "test": "node --no-warnings --test --test-reporter=spec '**/*test.mjs'"
+    "test": "npm run build:clean && node --enable-source-maps --import=tsimp/import --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
   }
 }
