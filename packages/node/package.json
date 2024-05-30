@@ -58,7 +58,7 @@
     "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint:src -- --fix",
-    "tsimp": "node --enable-source-maps --import tsimp/import --import @power-assert/node --test examples/spike/spike_test.mts",
+    "example:ts": "node --enable-source-maps --import tsimp/import --import @power-assert/node --test examples/bowling.test.mts",
     "example": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs",
     "demo": "node --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
     "test": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:297:7'"
