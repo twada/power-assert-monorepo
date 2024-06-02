@@ -1,5 +1,5 @@
-import { describe, it, beforeEach } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 
 const isStrike = (rolls, index) => (rolls[index] === 10);
 const isSpare = (rolls, index) => (rolls[index] + rolls[index + 1]) === 10;
@@ -57,7 +57,7 @@ function roll (frames, pins) {
     if (currentFrame.length == 2) {
       const frameScore = currentFrame.reduce((acc, pins) => acc + pins, 0);
       if (frameScore < 10) {
-        throw new Error('最終フレームが10点に満たない場合は3投目は投げられません');
+        throw new Error('Cannot throw 3rd ball if the final frame is less than 10 points');
       } else {
         currentFrame.push(pins);
       }
@@ -107,7 +107,7 @@ describe('Bowling Game', () => {
         [10], // strike
         [2, 8, 6]
       ];
-      assert(scoreOf(rollsOf(frames)) === 133);
+      assert(scoreOf(rollsOf(frames)) === 132);
       // assert(scoreOf(rollsOf(frames)) === 132);
       // assert(scoreOf(rollsOf(frames))
       //        ===
@@ -145,7 +145,7 @@ describe('Bowling Game', () => {
       const frames = roll([[10],[10]], 10);
       assert.deepEqual(frames, [[10], [10], [10]]);
     });
-    it('最終フレームの1投目がストライクの状態で2投目もストライクの場合', () => {
+    it('case: in final frame, 1st roll is strike, 2nd roll is strike', () => {
       const frame10th = [
         [0, 0],
         [0, 0],
@@ -173,7 +173,7 @@ describe('Bowling Game', () => {
       const frames = roll(frame10th, 10);
       assert.deepEqual(frames, expected);
     });
-    it('最終フレームの1,2投目がストライクの状態で3投目もストライクの場合', () => {
+    it('case: in final frame, 1st, 2nd and the 3rd roll are strike', () => {
       const frame10th = [
         [0, 0],
         [0, 0],
@@ -184,7 +184,7 @@ describe('Bowling Game', () => {
         [0, 0],
         [0, 0],
         [0, 0],
-        [10, 9],
+        [10, 10],
       ];
       const expected = [
         [0, 0],
@@ -196,13 +196,12 @@ describe('Bowling Game', () => {
         [0, 0],
         [0, 0],
         [0, 0],
-        // [10, 10, 10],
-        [10, 9, 10],
+        [10, 10, 10],
       ];
       const frames = roll(frame10th, 10);
       assert.deepEqual(frames, expected);
     });
-    it('最終フレームの1,2投目でスペアの状態で3投目', () => {
+    it('case: in final frame, 1st and 2nd roll are spare, 3rd roll', () => {
       const frame10th = [
         [0, 0],
         [0, 0],
@@ -230,7 +229,7 @@ describe('Bowling Game', () => {
       const frames = roll(frame10th, 4);
       assert.deepEqual(frames, expected);
     });
-    it('最終フレームはスペアやストライクでないと3投目は投げられない(例外が出る)', () => {
+    it('final frame must be a spare or a strike to throw the 3rd ball', () => {
       const frame10th = [
         [0, 0],
         [0, 0],
@@ -293,8 +292,8 @@ describe('Bowling Game', () => {
         10, // strike
         2, 8, 6
       ];
-      // assert(scoreOf(rolls) === 133);
-      assert(scoreOf(rolls) === 123);
+      assert(scoreOf(rolls) === 133);
+      // assert(scoreOf(rolls) === 123);
     });
   });
 
