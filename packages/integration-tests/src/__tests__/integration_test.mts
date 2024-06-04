@@ -179,8 +179,8 @@ false == true
     }, `
 
 assert(inner())
-            |
-            false
+       |
+       false
 
 false == true
 `);
@@ -191,10 +191,10 @@ false == true
     }, `
 
 assert(outer()()())
-            | | |
-            | | false
-            | function@anonymous
-            function@anonymous
+       |      | |
+       |      | false
+       |      function@anonymous
+       function@anonymous
 
 false == true
 `);
@@ -207,9 +207,9 @@ false == true
     }, `
 
 assert(inner().exact())
-            |       |
-            |       false
-            Object{exact:function@exact}
+       |       |
+       |       false
+       Object{exact:function@exact}
 
 false == true
 `);
