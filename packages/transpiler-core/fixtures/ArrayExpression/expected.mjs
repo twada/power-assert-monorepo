@@ -10,7 +10,7 @@ import {_power_} from "@power-assert/runtime";
     binexp: "==="
   });
   const _parg2 = _pasrt2.recorder(0);
-  _pasrt2.run(_parg2.rec(_parg2.tap(typeof _parg2.tap([_parg2.tap([_parg2.tap(_parg2.tap(foo, 16).bar, 20), _parg2.tap(baz(_parg2.tap(moo, 29)), 28)], 15), _parg2.tap(+_parg2.tap(fourStr, 38), 36)], 14), 7, {
+  _pasrt2.run(_parg2.rec(_parg2.tap(typeof _parg2.tap([_parg2.tap([_parg2.tap(_parg2.tap(foo, 16).bar, 20), _parg2.tap(baz(_parg2.tap(moo, 29)), 25)], 15), _parg2.tap(+_parg2.tap(fourStr, 38), 36)], 14), 7, {
     hint: "left"
   }) === _parg2.tap('number', 51, {
     hint: "right"

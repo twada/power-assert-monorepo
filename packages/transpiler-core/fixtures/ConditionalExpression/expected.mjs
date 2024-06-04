@@ -13,7 +13,7 @@ import {_power_} from "@power-assert/runtime";
 {
   const _pasrt3 = _power_(assert, null, "assert(foo() ? bar.baz : +goo)");
   const _parg3 = _pasrt3.recorder(0);
-  _pasrt3.run(_parg3.rec(_parg3.tap(foo(), 10) ? _parg3.tap(_parg3.tap(bar, 15).baz, 19) : _parg3.tap(+_parg3.tap(goo, 26), 25), 13));
+  _pasrt3.run(_parg3.rec(_parg3.tap(foo(), 7) ? _parg3.tap(_parg3.tap(bar, 15).baz, 19) : _parg3.tap(+_parg3.tap(goo, 26), 25), 13));
 }
 {
   const _pasrt4 = _power_(assert.equal, assert, "assert.equal(foo ? bar : baz, falsy ? truthy : truthy ? anotherFalsy : truthy)");
