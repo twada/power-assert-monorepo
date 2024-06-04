@@ -46,7 +46,7 @@ function calculateAddressOf (currentNode: Node, offset: Position | number, code:
     case 'MemberExpression':
       return propertyAddressOf(currentNode, offset, code);
     case 'CallExpression':
-      return openingParenAddressOf(currentNode, offset, code);
+      return calculateCallExpressionAddress(currentNode, offset, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
@@ -75,6 +75,24 @@ function propertyAddressOf (memberExpression: MemberExpression, offset: Position
 
 function questionMarkAddressOf (conditionalExpression: ConditionalExpression, offset: Position | number, code: string): number {
   return searchFor('?', conditionalExpression.test, offset, code);
+}
+
+function calculateCallExpressionAddress (callExpression: CallExpression, offset: Position | number, code: string): number {
+  switch (callExpression.callee.type) {
+    case 'Identifier':
+      // for callee like `foo()`, foo's offset is used
+      return startAddressOf(callExpression.callee, offset);
+    case 'MemberExpression':
+      if (!callExpression.callee.computed) {
+        // for callee like `foo.bar()`, bar's offset is used
+        return propertyAddressOf(callExpression.callee, offset, code);
+      }
+      break;
+    default:
+      break;
+  }
+  // otherwise, offset of opening parenthesis is used
+  return openingParenAddressOf(callExpression, offset, code);
 }
 
 function openingParenAddressOf (callExpression: CallExpression, offset: Position | number, code: string): number {
