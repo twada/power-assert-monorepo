@@ -435,7 +435,27 @@ impl TransformVisitor {
                     _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
                 }
             },
-            Expr::Call(CallExpr{ callee, .. }) => self.search_pos_for("(", &callee.span(), assertion_start_pos),
+            Expr::Call(CallExpr{ callee, .. }) => {
+                match callee {
+                    Callee::Expr(callee_expr) => {
+                        match callee_expr.as_ref() {
+                            Expr::Ident(Ident { span, .. }) => {
+                                // for callee like `foo()`, foo's span is used
+                                Utf8Pos(span.span_lo().to_u32() - assertion_start_pos.to_u32())
+                            },
+                            Expr::Member(MemberExpr{ prop, .. }) => {
+                                match prop {
+                                    // for callee like `foo.bar()`, bar's span is used
+                                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                                    _ => self.search_pos_for("(", &callee.span(), assertion_start_pos)
+                                }
+                            },
+                            _ => self.search_pos_for("(", &callee.span(), assertion_start_pos)
+                        }
+                    },
+                    _ => self.search_pos_for("(", &callee.span(), assertion_start_pos)
+                }
+            },
             // estree's LogicalExpression is mapped to BinaryExpression in swc
             Expr::Bin(BinExpr{ left, op, ..}) => self.search_pos_for(op.as_str(), &left.span(), assertion_start_pos),
             Expr::Assign(AssignExpr{ left, op, .. }) => self.search_pos_for(op.as_str(), &left.span(), assertion_start_pos),
