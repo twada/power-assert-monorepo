@@ -71,11 +71,11 @@ Then you will see the power-assert output.
     AssertionError [ERR_ASSERTION]:
 
     assert(ary.indexOf(zero) === two)
-           |          ||     |   |
-           |          ||     |   2
-           |          ||     false
-           |          |0
-           |          0
+           |   |       |     |   |
+           |   |       |     |   2
+           |   |       |     false
+           |   |       0
+           |   0
            [0,1,2]
 
     0 === 2
