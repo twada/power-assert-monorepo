@@ -213,6 +213,39 @@ assert(inner().exact())
 
 false == true
 `);
+
+    ptest('method callee is non-computed MemberExpression', (transpiledCode) => {
+      const obj = {
+        method () { return false; }
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(obj.method())
+       |   |
+       |   false
+       Object{method:function@method}
+
+false == true
+`);
+
+    ptest('method callee is non-computed MemberExpression that returns function then invoke immediately', (transpiledCode) => {
+      const obj = {
+        method () { return () => () => false; }
+      };
+      eval(transpiledCode);
+    }, `
+
+assert(obj.method()()())
+       |   |       | |
+       |   |       | false
+       |   |       function@anonymous
+       |   function@anonymous
+       Object{method:function@method}
+
+false == true
+`);
+
     ptest('method callee is computed MemberExpression', (transpiledCode) => {
       const methodName = 'method';
       const obj = {
