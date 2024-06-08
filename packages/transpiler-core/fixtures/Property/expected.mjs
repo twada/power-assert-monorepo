@@ -12,14 +12,14 @@ import {_power_} from "@power-assert/runtime";
   const _pasrt2 = _power_(assert, null, "assert({[ 'prop_' + foo() ]: 42})");
   const _parg3 = _pasrt2.recorder(0);
   _pasrt2.run(_parg3.rec({
-    [_parg3.tap(_parg3.tap('prop_', 10) + _parg3.tap(foo(), 23), 18)]: _parg3.tap(42, 29)
+    [_parg3.tap(_parg3.tap('prop_', 10) + _parg3.tap(foo(), 20), 18)]: _parg3.tap(42, 29)
   }, 7));
 }
 {
   const _pasrt3 = _power_(assert, null, "assert({[`prop_${generate(seed)}`]: foo})");
   const _parg4 = _pasrt3.recorder(0);
   _pasrt3.run(_parg4.rec({
-    [_parg4.tap(`prop_${_parg4.tap(generate(_parg4.tap(seed, 26)), 25)}`, 9)]: _parg4.tap(foo, 36)
+    [_parg4.tap(`prop_${_parg4.tap(generate(_parg4.tap(seed, 26)), 17)}`, 9)]: _parg4.tap(foo, 36)
   }, 7));
 }
 {

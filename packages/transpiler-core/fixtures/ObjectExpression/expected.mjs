@@ -16,7 +16,7 @@ import {_power_} from "@power-assert/runtime";
     name: _parg2.tap(nameOf(_parg2.tap({
       firstName: _parg2.tap(first, 50),
       lastName: _parg2.tap(last, 67)
-    }, 38)), 37)
+    }, 38)), 31)
   }, 9), 7));
 }
 {

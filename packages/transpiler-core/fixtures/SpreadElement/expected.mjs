@@ -3,7 +3,7 @@ import {_power_} from "@power-assert/runtime";
 {
   const _pasrt1 = _power_(assert, null, "assert(hello(...names))");
   const _parg1 = _pasrt1.recorder(0);
-  _pasrt1.run(_parg1.rec(hello(..._parg1.tap(names, 16)), 12));
+  _pasrt1.run(_parg1.rec(hello(..._parg1.tap(names, 16)), 7));
 }
 {
   const _pasrt2 = _power_(assert, null, "assert([head, ...tail].length)");
@@ -13,7 +13,7 @@ import {_power_} from "@power-assert/runtime";
 {
   const _pasrt3 = _power_(assert, null, "assert(f(head, ...iter(), ...[foo, bar]))");
   const _parg3 = _pasrt3.recorder(0);
-  _pasrt3.run(_parg3.rec(f(_parg3.tap(head, 9), ..._parg3.tap(iter(), 22), ..._parg3.tap([_parg3.tap(foo, 30), _parg3.tap(bar, 35)], 29)), 8));
+  _pasrt3.run(_parg3.rec(f(_parg3.tap(head, 9), ..._parg3.tap(iter(), 18), ..._parg3.tap([_parg3.tap(foo, 30), _parg3.tap(bar, 35)], 29)), 7));
 }
 {
   assert(...iter());

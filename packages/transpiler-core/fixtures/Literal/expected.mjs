@@ -38,7 +38,7 @@ import {_power_} from "@power-assert/runtime";
 {
   const _pasrt7 = _power_(assert, null, "assert(/^not/.exec(str))");
   const _parg12 = _pasrt7.recorder(0);
-  _pasrt7.run(_parg12.rec(_parg12.tap(/^not/, 7).exec(_parg12.tap(str, 19)), 18));
+  _pasrt7.run(_parg12.rec(_parg12.tap(/^not/, 7).exec(_parg12.tap(str, 19)), 14));
 }
 {
   const _pasrt8 = _power_(assert, null, "assert(0b111110111)");
