@@ -1,3 +1,11 @@
+## 0.4.0
+
+
+#### Features
+
+* [Adjust CallExpression address if callee is Identifier or non-computed MemberExpression](https://github.com/twada/power-assert-monorepo/pull/12)
+
+
 ## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.3.0) (2024-04-17)
 
 
