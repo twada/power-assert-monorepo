@@ -1,3 +1,10 @@
+## 0.4.0
+
+#### Features
+
+* [Adjust CallExpression address if callee is Identifier or non-computed MemberExpression](https://github.com/twada/power-assert-monorepo/pull/12)
+
+
 ## 0.3.0
 
 #### Bug Fixes
