@@ -166,7 +166,7 @@ pub struct TransformVisitor {
     argument_metadata: Option<ArgumentMetadata>,
     is_runtime_imported: bool,
     do_not_capture_immediate_child: bool,
-    code: Option<Arc<String>>
+    code: Arc<String>
 }
 
 impl Default for TransformVisitor {
@@ -183,7 +183,7 @@ impl Default for TransformVisitor {
             argument_metadata: None,
             do_not_capture_immediate_child: false,
             is_runtime_imported: false,
-            code: None
+            code: Arc::new("".into())
         };
         for module_name in [
             "node:assert",
@@ -220,7 +220,7 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
 impl From<&String> for TransformVisitor {
     fn from(code: &String) -> Self {
         TransformVisitor {
-            code: Some(Arc::new(code.into())),
+            code: Arc::new(code.into()),
             .. Default::default()
         }
     }
@@ -237,7 +237,7 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
 
         let code = match metadata.source_map.source_file.get() {
             Some(source_file) => {
-                Some(source_file.src.clone())
+                source_file.src.clone()
             },
             None => {
                 let filename = metadata
@@ -262,7 +262,7 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 // read all file contens into string
                 let error_message = format!("failed to read file: {}", path_in_sandbox);
                 let code = std::fs::read_to_string(path_in_sandbox).expect(&error_message);
-                Some(Arc::new(code))
+                Arc::new(code)
             }
         };
         TransformVisitor {
@@ -592,43 +592,34 @@ impl TransformVisitor {
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = Utf8Pos(n.span.lo.to_u32());
 
-        match self.code {
-            Some(ref code) => {
-                let start_pos_usize = (n.span.lo.to_u32() - self.span_offset - 1) as usize;
-                let end_pos_usize = (n.span.hi.to_u32() - self.span_offset - 1) as usize;
-                let assertion_code = code[start_pos_usize..end_pos_usize].to_string();
-                let utf16_len = assertion_code.encode_utf16().count();
-                let utf8_len = assertion_code.len();
-                let contains_multibyte_char = utf16_len < utf8_len;
+        let start_pos_usize = (n.span.lo.to_u32() - self.span_offset - 1) as usize;
+        let end_pos_usize = (n.span.hi.to_u32() - self.span_offset - 1) as usize;
+        let assertion_code = self.code[start_pos_usize..end_pos_usize].to_string();
+        let utf16_len = assertion_code.encode_utf16().count();
+        let utf8_len = assertion_code.len();
+        let contains_multibyte_char = utf16_len < utf8_len;
 
-                self.assertion_metadata = Some(AssertionMetadata {
-                    ident_name: powered_ident_name.clone(),
-                    callee_ident_name: prop_ident_name.clone(),
-                    receiver_ident_name: obj_ident_name.clone(),
-                    assertion_code,
-                    assertion_start_pos,
-                    contains_multibyte_char,
-                    binary_op: if n.args.len() == 1 {
-                        match n.args.first().unwrap().expr.as_ref() {
-                            Expr::Bin(BinExpr{ op, .. }) => {
-                                match op.as_str() {
-                                    "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
-                                    _ => None
-                                }
-                            },
+        self.assertion_metadata = Some(AssertionMetadata {
+            ident_name: powered_ident_name.clone(),
+            callee_ident_name: prop_ident_name.clone(),
+            receiver_ident_name: obj_ident_name.clone(),
+            assertion_code,
+            assertion_start_pos,
+            contains_multibyte_char,
+            binary_op: if n.args.len() == 1 {
+                match n.args.first().unwrap().expr.as_ref() {
+                    Expr::Bin(BinExpr{ op, .. }) => {
+                        match op.as_str() {
+                            "==" | "===" | "!=" | "!==" => Some(op.as_str().into()),
                             _ => None
                         }
-                    } else {
-                        None
-                    }
-                });
-            },
-            None => {
-                // TODO: error handling
-                panic!("code is None");
-                // return;
+                    },
+                    _ => None
+                }
+            } else {
+                None
             }
-        }
+        });
 
         // do not enter callee ident
         // n.callee.visit_mut_children_with(self);
