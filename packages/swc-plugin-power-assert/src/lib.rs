@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use serde::Deserialize;
 use rustc_hash::{
     FxHashSet,
     FxHashMap
@@ -69,21 +68,6 @@ use swc_core::plugin::metadata::{
     TransformPluginProgramMetadata,
     TransformPluginMetadataContextKind
 };
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-pub enum Config {
-    All(bool),
-    WithOptions(Options),
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Options {
-    #[serde(default)]
-    pub modules: Vec<JsWord>,
-    #[serde(default)]
-    pub variables: Vec<JsWord>,
-}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf8Pos(u32);
@@ -228,13 +212,6 @@ impl From<&String> for TransformVisitor {
 
 impl From<TransformPluginProgramMetadata> for TransformVisitor {
     fn from(metadata: TransformPluginProgramMetadata) -> Self {
-        let _config = serde_json::from_str::<Option<Config>>(
-            &metadata
-                .get_transform_plugin_config()
-                .expect("failed to get plugin config for power-assert"),
-        );
-        // println!("config: {:?}", config);
-
         let code = match metadata.source_map.source_file.get() {
             Some(source_file) => {
                 source_file.src.clone()

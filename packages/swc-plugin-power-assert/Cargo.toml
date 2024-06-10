@@ -16,8 +16,6 @@ crate-type = ["cdylib", "rlib"]
 # lto = true
 
 [dependencies]
-serde = "1"
-serde_json = "1"
 rustc-hash = "1"
 swc_core = { version = "0.92.*", features = ["ecma_plugin_transform"] }
 
