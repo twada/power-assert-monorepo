@@ -102,11 +102,11 @@ Run `vitest run`. You will see the power-assert output appears.
 AssertionError:
 
 assert(ary.indexOf(zero) === two)
-       |          ||     |   |
-       |          ||     |   2
-       |          ||     false
-       |          |0
-       |          0
+       |   |       |     |   |
+       |   |       |     |   2
+       |   |       |     false
+       |   |       0
+       |   0
        [0,1,2]
 
 0 === 2
