@@ -1,9 +1,12 @@
 ## 0.4.0
 
+#### Bug Fixes
+
+* make code content not optional ([f5a354b0](https://github.com/twada/power-assert-monorepo/commit/f5a354b017f993486c387dcd5bbf3f331f2b1d13))
+
 #### Features
 
 * [Adjust CallExpression address if callee is Identifier or non-computed MemberExpression](https://github.com/twada/power-assert-monorepo/pull/12)
-* make code content not optional ([f5a354b0](https://github.com/twada/power-assert-monorepo/commit/f5a354b017f993486c387dcd5bbf3f331f2b1d13))
 
 
 ## 0.3.0
