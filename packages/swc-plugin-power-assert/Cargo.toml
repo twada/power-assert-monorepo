@@ -10,7 +10,8 @@ SWC plugin for power-assert
 """
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
+# crate-type = ["cdylib", "rlib"]
 
 # [profile.release]
 # lto = true
