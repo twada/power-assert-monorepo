@@ -7,6 +7,7 @@
 #### Features
 
 * [Adjust CallExpression address if callee is Identifier or non-computed MemberExpression](https://github.com/twada/power-assert-monorepo/pull/12)
+* update swc_core to 0.94 ([f465b768](https://github.com/twada/power-assert-monorepo/commit/f465b7688a58c78a0c8f8318a01938507c291c00))
 
 
 ## 0.3.0
