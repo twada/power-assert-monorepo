@@ -974,6 +974,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f98d2aa92eebf49b69786be48e4477826b256916e84a57ff2a4f21923b48eb4c"
 
 [[package]]
+name = "ryu-js"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad97d4ce1560a5e27cec89519dc8300d1aa6035b099821261c651486a19e44d5"
+
+[[package]]
 name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1253,9 +1259,9 @@ dependencies = [
 
 [[package]]
 name = "swc_core"
-version = "0.92.5"
+version = "0.94.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e317f6f8b15019358d1e48631c0e6d098d9a3d00d666ea99650201661abea855"
+checksum = "505e5c0bfc03c87c5a6a048f55b3436f0e36a21c5b0aeff7a2a9f3b131d275c6"
 dependencies = [
  "once_cell",
  "swc_atoms",
@@ -1272,9 +1278,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_ast"
-version = "0.113.4"
+version = "0.114.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc1690cc0c9ab60b44ac0225ba1e231ac532f7ba1d754df761c6ee607561afae"
+checksum = "2b6906b332207b86bf47f0158607a1c85b48213fa41fdf1b3088023c93496ad3"
 dependencies = [
  "bitflags 2.5.0",
  "bytecheck",
@@ -1291,9 +1297,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_codegen"
-version = "0.149.1"
+version = "0.150.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fef147127a2926ca26171c7afcbf028ff86dc543ced87d316713f25620a15b9"
+checksum = "9352400c4a7a90ee74bff86536d1db54cd2e8fab15c1fd760a98f90f37252155"
 dependencies = [
  "memchr",
  "num-bigint",
@@ -1322,9 +1328,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_parser"
-version = "0.144.1"
+version = "0.145.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0499e69683ae5d67a20ff0279b94bc90f29df7922a46331b54d5dd367bf89570"
+checksum = "0d9b728e67633a72c183bdd500c9df410e13f8c6cab0c71fed392129e15fe5e9"
 dependencies = [
  "either",
  "new_debug_unreachable",
@@ -1357,9 +1363,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_transforms_base"
-version = "0.138.2"
+version = "0.139.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eddb95c2bdad1c9c29edf35712e1e0f9b9ddc1cdb5ba2d582fd93468cb075a03"
+checksum = "9f493dfa18f4d7480f32b85137f9751ca6930556b5204943036331c028f1bf1a"
 dependencies = [
  "better_scoped_tls",
  "bitflags 2.5.0",
@@ -1380,9 +1386,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_transforms_testing"
-version = "0.141.1"
+version = "0.142.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "686445efd086ca6dd52874b4d1935663914e2fb76514c0ad7b0105cec7859451"
+checksum = "0662f6e612a24230598f8e556bb62724b4776dc7394411eec41ad7b2930c27f5"
 dependencies = [
  "ansi_term",
  "anyhow",
@@ -1406,14 +1412,15 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_utils"
-version = "0.128.1"
+version = "0.129.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe5242670bc74e0a0b64b9d4912b37be36944517ce0881314162aeb4381272c3"
+checksum = "9192878217511f6b96ac3cd72e6ff3265cb8a72f311bb40d66a791a1ad08ac74"
 dependencies = [
  "indexmap",
  "num_cpus",
  "once_cell",
  "rustc-hash",
+ "ryu-js",
  "swc_atoms",
  "swc_common",
  "swc_ecma_ast",
@@ -1424,9 +1431,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_visit"
-version = "0.99.1"
+version = "0.100.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28a6ce28ad8e591f8d627f1f9cb26b25e5d83052a9bc1b674d95fc28040cfa98"
+checksum = "f6e19e5251bd397c4f75ccbfd17c36632e4768ba2c1a20facd05549a9cbae5f8"
 dependencies = [
  "num-bigint",
  "swc_atoms",
@@ -1493,9 +1500,9 @@ dependencies = [
 
 [[package]]
 name = "swc_plugin_proxy"
-version = "0.42.1"
+version = "0.43.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98974702046356b67da841a8de561480fd75f963f5d406eee40d690e014e4b55"
+checksum = "18fad9977b48c1a1c8f866e7e18cb9e616e85da00a75ba58df81e3a34c9f106b"
 dependencies = [
  "better_scoped_tls",
  "rkyv",

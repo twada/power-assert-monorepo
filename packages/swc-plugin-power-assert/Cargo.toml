@@ -18,11 +18,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rustc-hash = "1"
-swc_core = { version = "0.92.*", features = ["ecma_plugin_transform"] }
+swc_core = { version = "0.94.*", features = ["ecma_plugin_transform"] }
 
 [dev-dependencies]
-swc_ecma_transforms_testing = "0.141.*"
-swc_ecma_parser = "0.144.*"
+swc_ecma_transforms_testing = "0.142.*"
+swc_ecma_parser = "0.145.*"
 testing = "0.35.*"
 
 # .cargo/config defines few alias to build plugin.
