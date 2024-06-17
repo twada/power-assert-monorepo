@@ -1,5 +1,5 @@
 import { typeName } from './type-name.mjs';
-import type { State, PropKey } from './traverse.mjs';
+import type { State } from './traverse.mjs';
 import { strict as assert } from 'node:assert';
 
 const END = Symbol('end');
@@ -16,9 +16,9 @@ export type StringifyConfig = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValueStore = { [key: PropKey]: any };
+type KeyValueStore = { [key: PropertyKey]: any };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type KeyValuePair = { key: PropKey, value: any };
+type KeyValuePair = { key: PropertyKey, value: any };
 
 export type CollectorFunc = (str: string) => void;
 
@@ -199,7 +199,7 @@ function decorateArray (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push(']');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, _key: PropKey, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, _key: PropertyKey, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
       });
       acc.context.afterEachChild((_state: State, afterEachChildState: State) => {
@@ -220,7 +220,7 @@ function decorateSet (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, _key: PropKey, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, _key: PropertyKey, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
       });
       acc.context.afterEachChild((_state: State, afterEachChildState: State) => {
@@ -242,7 +242,7 @@ function decorateMap (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, key: PropKey, beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, key: PropertyKey, beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
         const keyStr = stringifyMapKey(key, beforeEachChildState);
         acc.push(keyStr + (acc.options.indent ? '=> ' : '=>'));
@@ -265,7 +265,7 @@ function decorateObject (): Composable {
         afterAllChildren(state, acc.push, acc.options);
         acc.push('}');
       });
-      acc.context.beforeEachChild((state: State, _val: unknown, key: PropKey, _beforeEachChildState: State) => {
+      acc.context.beforeEachChild((state: State, _val: unknown, key: PropertyKey, _beforeEachChildState: State) => {
         beforeEachChild(state, acc.push, acc.options);
         acc.push(sanitizeKey(key) + (acc.options.indent ? ': ' : ':'));
       });
@@ -277,7 +277,7 @@ function decorateObject (): Composable {
   };
 }
 
-function sanitizeKey (key: PropKey): string {
+function sanitizeKey (key: PropertyKey): string {
   if (typeof key === 'symbol') {
     return key.toString();
   } else {
