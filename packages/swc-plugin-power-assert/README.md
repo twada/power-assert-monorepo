@@ -7,6 +7,38 @@ swc-plugin-power-assert
 
 [![License][license-image]][license-url]
 
+```
+test at examples/bowling.test.mjs:97:5
+✖ real example (7.283209ms)
+  AssertionError [ERR_ASSERTION]:
+
+  assert(scoreOf(rollsOf(frames)) === 132)
+         |       |       |        |   |
+         |       |       |        |   132
+         |       |       |        false
+         |       |       [[1,4],[4,5],[6,4],[5,5],[10],[0,1],[7,3],[6,4],[10],[2,8,6]]
+         |       [1,4,4,5,6,4,5,5,10,0,1,7,3,6,4,10,2,8,6]
+         133
+
+  133 === 132
+
+      at TestContext.<anonymous> (/path/to/bowling.test.mjs:110:7)
+      at Test.runInAsyncScope (node:async_hooks:206:9)
+      at Test.run (node:internal/test_runner/test:824:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:533:18)
+      at Test.postRun (node:internal/test_runner/test:923:19)
+      at Test.run (node:internal/test_runner/test:866:12)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1183:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1183:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 133,
+    expected: 132,
+    operator: '==='
+  }
+```
 
 INSTALL
 ---------------------------------------
