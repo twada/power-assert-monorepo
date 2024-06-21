@@ -1,3 +1,10 @@
+### 0.4.1
+
+#### Bug Fixes
+
+* update swc_core to 0.95 since v0.94.x is marked as ["Do not use this version if you are building a plugin for SWC"](https://swc.rs/docs/plugin/selecting-swc-core#v094x) ([ffcc200a](https://github.com/twada/power-assert-monorepo/commit/ffcc200a937194e31f789d00cd1c417f6cfcec2e))
+
+
 ## 0.4.0
 
 #### Bug Fixes
