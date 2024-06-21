@@ -9,6 +9,7 @@ import { _power_ } from '@power-assert/runtime'; // variable '_power_' is refere
 import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
 // import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { SourceMapConsumer } from 'source-map';
+import swc from '@swc/core';
 import type { AssertionError } from 'node:assert';
 
 type TestFunc = (transpiledCode: string) => void;
@@ -20,6 +21,41 @@ function isAssertionError (e: unknown): e is AssertionError {
 export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
   // chop empty lines then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
+
+  test('SWC - ' + title + ': ' + expression, async () => {
+    const transpiled = swc.transformSync(expression, {
+      filename: 'source.mjs',
+      sourceMaps: true,
+      isModule: true,
+      swcrc: false,
+      jsc: {
+        parser: {
+          syntax: 'ecmascript'
+        },
+        transform: {},
+        target: 'es2022',
+        experimental: {
+          plugins: [
+            ['swc-plugin-power-assert', {}]
+          ]
+        }
+      }
+    });
+    const transpiledLines = transpiled.code.split('\n');
+    // comment first line out since import statement does not work in eval
+    transpiledLines[0] = "//port { _power_ } from '@power-assert/runtime';";
+    const evalTargetCode = transpiledLines.join('\n');
+    try {
+      testFunc(evalTargetCode);
+      throw new Error('AssertionError should be thrown');
+    } catch (e) {
+      if (!isAssertionError(e)) {
+        throw e;
+      }
+      assert.equal(e.message, expected);
+    }
+  });
+
   test(title + ': ' + expression, async () => {
     const transpiled = await transpileWithSeparatedSourceMap(expression, {
       file: 'source.mjs',
