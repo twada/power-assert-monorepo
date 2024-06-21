@@ -15,6 +15,7 @@ import { writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const inputFilepath = resolve(__dirname, '..', '..', 'testinput.mjs');
 
 type TestFunc = (transpiledCode: string) => void;
 
@@ -25,12 +26,11 @@ function isAssertionError (e: unknown): e is AssertionError {
 export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
   // chop empty lines then extract assertion expression
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
+  const prelude = "import { strict as assert } from 'node:assert';\n";
+  const wholeCode = prelude + expression;
 
   test('SWC - ' + title + ': ' + expression, async () => {
-    const prelude = "import { strict as assert } from 'node:assert';\n";
-    const source = prelude + expression;
-    const inputFilepath = resolve(__dirname, '..', '..', 'testinput.mjs');
-    writeFileSync(inputFilepath, source);
+    writeFileSync(inputFilepath, wholeCode);
 
     const transpiled = swc.transformFileSync(inputFilepath, {
       sourceMaps: true,
@@ -62,20 +62,41 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         throw e;
       }
       assert.equal(e.message, expected);
+
+      assert(e.stack !== undefined);
+      const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
+      assert(targetLineInStacktrace !== undefined);
+      const matchResult = targetLineInStacktrace.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
+      assert(matchResult !== null);
+      const lineInStacktrace = Number(matchResult[2]);
+      const columnInStacktrace = Number(matchResult[3]);
+
+      const generatedAssertionLineNum = transpiledLines.findIndex((line) => line.startsWith('_pasrt1.run')) + 1;
+      assert.equal(lineInStacktrace, generatedAssertionLineNum);
+      assert.equal(columnInStacktrace, '_pasrt1.r'.length);
+
+      if (transpiled.map === undefined) {
+        assert.fail('source map is not found');
+      }
+      const consumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
+      const originalPosition = consumer.originalPositionFor({
+        line: lineInStacktrace,
+        column: columnInStacktrace
+      });
+      assert.equal(originalPosition.source, inputFilepath);
+      assert.equal(originalPosition.line, 2);
+      assert.equal(originalPosition.column, 0);
     }
   });
 
   test(title + ': ' + expression, async () => {
-    const transpiled = await transpileWithSeparatedSourceMap(expression, {
-      file: 'source.mjs',
-      variables: [
-        // set variable name explicitly for testing
-        'assert'
-      ]
+    const transpiled = await transpileWithSeparatedSourceMap(wholeCode, {
+      file: inputFilepath
     });
     const transpiledLines = transpiled.code.split('\n');
-    // comment first line out since import statement does not work in eval
-    transpiledLines[0] = "//port { _power_ } from '@power-assert/runtime';";
+    // comment lines out since import statement does not work in eval
+    transpiledLines[0] = "//port { strict as assert } from 'node:assert';";
+    transpiledLines[1] = "//port { _power_ } from '@power-assert/runtime';";
     const evalTargetCode = transpiledLines.join('\n');
     try {
       testFunc(evalTargetCode);
@@ -103,8 +124,8 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         line: lineInStacktrace,
         column: columnInStacktrace
       });
-      assert.equal(originalPosition.source, 'source.mjs');
-      assert.equal(originalPosition.line, 1);
+      assert.equal(originalPosition.source, inputFilepath);
+      assert.equal(originalPosition.line, 2);
       assert.equal(originalPosition.column, 0);
     }
   });
