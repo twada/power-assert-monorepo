@@ -18,12 +18,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rustc-hash = "1"
-swc_core = { version = "0.94.*", features = ["ecma_plugin_transform"] }
+swc_core = { version = "0.95.*", features = ["ecma_plugin_transform"] }
 
 [dev-dependencies]
-swc_ecma_transforms_testing = "0.142.*"
-swc_ecma_parser = "0.145.*"
-testing = "0.35.*"
+swc_ecma_transforms_testing = "0.143.*"
+swc_ecma_parser = "0.146.*"
+testing = "0.36.*"
 
 # .cargo/config defines few alias to build plugin.
 # cargo build-wasi generates wasm-wasi32 binary
