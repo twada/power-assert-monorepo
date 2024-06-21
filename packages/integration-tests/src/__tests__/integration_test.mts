@@ -11,6 +11,10 @@ import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
 import { SourceMapConsumer } from 'source-map';
 import swc from '@swc/core';
 import type { AssertionError } from 'node:assert';
+import { writeFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 type TestFunc = (transpiledCode: string) => void;
 
@@ -23,8 +27,12 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
   const expression = expected.split('\n').slice(2, (2 + howManyLines)).join('\n');
 
   test('SWC - ' + title + ': ' + expression, async () => {
-    const transpiled = swc.transformSync(expression, {
-      filename: 'source.mjs',
+    const prelude = "import { strict as assert } from 'node:assert';\n";
+    const source = prelude + expression;
+    const inputFilepath = resolve(__dirname, '..', '..', 'testinput.mjs');
+    writeFileSync(inputFilepath, source);
+
+    const transpiled = swc.transformFileSync(inputFilepath, {
       sourceMaps: true,
       isModule: true,
       swcrc: false,
@@ -42,8 +50,9 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
       }
     });
     const transpiledLines = transpiled.code.split('\n');
-    // comment first line out since import statement does not work in eval
-    transpiledLines[0] = "//port { _power_ } from '@power-assert/runtime';";
+    // comment lines out since import statement does not work in eval
+    transpiledLines[0] = "//port { strict as assert } from 'node:assert';";
+    transpiledLines[1] = "//port { _power_ } from '@power-assert/runtime';";
     const evalTargetCode = transpiledLines.join('\n');
     try {
       testFunc(evalTargetCode);
