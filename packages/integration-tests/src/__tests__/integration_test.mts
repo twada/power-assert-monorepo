@@ -62,30 +62,9 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         throw e;
       }
       assert.equal(e.message, expected);
-
-      assert(e.stack !== undefined);
-      const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
-      assert(targetLineInStacktrace !== undefined);
-      const matchResult = targetLineInStacktrace.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
-      assert(matchResult !== null);
-      const lineInStacktrace = Number(matchResult[2]);
-      const columnInStacktrace = Number(matchResult[3]);
-
-      const generatedAssertionLineNum = transpiledLines.findIndex((line) => line.startsWith('_pasrt1.run')) + 1;
-      assert.equal(lineInStacktrace, generatedAssertionLineNum);
-      assert.equal(columnInStacktrace, '_pasrt1.r'.length);
-
-      if (transpiled.map === undefined) {
-        assert.fail('source map is not found');
-      }
+      assert(transpiled.map !== undefined);
       const consumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
-      const originalPosition = consumer.originalPositionFor({
-        line: lineInStacktrace,
-        column: columnInStacktrace
-      });
-      assert.equal(originalPosition.source, inputFilepath);
-      assert.equal(originalPosition.line, 2);
-      assert.equal(originalPosition.column, 0);
+      verifyStackAndSourceMap(e, transpiledLines, consumer);
     }
   });
 
@@ -106,29 +85,32 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         throw e;
       }
       assert.equal(e.message, expected);
-
-      assert(e.stack !== undefined);
-      const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
-      assert(targetLineInStacktrace !== undefined);
-      const matchResult = targetLineInStacktrace.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
-      assert(matchResult !== null);
-      const lineInStacktrace = Number(matchResult[2]);
-      const columnInStacktrace = Number(matchResult[3]);
-
-      const generatedAssertionLineNum = transpiledLines.findIndex((line) => line.startsWith('_pasrt1.run')) + 1;
-      assert.equal(lineInStacktrace, generatedAssertionLineNum);
-      assert.equal(columnInStacktrace, '_pasrt1.r'.length);
-
       const consumer = await new SourceMapConsumer(transpiled.sourceMap);
-      const originalPosition = consumer.originalPositionFor({
-        line: lineInStacktrace,
-        column: columnInStacktrace
-      });
-      assert.equal(originalPosition.source, inputFilepath);
-      assert.equal(originalPosition.line, 2);
-      assert.equal(originalPosition.column, 0);
+      verifyStackAndSourceMap(e, transpiledLines, consumer);
     }
   });
+
+  function verifyStackAndSourceMap (e: AssertionError, transpiledLines: string[], consumer: SourceMapConsumer) {
+    assert(e.stack !== undefined);
+    const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
+    assert(targetLineInStacktrace !== undefined);
+    const matchResult = targetLineInStacktrace.match(/eval at <anonymous> \((.+)\), <anonymous>:(\d+):(\d+)\)/);
+    assert(matchResult !== null);
+    const lineInStacktrace = Number(matchResult[2]);
+    const columnInStacktrace = Number(matchResult[3]);
+
+    const generatedAssertionLineNum = transpiledLines.findIndex((line) => line.startsWith('_pasrt1.run')) + 1;
+    assert.equal(lineInStacktrace, generatedAssertionLineNum);
+    assert.equal(columnInStacktrace, '_pasrt1.r'.length);
+
+    const originalPosition = consumer.originalPositionFor({
+      line: lineInStacktrace,
+      column: columnInStacktrace
+    });
+    assert.equal(originalPosition.source, inputFilepath);
+    assert.equal(originalPosition.line, 2);
+    assert.equal(originalPosition.column, 0);
+  }
 }
 
 describe('Integration of transpiler and runtime', () => {
