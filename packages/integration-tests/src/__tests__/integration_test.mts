@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: 0 */
 /* eslint no-eval: 0 */
 import { test, describe } from 'node:test';
-import { strict as assert } from 'node:assert/strict'; // variable 'assert' is referenced in eval
+import { strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
 // import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
 // import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler/src/transpile-with-sourcemap.mjs';
@@ -29,10 +29,10 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
   const prelude = "import { strict as assert } from 'node:assert';\n";
   const wholeCode = prelude + expression;
 
-  test('SWC - ' + title + ': ' + expression, async () => {
+  test('swc-plugin-power-assert - ' + title + ': ' + expression, async () => {
+    // write to file since swc-plugin-power-assert requires target file existence in appropriate path
     writeFileSync(inputFilepath, wholeCode);
-
-    const transpiled = swc.transformFileSync(inputFilepath, {
+    const transpiled = await swc.transformFile(inputFilepath, {
       sourceMaps: true,
       isModule: true,
       swcrc: false,
@@ -49,30 +49,21 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         }
       }
     });
-    const transpiledLines = transpiled.code.split('\n');
-    // comment lines out since import statement does not work in eval
-    transpiledLines[0] = "//port { strict as assert } from 'node:assert';";
-    transpiledLines[1] = "//port { _power_ } from '@power-assert/runtime';";
-    const evalTargetCode = transpiledLines.join('\n');
-    try {
-      testFunc(evalTargetCode);
-      throw new Error('AssertionError should be thrown');
-    } catch (e) {
-      if (!isAssertionError(e)) {
-        throw e;
-      }
-      assert.equal(e.message, expected);
-      assert(transpiled.map !== undefined);
-      const consumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
-      verifyStackAndSourceMap(e, transpiledLines, consumer);
-    }
+    assert(transpiled.map !== undefined);
+    const sourceMapConsumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
+    verifyPowerAssertOutput(transpiled.code, sourceMapConsumer);
   });
 
-  test(title + ': ' + expression, async () => {
+  test('@power-assert/transpiler - ' + title + ': ' + expression, async () => {
     const transpiled = await transpileWithSeparatedSourceMap(wholeCode, {
       file: inputFilepath
     });
-    const transpiledLines = transpiled.code.split('\n');
+    const sourceMapConsumer = await new SourceMapConsumer(transpiled.sourceMap);
+    verifyPowerAssertOutput(transpiled.code, sourceMapConsumer);
+  });
+
+  function verifyPowerAssertOutput (transpiledCode: string, sourceMapConsumer: SourceMapConsumer) {
+    const transpiledLines = transpiledCode.split('\n');
     // comment lines out since import statement does not work in eval
     transpiledLines[0] = "//port { strict as assert } from 'node:assert';";
     transpiledLines[1] = "//port { _power_ } from '@power-assert/runtime';";
@@ -85,10 +76,9 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
         throw e;
       }
       assert.equal(e.message, expected);
-      const consumer = await new SourceMapConsumer(transpiled.sourceMap);
-      verifyStackAndSourceMap(e, transpiledLines, consumer);
+      verifyStackAndSourceMap(e, transpiledLines, sourceMapConsumer);
     }
-  });
+  }
 
   function verifyStackAndSourceMap (e: AssertionError, transpiledLines: string[], consumer: SourceMapConsumer) {
     assert(e.stack !== undefined);
