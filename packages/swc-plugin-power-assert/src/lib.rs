@@ -598,7 +598,7 @@ impl TransformVisitor {
             }
         });
 
-        // do not enter callee ident
+        // do not enter assertion callee. e.g. assert in assert(foo)
         // n.callee.visit_mut_children_with(self);
 
         // enter arguments
@@ -857,9 +857,23 @@ impl VisitMut for TransformVisitor {
             n.visit_mut_children_with(self);
             return;
         }
-        self.do_not_capture_immediate_child = true;
-        n.visit_mut_children_with(self);
-        self.do_not_capture_immediate_child = false;
+        match &n {
+            Callee::Expr(callee_expr) => {
+                match callee_expr.as_ref() {
+                    Expr::Ident(Ident { .. }) => {
+                        // do not capture foo in foo()
+                    },
+                    Expr::Member(MemberExpr{ .. }) => {
+                        // do not capture foo.bar in foo.bar() or foo[bar] in foo[bar]()
+                        self.do_not_capture_immediate_child = true;
+                        n.visit_mut_children_with(self);
+                        self.do_not_capture_immediate_child = false;
+                    },
+                    _ => n.visit_mut_children_with(self)
+                }
+            },
+            _ => {}
+        }
     }
 
     fn visit_mut_expr(&mut self, n: &mut Expr) {
