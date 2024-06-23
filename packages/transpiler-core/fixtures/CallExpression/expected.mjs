@@ -8,7 +8,7 @@ describe('description', () => {
     const func = () => false;
     _pasrt1.run(_parg1.rec(func(), 7));
   });
-  it('method', () => {
+  it('method callee is non-computed MemberExpression', () => {
     const _pasrt2 = _power_(assert, null, "assert(obj.method())");
     const _parg2 = _pasrt2.recorder(0);
     const obj = {
@@ -16,7 +16,7 @@ describe('description', () => {
     };
     _pasrt2.run(_parg2.rec(_parg2.tap(obj, 7).method(), 11));
   });
-  it('computed method', () => {
+  it('method callee is computed MemberExpression', () => {
     const _pasrt3 = _power_(assert, null, "assert(obj[methodName]())");
     const _parg3 = _pasrt3.recorder(0);
     const methodName = 'method';
@@ -24,5 +24,31 @@ describe('description', () => {
       method: () => false
     };
     _pasrt3.run(_parg3.rec(_parg3.tap(obj, 7)[_parg3.tap(methodName, 11)](), 22));
+  });
+  it('method callee is function', () => {
+    const _pasrt4 = _power_(assert, null, "assert(inner().exact())");
+    const _parg4 = _pasrt4.recorder(0);
+    const inner = () => ({
+      exact() {
+        return false;
+      }
+    });
+    _pasrt4.run(_parg4.rec(_parg4.tap(inner(), 7).exact(), 15));
+  });
+  it('CallExpression of CallExpression of CallExpression', () => {
+    const _pasrt5 = _power_(assert, null, "assert(outer()()())");
+    const _parg5 = _pasrt5.recorder(0);
+    const outer = () => () => () => false;
+    _pasrt5.run(_parg5.rec(_parg5.tap(_parg5.tap(outer(), 7)(), 14)(), 16));
+  });
+  it('method callee is non-computed MemberExpression that returns function then invoke immediately', () => {
+    const _pasrt6 = _power_(assert, null, "assert(obj.method()()())");
+    const _parg6 = _pasrt6.recorder(0);
+    const obj = {
+      method() {
+        return () => () => false;
+      }
+    };
+    _pasrt6.run(_parg6.rec(_parg6.tap(_parg6.tap(_parg6.tap(obj, 7).method(), 11)(), 19)(), 21));
   });
 });
