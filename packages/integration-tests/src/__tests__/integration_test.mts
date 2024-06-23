@@ -4,10 +4,7 @@
 import { test, describe } from 'node:test';
 import { strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
-// import { _power_ } from '../runtime/runtime.mjs'; // variable '_power_' is referenced in eval
-// import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler/src/transpile-with-sourcemap.mjs';
 import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
-// import { transpileWithSeparatedSourceMap } from '../transpiler/transpile-with-sourcemap.mjs';
 import { SourceMapConsumer } from 'source-map';
 import swc from '@swc/core';
 import type { AssertionError } from 'node:assert';
@@ -404,19 +401,4 @@ assert(truthy
 "1" === 0
 `, 3);
   });
-
-  //   ptest('move to next line if width of string is unknown', (transpiledCode) => {
-  //     const loooooooooongVarName = '𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽';
-  //     const falsy = 0;
-  //     eval(transpiledCode);
-  //   }, `
-
-  // assert(loooooooooongVarName === falsy)
-  //        |                    |   |
-  //        |                    |   0
-  //        |                    false
-  //        "𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽"
-
-  // "𠮷野家👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦で𩸽" === 0
-  // `);
 });
