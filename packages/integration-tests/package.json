@@ -4,7 +4,13 @@
   "version": "0.0.0",
   "description": "power-assert integration tests",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@power-assert/transpiler": "^0.3.0",
+    "@power-assert/runtime": "^0.2.0",
+    "@swc/core": "^1.6.0",
+    "swc-plugin-power-assert": "^0.4.1",
+    "source-map": "^0.7.4"
+  },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
@@ -15,10 +21,5 @@
     "power-assert"
   ],
   "author": "Takuto WADA",
-  "license": "MIT",
-  "dependencies": {
-    "@power-assert/transpiler": "^0.3.0",
-    "@power-assert/runtime": "^0.2.0",
-    "source-map": "^0.7.4"
-  }
+  "license": "MIT"
 }
