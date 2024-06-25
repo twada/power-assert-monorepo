@@ -1,18 +1,23 @@
 /* eslint @typescript-eslint/no-unused-vars: 0 */
 /* eslint no-unused-vars: 0 */
 /* eslint no-eval: 0 */
-import { test, describe } from 'node:test';
+import { test, describe, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
 import { transpileWithSeparatedSourceMap } from '@power-assert/transpiler';
 import { SourceMapConsumer } from 'source-map';
 import swc from '@swc/core';
 import type { AssertionError } from 'node:assert';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, rmSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const inputFilepath = resolve(__dirname, '..', '..', 'testinput.mjs');
+afterEach(() => {
+  if (existsSync(inputFilepath)) {
+    rmSync(inputFilepath);
+  }
+});
 
 type TestFunc = (transpiledCode: string) => void;
 
