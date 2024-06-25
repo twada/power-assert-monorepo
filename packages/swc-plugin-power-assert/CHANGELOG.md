@@ -1,3 +1,10 @@
+### 0.4.2
+
+#### Bug Fixes
+
+* [Capture CallExpression callee except for Identifier or non-computed MemberExpression](https://github.com/twada/power-assert-monorepo/pull/13)
+
+
 ### 0.4.1
 
 #### Bug Fixes
