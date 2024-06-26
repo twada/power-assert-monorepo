@@ -1202,7 +1202,7 @@ dependencies = [
 
 [[package]]
 name = "swc-plugin-power-assert"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "rustc-hash",
  "swc_core",
