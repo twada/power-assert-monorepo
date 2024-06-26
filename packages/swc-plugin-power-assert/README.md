@@ -47,6 +47,51 @@ INSTALL
 $ npm install --save-dev swc-plugin-power-assert
 ```
 
+USAGE
+---------------------------------------
+
+via `@swc/core` module
+```
+const transpiled = await swc.transformFile(inputFilepath, {
+  sourceMaps: true,
+  isModule: true,
+  swcrc: false,
+  jsc: {
+    parser: {
+      syntax: 'ecmascript'
+    },
+    transform: {},
+    target: 'es2022',
+    experimental: {
+      plugins: [
+        ['swc-plugin-power-assert', {}]
+      ]
+    }
+  }
+});
+```
+
+
+via `.swcrc` file
+```
+{
+  "jsc": {
+    "parser": {
+      "syntax": "ecmascript"
+    },
+    "experimental": {
+      "plugins": [
+        ["./swc_plugin_power_assert.wasm", {}]
+      ]
+    }
+  },
+  "sourceMaps": true,
+  "inlineSourcesContent": true
+}
+```
+
+
+
 AUTHOR
 ---------------------------------------
 * [Takuto Wada](https://github.com/twada)
