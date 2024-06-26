@@ -81,7 +81,7 @@ via `.swcrc` file
     },
     "experimental": {
       "plugins": [
-        ["./swc_plugin_power_assert.wasm", {}]
+        ["swc-plugin-power-assert", {}]
       ]
     }
   },
