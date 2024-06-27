@@ -29,7 +29,7 @@
   ],
   "preferUnplugged": true,
   "peerDependencies": {
-    "@power-assert/runtime": "^0.2.0"
+    "@power-assert/runtime": "^0.2.1"
   },
   "devDependencies": {
     "@swc-node/register": "^1.6.8",
