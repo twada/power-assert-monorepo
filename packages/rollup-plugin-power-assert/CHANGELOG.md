@@ -1,3 +1,9 @@
+### 0.1.1
+
+  * [chore] upgrade transpiler to v0.4.0
+  * [chore] upgrade runtime to v0.2.1
+
+
 ## [0.1.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.1.0) (2024-04-25)
 
 
