@@ -1,3 +1,8 @@
+## 0.3.1
+
+  * [chore] upgrade transpiler to v0.4.0
+  * [chore] upgrade runtime to v0.2.1
+
 ## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.3.0) (2024-05-31)
 
 
