@@ -1,6 +1,8 @@
-import { parse } from 'acorn';
+import { Parser } from 'acorn';
+import { importAttributes } from 'acorn-import-attributes';
 import { espowerAst } from '@power-assert/transpiler-core';
-import { generate } from 'astring';
+import { generate, GENERATOR } from 'astring';
+import { astringImportAttributes } from 'astring-import-attributes';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
 import { transfer } from 'multi-stage-sourcemap';
@@ -10,6 +12,8 @@ import { resolve } from 'node:path';
 import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
 import type { TargetImportSpecifier } from '@power-assert/transpiler-core';
+
+export type TranspileAstFunc = (ast: Node, code: string) => Node;
 
 export type TranspileWithSourceMapOptions = {
   file?: string,
@@ -30,7 +34,8 @@ type CodeWithInlineSourceMap = {
 };
 
 export async function transpileWithSeparatedSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSeparatedSourceMap> {
-  const { transpiledCode, outMapConv } = await transpile(code, options);
+  const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
+  const { transpiledCode, outMapConv } = await transpileWith(transpile, code, options?.file);
   return {
     type: 'CodeWithSeparatedSourceMap',
     code: transpiledCode,
@@ -39,7 +44,8 @@ export async function transpileWithSeparatedSourceMap (code: string, options?: T
 }
 
 export async function transpileWithInlineSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithInlineSourceMap> {
-  const { transpiledCode, outMapConv } = await transpile(code, options);
+  const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
+  const { transpiledCode, outMapConv } = await transpileWith(transpile, code, options?.file);
   return {
     type: 'CodeWithInlineSourceMap',
     code: transpiledCode + '\n' + outMapConv.toComment() + '\n'
@@ -52,25 +58,25 @@ type CodeWithSourceMapConverter = {
   outMapConv: SourceMapConverter
 };
 
-async function transpile (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSourceMapConverter> {
-  const config = { ...options };
-  const ast: Node = parse(code, {
+async function transpileWith (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): Promise<CodeWithSourceMapConverter> {
+  const ast: Node = Parser.extend(importAttributes).parse(code, {
     sourceType: 'module',
-    ecmaVersion: 2022,
+    ecmaVersion: 2024,
     locations: true, // true for SourceMap
     ranges: false,
-    sourceFile: config.file
+    sourceFile: filePathOrUrl
   }) as Node;
-  const modifiedAst = espowerAst(ast, code, config);
+  const modifiedAst = transpile(ast, code);
   const smg = new SourceMapGenerator({
-    file: config.file
+    file: filePathOrUrl
   });
   const transpiledCode = generate(modifiedAst, {
+    generator: astringImportAttributes(GENERATOR),
     sourceMap: smg
   });
 
   let outMapConv = fromObject(smg.toJSON());
-  const inMapConv = await findIncomingSourceMap(code, config.file);
+  const inMapConv = await findIncomingSourceMap(code, filePathOrUrl);
   if (inMapConv) {
     outMapConv = reconnectSourceMap(inMapConv, outMapConv);
   }
