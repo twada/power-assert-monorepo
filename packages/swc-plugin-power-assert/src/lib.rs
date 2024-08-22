@@ -62,7 +62,7 @@ use swc_core::common::{
     Span,
     Spanned
 };
-use swc_core::common::source_map::Pos;
+use swc_core::common::source_map::SmallPos;
 use swc_core::common::util::take::Take;
 use swc_core::plugin::plugin_transform;
 use swc_core::plugin::metadata::{
@@ -73,7 +73,7 @@ use swc_core::plugin::metadata::{
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf8Pos(u32);
 
-impl Pos for Utf8Pos {
+impl SmallPos for Utf8Pos {
     #[inline(always)]
     fn from_usize(n: usize) -> Utf8Pos {
         Utf8Pos(n as u32)
@@ -98,7 +98,7 @@ impl Pos for Utf8Pos {
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf16Pos(u32);
 
-impl Pos for Utf16Pos {
+impl SmallPos for Utf16Pos {
     #[inline(always)]
     fn from_usize(n: usize) -> Utf16Pos {
         Utf16Pos(n as u32)
