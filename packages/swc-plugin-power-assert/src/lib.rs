@@ -13,6 +13,7 @@ use swc_core::ecma::ast::{
     Number,
     Stmt,
     Ident,
+    IdentName,
     BindingIdent,
     CallExpr,
     BinExpr,
@@ -282,7 +283,7 @@ impl TransformVisitor {
             Expr::Member(MemberExpr {
                 span: Span::default(),
                 obj: Box::new(Expr::Ident(Ident::new(powered_ident_name.into(), Span::default()))),
-                prop: MemberProp::Ident(Ident::new("run".into(), Span::default()))
+                prop: MemberProp::Ident(IdentName::new("run".into(), Span::default()))
             })
         ))
     }
@@ -319,7 +320,7 @@ impl TransformVisitor {
             span: Span::default(),
             props: vec![
                 PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                    key: PropName::Ident(Ident::new("hint".into(), Span::default())),
+                    key: PropName::Ident(IdentName::new("hint".into(), Span::default())),
                     value: Box::new(Expr::Lit(Lit::Str(hint.into())))
                 })))
             ]
@@ -349,13 +350,13 @@ impl TransformVisitor {
                     MemberExpr {
                         span: Span::default(),
                         obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
-                        prop: MemberProp::Ident(Ident::new("rec".into(), Span::default()))
+                        prop: MemberProp::Ident(IdentName::new("rec".into(), Span::default()))
                     }
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex))
                 ],
-                type_args: None,
+                ..Default::default()
             })
         });
     }
@@ -371,14 +372,14 @@ impl TransformVisitor {
                     MemberExpr {
                         span: Span::default(),
                         obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.to_owned(), Span::default()))),
-                        prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
+                        prop: MemberProp::Ident(IdentName::new("tap".into(), Span::default()))
                     }
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
                     ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.to_u32() as f64)))))
                 ],
-                type_args: None,
+                ..Default::default()
             })
         });
     }
@@ -446,7 +447,6 @@ impl TransformVisitor {
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
-            span: Span::default(),
             kind: VarDeclKind::Const,
             declare: false,
             decls: vec![
@@ -462,17 +462,18 @@ impl TransformVisitor {
                             MemberExpr {
                                 span: Span::default(),
                                 obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
+                                prop: MemberProp::Ident(IdentName::new("recorder".into(), Span::default()))
                             }
                         ))),
                         args: vec![
                             ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(argument_metadata.arg_index as f64)))))
                         ],
-                        type_args: None,
+                        ..Default::default()
                     }))),
                     definite: false
                 }
-            ]
+            ],
+            ..Default::default()
         })))
     }
 
@@ -485,7 +486,7 @@ impl TransformVisitor {
                             MemberExpr {
                                 span: Span::default(),
                                 obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
+                                prop: MemberProp::Ident(IdentName::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
                             }
                         )
                     },
@@ -513,7 +514,7 @@ impl TransformVisitor {
                 span: Span::default(),
                 props: vec![
                     PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                        key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
+                        key: PropName::Ident(IdentName::new("binexp".into(), Span::default())),
                         value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
                     })))
                 ]
@@ -521,7 +522,6 @@ impl TransformVisitor {
         }
 
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
-            span: Span::default(),
             kind: VarDeclKind::Const,
             declare: false,
             decls: vec![
@@ -537,11 +537,12 @@ impl TransformVisitor {
                             Expr::Ident(Ident::new("_power_".into(), Span::default()))
                         )),
                         args,
-                        type_args: None,
+                        ..Default::default()
                     }))),
                     definite: false
                 }
-            ]
+            ],
+            ..Default::default()
         })))
     }
 
