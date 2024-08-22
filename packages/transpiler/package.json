@@ -44,7 +44,9 @@
   "dependencies": {
     "@power-assert/transpiler-core": "^0.4.0",
     "acorn": "^8.10.0",
+    "acorn-import-attributes": "^1.9.5",
     "astring": "^1.8.6",
+    "astring-import-attributes": "^0.1.0",
     "convert-source-map": "^2.0.0",
     "multi-stage-sourcemap": "^0.3.1",
     "source-map": "^0.7.4"
