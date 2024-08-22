@@ -282,13 +282,13 @@ impl TransformVisitor {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
-                obj: Box::new(Expr::Ident(Ident::from(powered_ident_name.into()))),
+                obj: Box::new(Expr::Ident(powered_ident_name.into())),
                 prop: MemberProp::Ident(IdentName::new("run".into(), Span::default()))
             })
         ))
     }
 
-    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
+    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut IdentName)) -> bool {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -349,7 +349,7 @@ impl TransformVisitor {
                 callee: Callee::Expr(Box::new(Expr::Member(
                     MemberExpr {
                         span: Span::default(),
-                        obj: Box::new(Expr::Ident(Ident::from(argrec_ident_name.into()))),
+                        obj: Box::new(Expr::Ident(argrec_ident_name.into())),
                         prop: MemberProp::Ident(IdentName::new("rec".into(), Span::default()))
                     }
                 ))),
@@ -409,7 +409,7 @@ impl TransformVisitor {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
                     MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
-                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    MemberProp::Ident(IdentName { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
                 }
             },
@@ -418,7 +418,7 @@ impl TransformVisitor {
                     // for callee like `foo()`, foo's span is used
                     Expr::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     // for callee like `foo.bar()`, bar's span is used
-                    Expr::Member(MemberExpr{ prop: MemberProp::Ident(Ident { span, .. }), .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    Expr::Member(MemberExpr{ prop: MemberProp::Ident(IdentName { span, .. }), .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     // otherwise, span of opening parenthesis is used
                     _ => self.search_pos_for("(", &callee_expr.span(), assertion_start_pos)
                 }
@@ -534,7 +534,7 @@ impl TransformVisitor {
                     init: Some(Box::new(Expr::Call(CallExpr {
                         span: Span::default(),
                         callee: Callee::Expr(Box::new(
-                            Expr::Ident(Ident::from("_power_".into()))
+                            Expr::Ident("_power_".into())
                         )),
                         args,
                         ..Default::default()
@@ -552,7 +552,7 @@ impl TransformVisitor {
             span: Span::default(),
             specifiers: vec![
                 ImportSpecifier::Named(ImportNamedSpecifier {
-                    local: Ident::from("_power_".into()),
+                    local: "_power_".into(),
                     imported: None,
                     span: Span::default(),
                     is_type_only: false,
