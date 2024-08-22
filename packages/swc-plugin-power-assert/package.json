@@ -32,9 +32,9 @@
     "@power-assert/runtime": "^0.2.1"
   },
   "devDependencies": {
-    "@swc-node/register": "^1.6.8",
-    "@swc/cli": "^0.3.0",
-    "@swc/core": "^1.6.0"
+    "@swc-node/register": "^1.10.0",
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.0"
   },
   "scripts": {
     "version": "cargo-set-version set-version $(cat ./package.json | jq -r '.version') && git add ./Cargo.toml && git add ../../Cargo.lock",
