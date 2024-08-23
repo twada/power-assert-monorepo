@@ -1,9 +1,15 @@
+### [0.4.1](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.1) (2024-08-23)
+
+  * [refactor] [rename esm-loader.mts to hooks.mts](https://github.com/twada/power-assert-monorepo/commit/ec23da61f484d18aa508f31b4b8a6964ea8afe11)
+
+
 ## [0.4.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.0) (2024-08-23)
 
-  * [feat] support chaining with other customization hooks
-  * [feat] expose '@power-assert/node/hooks' to support chain of hooks easily
+  * [feat] [Support chaining with other customization hooks](https://github.com/twada/power-assert-monorepo/pull/17)
+    * [feat] expose '@power-assert/node/hooks' to support chain of hooks easily
   * [chore] upgrade transpiler to v0.5.0
   * [chore] upgrade runtime to v0.2.1
+
 
 ## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.3.0) (2024-05-31)
 
