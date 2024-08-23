@@ -283,7 +283,7 @@ impl TransformVisitor {
             Expr::Member(MemberExpr {
                 span: Span::default(),
                 obj: Box::new(Expr::Ident(powered_ident_name.into())),
-                prop: MemberProp::Ident(IdentName::new("run".into(), Span::default()))
+                prop: MemberProp::Ident("run".into())
             })
         ))
     }
@@ -320,7 +320,7 @@ impl TransformVisitor {
             span: Span::default(),
             props: vec![
                 PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                    key: PropName::Ident(IdentName::new("hint".into(), Span::default())),
+                    key: PropName::Ident("hint".into()),
                     value: Box::new(Expr::Lit(Lit::Str(hint.into())))
                 })))
             ]
@@ -345,12 +345,11 @@ impl TransformVisitor {
     fn wrap_with_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) {
         arg.expr.as_mut().map_with_mut(|ex: Expr| {
             Expr::Call(CallExpr {
-                span: Span::default(),
                 callee: Callee::Expr(Box::new(Expr::Member(
                     MemberExpr {
-                        span: Span::default(),
                         obj: Box::new(Expr::Ident(argrec_ident_name.into())),
-                        prop: MemberProp::Ident(IdentName::new("rec".into(), Span::default()))
+                        prop: MemberProp::Ident("rec".into()),
+                        ..Default::default()
                     }
                 ))),
                 args: vec![
@@ -370,9 +369,9 @@ impl TransformVisitor {
                 span: Span::default(),
                 callee: Callee::Expr(Box::new(Expr::Member(
                     MemberExpr {
-                        span: Span::default(),
                         obj: Box::new(Expr::Ident(Ident::from(argrec_ident_name.to_owned()))),
-                        prop: MemberProp::Ident(IdentName::new("tap".into(), Span::default()))
+                        prop: MemberProp::Ident("tap".into()),
+                        ..Default::default()
                     }
                 ))),
                 args: vec![
@@ -452,17 +451,13 @@ impl TransformVisitor {
             decls: vec![
                 VarDeclarator {
                     span: Span::default(),
-                    name: Pat::Ident(BindingIdent{
-                        id: Ident::from(argument_metadata.ident_name.clone()),
-                        type_ann: None
-                    }),
+                    name: Pat::Ident(argument_metadata.ident_name.clone().into()),
                     init: Some(Box::new(Expr::Call(CallExpr {
-                        span: Span::default(),
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
-                                span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::from(argument_metadata.powered_ident_name.clone()))),
-                                prop: MemberProp::Ident(IdentName::new("recorder".into(), Span::default()))
+                                obj: Box::new(Expr::Ident(argument_metadata.powered_ident_name.clone().into())),
+                                prop: MemberProp::Ident("recorder".into()),
+                                ..Default::default()
                             }
                         ))),
                         args: vec![
@@ -484,21 +479,21 @@ impl TransformVisitor {
                     Some(receiver_ident_name) => {
                         Expr::Member(
                             MemberExpr {
-                                span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::from(receiver_ident_name.clone()))),
-                                prop: MemberProp::Ident(IdentName::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
+                                obj: Box::new(Expr::Ident(receiver_ident_name.clone().into())),
+                                prop: MemberProp::Ident(assertion_metadata.callee_ident_name.clone().into()),
+                                ..Default::default()
                             }
                         )
                     },
                     None => {
-                        Expr::Ident(Ident::from(assertion_metadata.callee_ident_name.clone()))
+                        Expr::Ident(assertion_metadata.callee_ident_name.clone().into())
                     }
                 }
             )),
             ExprOrSpread::from(Box::new(
                 match &assertion_metadata.receiver_ident_name {
                     Some(receiver_ident_name) => {
-                        Expr::Ident(Ident::from(receiver_ident_name.clone()))
+                        Expr::Ident(receiver_ident_name.clone().into())
                     },
                     None => {
                         Expr::Lit(Lit::Null(Null { span: Span::default() }))
@@ -511,13 +506,13 @@ impl TransformVisitor {
         if assertion_metadata.binary_op.is_some() {
             // add object expression { binexp: "===" } to args
             args.push(ExprOrSpread::from(Box::new(Expr::Object(ObjectLit{
-                span: Span::default(),
                 props: vec![
                     PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                        key: PropName::Ident(IdentName::new("binexp".into(), Span::default())),
+                        key: PropName::Ident("binexp".into()),
                         value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
                     })))
-                ]
+                ],
+                ..Default::default()
             }))));
         }
 
@@ -527,12 +522,8 @@ impl TransformVisitor {
             decls: vec![
                 VarDeclarator {
                     span: Span::default(),
-                    name: Pat::Ident(BindingIdent{
-                        id: Ident::from(assertion_metadata.ident_name.clone()),
-                        type_ann: None
-                    }),
+                    name: Pat::Ident(assertion_metadata.ident_name.clone().into()),
                     init: Some(Box::new(Expr::Call(CallExpr {
-                        span: Span::default(),
                         callee: Callee::Expr(Box::new(
                             Expr::Ident("_power_".into())
                         )),
