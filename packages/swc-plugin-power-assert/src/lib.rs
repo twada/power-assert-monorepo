@@ -932,7 +932,7 @@ mod tests {
     use swc_ecma_transforms_testing::test_fixture;
     use swc_core::ecma::transforms::testing::FixtureTestConfig;
     use swc_core::ecma::visit::as_folder;
-    use swc_ecma_parser::{EsConfig, Syntax};
+    use swc_ecma_parser::{EsSyntax, Syntax};
     use std::fs;
     use super::TransformVisitor;
 
@@ -941,7 +941,7 @@ mod tests {
         let output = input.with_file_name("expected.mjs");
         let code = fs::read_to_string(&input).unwrap();
         test_fixture(
-            Syntax::Es(EsConfig::default()),
+            Syntax::Es(EsSyntax::default()),
             &|_t| {
                 as_folder(TransformVisitor::from(&code))
             },
@@ -959,7 +959,7 @@ mod tests {
         let output = input.with_file_name("expected.swc.mjs");
         let code = fs::read_to_string(&input).unwrap();
         test_fixture(
-            Syntax::Es(EsConfig::default()),
+            Syntax::Es(EsSyntax::default()),
             &|_t| {
                 as_folder(TransformVisitor::from(&code))
             },
