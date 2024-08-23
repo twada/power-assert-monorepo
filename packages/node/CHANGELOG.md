@@ -1,6 +1,8 @@
-## 0.3.1
+## [0.4.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.0) (2024-08-23)
 
-  * [chore] upgrade transpiler to v0.4.0
+  * [feat] support chaining with other customization hooks
+  * [feat] expose '@power-assert/node/hooks' to support chain of hooks easily
+  * [chore] upgrade transpiler to v0.5.0
   * [chore] upgrade runtime to v0.2.1
 
 ## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.3.0) (2024-05-31)
