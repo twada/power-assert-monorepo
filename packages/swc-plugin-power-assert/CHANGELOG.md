@@ -1,3 +1,10 @@
+## 0.5.0
+
+#### Features
+
+* [Update swc_core (crate) to 0.101 to support @swc/core (npm) 1.7.0](https://github.com/twada/power-assert-monorepo/pull/16)
+
+
 ### 0.4.2
 
 #### Bug Fixes
