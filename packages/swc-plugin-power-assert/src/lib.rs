@@ -14,7 +14,6 @@ use swc_core::ecma::ast::{
     Stmt,
     Ident,
     IdentName,
-    BindingIdent,
     CallExpr,
     BinExpr,
     Expr,
