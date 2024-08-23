@@ -1,4 +1,4 @@
-## 0.5.0
+## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.5.0) (2024-08-23)
 
 #### Features
 
