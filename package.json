@@ -28,6 +28,8 @@
     "typescript-eslint": "^7.6.0"
   },
   "scripts": {
+    "prepack": "npm run rebuild && npm run test:prove",
+    "rebuild": "npm run clean:all && npm run build:all",
     "test": "npm run clean:all && npm run lint:all && npm run build:all && npm run test:all",
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=_test.mjs",
     "clean:all": "npm run build:clean --workspaces --if-present",
