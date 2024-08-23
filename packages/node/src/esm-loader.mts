@@ -3,93 +3,7 @@ import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
 import { readFile } from 'node:fs/promises';
 import { dirname, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-// start borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/module.d.ts
-interface ImportAttributes extends NodeJS.Dict<string> {
-  type?: string | undefined;
-}
-/** @deprecated Use `ImportAttributes` instead */
-interface ImportAssertions extends ImportAttributes {}
-type ModuleFormat = 'builtin' | 'commonjs' | 'json' | 'module' | 'wasm';
-type ModuleSource = string | ArrayBuffer | NodeJS.TypedArray;
-// customization: add 'power-assert' format
-type CustomizedModuleFormat = ModuleFormat | 'power-assert';
-
-interface ResolveHookContext {
-  /**
-   * Export conditions of the relevant `package.json`
-   */
-  conditions: string[];
-  /**
-   * @deprecated Use `importAttributes` instead
-   */
-  importAssertions: ImportAssertions;
-  /**
-   *  An object whose key-value pairs represent the assertions for the module to import
-   */
-  importAttributes: ImportAttributes;
-  /**
-   * The module importing this one, or undefined if this is the Node.js entry point
-   */
-  parentURL: string | undefined;
-}
-
-interface ResolveFnOutput {
-  /**
-   * A hint to the load hook (it might be ignored)
-   */
-  format?: CustomizedModuleFormat | null | undefined;
-  /**
-   * @deprecated Use `importAttributes` instead
-   */
-  importAssertions?: ImportAssertions | undefined;
-  /**
-   * The import attributes to use when caching the module (optional; if excluded the input will be used)
-   */
-  importAttributes?: ImportAttributes | undefined;
-  /**
-   * A signal that this hook intends to terminate the chain of `resolve` hooks.
-   * @default false
-   */
-  shortCircuit?: boolean | undefined;
-  /**
-   * The absolute URL to which this input resolves
-   */
-  url: string;
-}
-
-interface LoadHookContext {
-  /**
-   * Export conditions of the relevant `package.json`
-   */
-  conditions: string[];
-  /**
-   * The format optionally supplied by the `resolve` hook chain
-   */
-  format: CustomizedModuleFormat;
-  /**
-   * @deprecated Use `importAttributes` instead
-   */
-  importAssertions: ImportAttributes;
-  /**
-   *  An object whose key-value pairs represent the assertions for the module to import
-   */
-  importAttributes: ImportAttributes;
-}
-
-interface LoadFnOutput {
-  format: ModuleFormat;
-  /**
-   * A signal that this hook intends to terminate the chain of `resolve` hooks.
-   * @default false
-   */
-  shortCircuit?: boolean | undefined;
-  /**
-   * The source for Node.js to evaluate
-   */
-  source?: ModuleSource;
-}
-// end borrowing from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/node/module.d.ts
+import type { LoadFnOutput, LoadHookContext, ResolveFnOutput, ResolveHookContext } from 'node:module';
 
 type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
 type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput | Promise<LoadFnOutput>;
@@ -111,21 +25,26 @@ const supportedExts = new Set([
  * @param nextResolve The subsequent `resolve` hook in the chain, or the Node.js default `resolve` hook after the last user-supplied resolve hook
  */
 export async function resolve (specifier: string, context: ResolveHookContext, nextResolve: NextResolveFn): Promise<ResolveFnOutput> {
+  const nextResolveWithShortCircuitFalse = async (specifier: string, context: ResolveHookContext): Promise<ResolveFnOutput> => {
+    const resolved = await nextResolve(specifier, context);
+    return { ...resolved, shortCircuit: false };
+  };
+
   // 1: Any files explicitly provided by the user are executed.
   // 2: node_modules directories are skipped unless explicitly provided by the user.
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
   const isEntryPoint = (context.parentURL === undefined);
   if (!isEntryPoint) {
     // modules that are imported by other modules are not transpiled
-    return nextResolve(specifier, context);
+    return nextResolveWithShortCircuitFalse(specifier, context);
   }
 
   const ext = extname(specifier);
   if (!supportedExts.has(ext)) {
-    return nextResolve(specifier, context);
+    return nextResolveWithShortCircuitFalse(specifier, context);
   }
 
-  const { url: nextUrl } = await nextResolve(specifier, context);
+  const { url: nextUrl } = await nextResolveWithShortCircuitFalse(specifier, context);
   const url = nextUrl ?? new URL(specifier, context.parentURL).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
@@ -134,12 +53,17 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   // url ends with .js or .ts => detect format from package.json
   const isModule = ext.startsWith('.m') || (await getPackageType(url)) === 'module';
   if (!isModule) {
-    return nextResolve(specifier, context);
+    return nextResolveWithShortCircuitFalse(specifier, context);
   }
-
+  const { importAttributes } = context;
+  // MEMO: need to mutate importAttributes directly since shallow copy of importAttributes with object rest spread operator does not work in this case
+  importAttributes.powerAssert = 'power-assert';
+  // const extraAttrs = { powerAssert: 'power-assert' };
   const resolved: ResolveFnOutput = {
-    format: 'power-assert', // Provide a signal to `load`
-    shortCircuit: true,
+    format: 'module',
+    // importAttributes: { ...importAttributes, ...extraAttrs },
+    importAttributes,
+    shortCircuit: false,
     url
   };
   return resolved;
@@ -154,19 +78,23 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
  * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
  */
 export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  const { format: resolvedFormat } = context;
-  if (resolvedFormat !== 'power-assert') {
-    // If the format is not 'power-assert', the default `load` hook should be used
-    return nextLoad(url);
+  const nextLoadWithShortCircuitFalse = async (url: string, context: LoadHookContext): Promise<LoadFnOutput> => {
+    const loaded = await nextLoad(url, context);
+    return { ...loaded, shortCircuit: false };
+  };
+  const { importAttributes } = context;
+  if (!importAttributes.powerAssert) {
+    return nextLoadWithShortCircuitFalse(url, context);
   }
-  const realFormat = 'module';
+  delete importAttributes.powerAssert;
 
-  const { source: rawSource } = await nextLoad(url, { ...context, format: realFormat });
+  const { source: rawSource } = await nextLoadWithShortCircuitFalse(url, context);
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   const incomingCode = rawSource.toString();
   const transpiled = await transpileWithInlineSourceMap(incomingCode, { file: url });
   return {
-    format: realFormat,
+    format: 'module',
+    shortCircuit: false,
     source: transpiled.code
   };
 }

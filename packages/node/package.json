@@ -27,6 +27,12 @@
         "default": "./dist/register.mjs"
       }
     },
+    "./hooks": {
+      "import": {
+        "types": "./dist/esm-loader.d.mts",
+        "default": "./dist/esm-loader.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
