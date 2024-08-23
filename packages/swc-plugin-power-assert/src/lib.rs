@@ -13,7 +13,7 @@ use swc_core::ecma::ast::{
     Number,
     Stmt,
     Ident,
-    BindingIdent,
+    IdentName,
     CallExpr,
     BinExpr,
     Expr,
@@ -61,7 +61,7 @@ use swc_core::common::{
     Span,
     Spanned
 };
-use swc_core::common::source_map::Pos;
+use swc_core::common::source_map::SmallPos;
 use swc_core::common::util::take::Take;
 use swc_core::plugin::plugin_transform;
 use swc_core::plugin::metadata::{
@@ -72,7 +72,7 @@ use swc_core::plugin::metadata::{
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf8Pos(u32);
 
-impl Pos for Utf8Pos {
+impl SmallPos for Utf8Pos {
     #[inline(always)]
     fn from_usize(n: usize) -> Utf8Pos {
         Utf8Pos(n as u32)
@@ -97,7 +97,7 @@ impl Pos for Utf8Pos {
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct Utf16Pos(u32);
 
-impl Pos for Utf16Pos {
+impl SmallPos for Utf16Pos {
     #[inline(always)]
     fn from_usize(n: usize) -> Utf16Pos {
         Utf16Pos(n as u32)
@@ -281,13 +281,13 @@ impl TransformVisitor {
         Callee::Expr(Box::new(
             Expr::Member(MemberExpr {
                 span: Span::default(),
-                obj: Box::new(Expr::Ident(Ident::new(powered_ident_name.into(), Span::default()))),
-                prop: MemberProp::Ident(Ident::new("run".into(), Span::default()))
+                obj: Box::new(Expr::Ident(powered_ident_name.into())),
+                prop: MemberProp::Ident("run".into())
             })
         ))
     }
 
-    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut Ident)) -> bool {
+    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut IdentName)) -> bool {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -319,7 +319,7 @@ impl TransformVisitor {
             span: Span::default(),
             props: vec![
                 PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                    key: PropName::Ident(Ident::new("hint".into(), Span::default())),
+                    key: PropName::Ident("hint".into()),
                     value: Box::new(Expr::Lit(Lit::Str(hint.into())))
                 })))
             ]
@@ -344,18 +344,17 @@ impl TransformVisitor {
     fn wrap_with_rec_without_pos(&self, arg: &mut ExprOrSpread, argrec_ident_name: &str) {
         arg.expr.as_mut().map_with_mut(|ex: Expr| {
             Expr::Call(CallExpr {
-                span: Span::default(),
                 callee: Callee::Expr(Box::new(Expr::Member(
                     MemberExpr {
-                        span: Span::default(),
-                        obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.into(), Span::default()))),
-                        prop: MemberProp::Ident(Ident::new("rec".into(), Span::default()))
+                        obj: Box::new(Expr::Ident(argrec_ident_name.into())),
+                        prop: MemberProp::Ident("rec".into()),
+                        ..Default::default()
                     }
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex))
                 ],
-                type_args: None,
+                ..Default::default()
             })
         });
     }
@@ -369,16 +368,16 @@ impl TransformVisitor {
                 span: Span::default(),
                 callee: Callee::Expr(Box::new(Expr::Member(
                     MemberExpr {
-                        span: Span::default(),
-                        obj: Box::new(Expr::Ident(Ident::new(argrec_ident_name.to_owned(), Span::default()))),
-                        prop: MemberProp::Ident(Ident::new("tap".into(), Span::default()))
+                        obj: Box::new(Expr::Ident(Ident::from(argrec_ident_name.to_owned()))),
+                        prop: MemberProp::Ident("tap".into()),
+                        ..Default::default()
                     }
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
                     ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.to_u32() as f64)))))
                 ],
-                type_args: None,
+                ..Default::default()
             })
         });
     }
@@ -408,7 +407,7 @@ impl TransformVisitor {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
                     MemberProp::Computed(ComputedPropName{ span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
-                    MemberProp::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    MemberProp::Ident(IdentName { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     _ => Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32())
                 }
             },
@@ -417,7 +416,7 @@ impl TransformVisitor {
                     // for callee like `foo()`, foo's span is used
                     Expr::Ident(Ident { span, .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     // for callee like `foo.bar()`, bar's span is used
-                    Expr::Member(MemberExpr{ prop: MemberProp::Ident(Ident { span, .. }), .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
+                    Expr::Member(MemberExpr{ prop: MemberProp::Ident(IdentName { span, .. }), .. }) => Utf8Pos(span.lo.to_u32() - assertion_start_pos.to_u32()),
                     // otherwise, span of opening parenthesis is used
                     _ => self.search_pos_for("(", &callee_expr.span(), assertion_start_pos)
                 }
@@ -446,33 +445,29 @@ impl TransformVisitor {
 
     fn create_argrec_decl(&self, argument_metadata: &ArgumentMetadata) -> Stmt {
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
-            span: Span::default(),
             kind: VarDeclKind::Const,
             declare: false,
             decls: vec![
                 VarDeclarator {
                     span: Span::default(),
-                    name: Pat::Ident(BindingIdent{
-                        id: Ident::new(argument_metadata.ident_name.clone(), Span::default()),
-                        type_ann: None
-                    }),
+                    name: Pat::Ident(argument_metadata.ident_name.clone().into()),
                     init: Some(Box::new(Expr::Call(CallExpr {
-                        span: Span::default(),
                         callee: Callee::Expr(Box::new(Expr::Member(
                             MemberExpr {
-                                span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(argument_metadata.powered_ident_name.clone(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new("recorder".into(), Span::default()))
+                                obj: Box::new(Expr::Ident(argument_metadata.powered_ident_name.clone().into())),
+                                prop: MemberProp::Ident("recorder".into()),
+                                ..Default::default()
                             }
                         ))),
                         args: vec![
                             ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(argument_metadata.arg_index as f64)))))
                         ],
-                        type_args: None,
+                        ..Default::default()
                     }))),
                     definite: false
                 }
-            ]
+            ],
+            ..Default::default()
         })))
     }
 
@@ -483,21 +478,21 @@ impl TransformVisitor {
                     Some(receiver_ident_name) => {
                         Expr::Member(
                             MemberExpr {
-                                span: Span::default(),
-                                obj: Box::new(Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))),
-                                prop: MemberProp::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
+                                obj: Box::new(Expr::Ident(receiver_ident_name.clone().into())),
+                                prop: MemberProp::Ident(assertion_metadata.callee_ident_name.clone().into()),
+                                ..Default::default()
                             }
                         )
                     },
                     None => {
-                        Expr::Ident(Ident::new(assertion_metadata.callee_ident_name.clone(), Span::default()))
+                        Expr::Ident(assertion_metadata.callee_ident_name.clone().into())
                     }
                 }
             )),
             ExprOrSpread::from(Box::new(
                 match &assertion_metadata.receiver_ident_name {
                     Some(receiver_ident_name) => {
-                        Expr::Ident(Ident::new(receiver_ident_name.clone(), Span::default()))
+                        Expr::Ident(receiver_ident_name.clone().into())
                     },
                     None => {
                         Expr::Lit(Lit::Null(Null { span: Span::default() }))
@@ -510,38 +505,34 @@ impl TransformVisitor {
         if assertion_metadata.binary_op.is_some() {
             // add object expression { binexp: "===" } to args
             args.push(ExprOrSpread::from(Box::new(Expr::Object(ObjectLit{
-                span: Span::default(),
                 props: vec![
                     PropOrSpread::Prop(Box::new(Prop::KeyValue(KeyValueProp {
-                        key: PropName::Ident(Ident::new("binexp".into(), Span::default())),
+                        key: PropName::Ident("binexp".into()),
                         value: Box::new(Expr::Lit(Lit::Str(assertion_metadata.binary_op.as_ref().unwrap().clone().into())))
                     })))
-                ]
+                ],
+                ..Default::default()
             }))));
         }
 
         Stmt::Decl(Decl::Var(Box::new(VarDecl {
-            span: Span::default(),
             kind: VarDeclKind::Const,
             declare: false,
             decls: vec![
                 VarDeclarator {
                     span: Span::default(),
-                    name: Pat::Ident(BindingIdent{
-                        id: Ident::new(assertion_metadata.ident_name.clone(), Span::default()),
-                        type_ann: None
-                    }),
+                    name: Pat::Ident(assertion_metadata.ident_name.clone().into()),
                     init: Some(Box::new(Expr::Call(CallExpr {
-                        span: Span::default(),
                         callee: Callee::Expr(Box::new(
-                            Expr::Ident(Ident::new("_power_".into(), Span::default()))
+                            Expr::Ident("_power_".into())
                         )),
                         args,
-                        type_args: None,
+                        ..Default::default()
                     }))),
                     definite: false
                 }
-            ]
+            ],
+            ..Default::default()
         })))
     }
 
@@ -551,7 +542,7 @@ impl TransformVisitor {
             span: Span::default(),
             specifiers: vec![
                 ImportSpecifier::Named(ImportNamedSpecifier {
-                    local: Ident::new("_power_".into(), Span::default()),
+                    local: "_power_".into(),
                     imported: None,
                     span: Span::default(),
                     is_type_only: false,
@@ -931,7 +922,7 @@ mod tests {
     use swc_ecma_transforms_testing::test_fixture;
     use swc_core::ecma::transforms::testing::FixtureTestConfig;
     use swc_core::ecma::visit::as_folder;
-    use swc_ecma_parser::{EsConfig, Syntax};
+    use swc_ecma_parser::{EsSyntax, Syntax};
     use std::fs;
     use super::TransformVisitor;
 
@@ -940,7 +931,7 @@ mod tests {
         let output = input.with_file_name("expected.mjs");
         let code = fs::read_to_string(&input).unwrap();
         test_fixture(
-            Syntax::Es(EsConfig::default()),
+            Syntax::Es(EsSyntax::default()),
             &|_t| {
                 as_folder(TransformVisitor::from(&code))
             },
@@ -958,7 +949,7 @@ mod tests {
         let output = input.with_file_name("expected.swc.mjs");
         let code = fs::read_to_string(&input).unwrap();
         test_fixture(
-            Syntax::Es(EsConfig::default()),
+            Syntax::Es(EsSyntax::default()),
             &|_t| {
                 as_folder(TransformVisitor::from(&code))
             },
