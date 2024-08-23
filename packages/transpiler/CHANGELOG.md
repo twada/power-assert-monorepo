@@ -1,8 +1,8 @@
-## 0.5.0
+## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-v0.5.0) (2024-08-23)
 
 #### Features
 
-  * support import attributes
+  * [Support import attributes](https://github.com/twada/power-assert-monorepo/pull/15)
 
 
 ## [0.4.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-v0.4.0) (2024-06-29)
