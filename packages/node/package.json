@@ -29,8 +29,8 @@
     },
     "./hooks": {
       "import": {
-        "types": "./dist/esm-loader.d.mts",
-        "default": "./dist/esm-loader.mjs"
+        "types": "./dist/hooks.d.mts",
+        "default": "./dist/hooks.mjs"
       }
     },
     "./package.json": "./package.json"
