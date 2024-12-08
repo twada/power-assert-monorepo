@@ -391,6 +391,12 @@ assert.equal(truthy,
   'falsy is not truthy')
 
 falsy is not truthy
+
+'1' !== 0
+
+
+
+'1' !== 0
 `, 3);
 
     ptest('BinaryExpression analysis', (transpiledCode) => {
