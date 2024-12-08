@@ -1,3 +1,10 @@
+### [0.4.2](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.2) (2024-12-09)
+
+#### Bug Fixes
+
+  * [fix] fix regression introduced in ec23da61f4 ([329f6d1e](https://github.com/twada/power-assert-monorepo/commit/329f6d1edb8840744dc9478c6b0be521b5e5d9e1))
+
+
 ### [0.4.1](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.1) (2024-08-23)
 
   * [refactor] [rename esm-loader.mts to hooks.mts](https://github.com/twada/power-assert-monorepo/commit/ec23da61f484d18aa508f31b4b8a6964ea8afe11)
