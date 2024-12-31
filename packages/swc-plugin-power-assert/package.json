@@ -43,8 +43,8 @@
     "example:import": "SWCRC=true node --enable-source-maps --import @swc-node/register/esm-register --test ./examples/bowling.test.mjs",
     "test": "cargo test",
     "build": "npm run build:release && npm run build:cp",
-    "build:release": "cargo build-wasi --release",
-    "build:cp": "cp ../../target/wasm32-wasi/release/swc_plugin_power_assert.wasm ./swc_plugin_power_assert.wasm",
+    "build:release": "cargo build --target=wasm32-wasip1 --release",
+    "build:cp": "cp ../../target/wasm32-wasip1/release/swc_plugin_power_assert.wasm ./swc_plugin_power_assert.wasm",
     "prepack": "npm run build"
   }
 }
