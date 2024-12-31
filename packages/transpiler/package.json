@@ -42,7 +42,7 @@
     "assertion"
   ],
   "dependencies": {
-    "@power-assert/transpiler-core": "^0.4.0",
+    "@power-assert/transpiler-core": "^0.4.1",
     "acorn": "^8.10.0",
     "acorn-import-attributes": "^1.9.5",
     "astring": "^1.8.6",
