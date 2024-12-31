@@ -1,7 +1,5 @@
-import { Parser } from 'acorn';
-import { importAttributes } from 'acorn-import-attributes';
-import { generate, GENERATOR } from 'astring';
-import { astringImportAttributes } from 'astring-import-attributes';
+import { parse } from 'acorn';
+import { generate } from 'astring';
 import { SourceMapGenerator } from 'source-map';
 import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-source-map';
 import { transfer } from 'multi-stage-sourcemap';
@@ -20,7 +18,7 @@ export type CodeWithSourceMapConverter = {
 };
 
 export async function transpileWith (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): Promise<CodeWithSourceMapConverter> {
-  const ast: Node = Parser.extend(importAttributes).parse(code, {
+  const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2024,
     locations: true, // true for SourceMap
@@ -32,7 +30,6 @@ export async function transpileWith (transpile: TranspileAstFunc, code: string, 
     file: filePathOrUrl
   });
   const transpiledCode = generate(modifiedAst, {
-    generator: astringImportAttributes(GENERATOR),
     sourceMap: smg
   });
 
