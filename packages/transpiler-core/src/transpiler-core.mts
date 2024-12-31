@@ -120,9 +120,15 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
     for (const specifier of importDeclaration.specifiers) {
       if (specifier.type === 'ImportSpecifier') {
         const imported = specifier.imported;
-        if (!imports || imports.length === 0 || imports.includes(imported.name)) {
+        if (!imports || imports.length === 0) {
           registerIdentifierAsAssertionVariable(specifier.local);
+          continue;
         }
+        if (isIdentifier(imported) && imports.includes(imported.name)) {
+          registerIdentifierAsAssertionVariable(specifier.local);
+          continue;
+        }
+        // string literal import is not supported
       } else if (specifier.type === 'ImportDefaultSpecifier' || specifier.type === 'ImportNamespaceSpecifier') {
         registerIdentifierAsAssertionVariable(specifier.local);
       }
