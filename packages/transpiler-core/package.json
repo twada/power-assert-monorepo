@@ -27,6 +27,10 @@
   "main": "./dist/transpiler-core.mjs",
   "exports": {
     ".": {
+      "module-sync": {
+        "types": "./dist/transpiler-core.d.mts",
+        "default": "./dist/transpiler-core.mjs"
+      },
       "import": {
         "types": "./dist/transpiler-core.d.mts",
         "default": "./dist/transpiler-core.mjs"
