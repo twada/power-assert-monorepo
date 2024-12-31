@@ -1,4 +1,12 @@
-## 0.4.0
+### [0.4.1](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.4.1) (2024-12-31)
+
+#### Chore
+
+* [mark transpiler-core package as "module-sync"](https://github.com/twada/power-assert-monorepo/commit/5ed2a952df)
+* [unsupport string literal import](https://github.com/twada/power-assert-monorepo/pull/18)
+
+
+## [0.4.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.4.0) (2024-06-29)
 
 
 #### Features
