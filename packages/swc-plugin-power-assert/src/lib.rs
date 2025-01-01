@@ -52,8 +52,7 @@ use swc_core::ecma::ast::{
 };
 use swc_core::ecma::atoms::JsWord;
 use swc_core::ecma::visit::{
-    as_folder,
-    FoldWith,
+    visit_mut_pass,
     VisitMut,
     VisitMutWith
 };
@@ -912,7 +911,7 @@ impl VisitMut for TransformVisitor {
 /// Refer swc_plugin_macro to see how does it work internally.
 #[plugin_transform]
 pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
-    program.fold_with(&mut as_folder(TransformVisitor::from(metadata)))
+    program.apply(&mut visit_mut_pass(TransformVisitor::from(metadata)))
 }
 
 
@@ -921,7 +920,7 @@ mod tests {
     use std::path::PathBuf;
     use swc_ecma_transforms_testing::test_fixture;
     use swc_core::ecma::transforms::testing::FixtureTestConfig;
-    use swc_core::ecma::visit::as_folder;
+    use swc_core::ecma::visit::visit_mut_pass;
     use swc_ecma_parser::{EsSyntax, Syntax};
     use std::fs;
     use super::TransformVisitor;
@@ -933,7 +932,7 @@ mod tests {
         test_fixture(
             Syntax::Es(EsSyntax::default()),
             &|_t| {
-                as_folder(TransformVisitor::from(&code))
+                visit_mut_pass(TransformVisitor::from(&code))
             },
             &input,
             &output,
@@ -951,7 +950,7 @@ mod tests {
         test_fixture(
             Syntax::Es(EsSyntax::default()),
             &|_t| {
-                as_folder(TransformVisitor::from(&code))
+                visit_mut_pass(TransformVisitor::from(&code))
             },
             &input,
             &output,
