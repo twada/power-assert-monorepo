@@ -51,7 +51,7 @@ USAGE
 ---------------------------------------
 
 via `@swc/core` module
-```
+```javascript
 const transpiled = await swc.transformFile(inputFilepath, {
   sourceMaps: true,
   isModule: true,
