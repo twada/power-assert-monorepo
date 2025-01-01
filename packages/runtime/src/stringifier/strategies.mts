@@ -15,9 +15,8 @@ export type StringifyConfig = {
   lineSeparator: string,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValueStore = { [key: PropertyKey]: any };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type KeyValuePair = { key: PropertyKey, value: any };
 
 export type CollectorFunc = (str: string) => void;

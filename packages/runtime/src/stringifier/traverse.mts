@@ -1,7 +1,6 @@
 // minimal port of substack's traverse with Map / Set support
 import { strict as assert } from 'node:assert';
 
-/* eslint-disable no-use-before-define */
 export type State = {
   node: unknown,
   path: Array<PropertyKey>,
@@ -89,7 +88,7 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
       let keepGoing = true;
       const state: State = {
         node,
-        path: ([] as (string|number|symbol)[]).concat(path),
+        path: ([] as (string | number | symbol)[]).concat(path),
         parent: parents[parents.length - 1],
         parents: ([] as State[]).concat(parents),
         key: path.slice(-1)[0],
