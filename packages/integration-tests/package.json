@@ -16,7 +16,7 @@
     "demo": "node --test --import @power-assert/node '**/demo/*demo.mjs'",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
-    "fix": "npm run lint:src -- --fix",
+    "fix": "npm run lint -- --fix",
     "test": "node --no-warnings --test --test-reporter=spec '**/__tests__/**/*test.mjs'"
   },
   "keywords": [
