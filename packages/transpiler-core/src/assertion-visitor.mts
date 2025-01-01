@@ -23,7 +23,6 @@ type ControllerLike = {
   currentKey: NodeKey,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // type KeyValue = { [key: string]: any };
 
 type AcornSwcLikeNode = Node & {

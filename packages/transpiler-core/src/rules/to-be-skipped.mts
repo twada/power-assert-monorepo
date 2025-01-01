@@ -67,7 +67,7 @@ const isTypeOfOrDeleteUnaryExpression = (currentNode: Node, parentNode: Node, cu
   return currentNode.type === 'Identifier' && parentNode.type === 'UnaryExpression' && (parentNode.operator === 'typeof' || parentNode.operator === 'delete') && currentKey === 'argument';
 };
 
-const toBeSkipped = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
+const toBeSkipped = ({ currentNode, parentNode, currentKey }: { currentNode: Node, parentNode: Node | null, currentKey: NodeKey }) => {
   assert(parentNode, 'Parent node must exist');
   return !isSupportedNode(currentNode) ||
         isLeftHandSideOfAssignment(parentNode, currentKey) ||

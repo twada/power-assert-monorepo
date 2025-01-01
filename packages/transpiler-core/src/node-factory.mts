@@ -57,8 +57,8 @@ export interface ArrowFunctionExpressionWithConciseBody extends ArrowFunctionExp
   type: 'ArrowFunctionExpression';
   body: Expression;
 }
-export type ScopedFunction = ArrowFunctionExpressionWithBlock | FunctionDeclaration | FunctionExpression
-export type ScopedBlock = BlockStatement | StaticBlock
+export type ScopedFunction = ArrowFunctionExpressionWithBlock | FunctionDeclaration | FunctionExpression;
+export type ScopedBlock = BlockStatement | StaticBlock;
 export type Scoped = Program | ScopedFunction | ScopedBlock;
 
 type AcornSwcLikeNode = {
@@ -295,7 +295,7 @@ class NodeCreator {
 
 type PropKeyAccessible = {
   [key: string]: unknown;
-}
+};
 
 function isPlainObject (value: unknown): value is object & PropKeyAccessible {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
