@@ -1,3 +1,10 @@
+## [0.6.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.6.0) (2025-01-01)
+
+#### Features
+
+* [Update swc_core (crate) to v9 to support @swc/core (npm) 1.10.0](https://github.com/twada/power-assert-monorepo/pull/20)
+
+
 ## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.5.0) (2024-08-23)
 
 #### Features
