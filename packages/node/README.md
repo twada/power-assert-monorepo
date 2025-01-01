@@ -6,6 +6,7 @@ power-assert custom hook for Node Test Runner: Provides descriptive assertion me
 [![power-assert][power-assert-banner]][power-assert-url]
 
 [![License][license-image]][license-url]
+[![Code Style][style-image]][style-url]
 ![Supported Node Version](https://img.shields.io/node/v/%40power-assert%2Fnode)
 
 ```
@@ -151,6 +152,9 @@ Licensed under the [MIT](https://twada.mit-license.org/) license.
 
 [power-assert-url]: https://github.com/power-assert-js
 [power-assert-banner]: https://raw.githubusercontent.com/power-assert-js/power-assert-js-logo/master/banner/banner-official-fullcolor.png
+
+[style-url]: https://github.com/neostandard/neostandard
+[style-image]: https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat
 
 [license-url]: https://twada.mit-license.org/
 [license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg
