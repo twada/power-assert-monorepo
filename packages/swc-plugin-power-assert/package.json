@@ -2,23 +2,23 @@
   "name": "swc-plugin-power-assert",
   "version": "0.5.0",
   "description": "SWC plugin for power-assert",
+  "keywords": [
+    "swc-plugin",
+    "power-assert"
+  ],
+  "homepage": "https://github.com/twada/power-assert-monorepo",
+  "bugs": "https://github.com/twada/power-assert-monorepo/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/twada/power-assert-monorepo.git",
+    "directory": "packages/swc-plugin-power-assert"
+  },
+  "license": "MIT",
   "author": {
     "name": "Takuto WADA",
     "email": "takuto.wada@gmail.com",
     "url": "https://github.com/twada"
   },
-  "homepage": "https://github.com/twada/power-assert-monorepo",
-  "bugs": "https://github.com/twada/power-assert-monorepo/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/twada/power-assert-monorepo.git",
-    "directory": "packages/swc-plugin-power-assert"
-  },
-  "license": "MIT",
-  "keywords": [
-    "swc-plugin",
-    "power-assert"
-  ],
   "main": "./swc_plugin_power_assert.wasm",
   "files": [
     "swc_plugin_power_assert.wasm",
@@ -27,15 +27,6 @@
     "Cargo.toml",
     "package.json"
   ],
-  "preferUnplugged": true,
-  "peerDependencies": {
-    "@power-assert/runtime": "^0.2.1"
-  },
-  "devDependencies": {
-    "@swc-node/register": "^1.10.0",
-    "@swc/cli": "^0.5.0",
-    "@swc/core": "^1.10.0"
-  },
   "scripts": {
     "version": "cargo-set-version set-version $(cat ./package.json | jq -r '.version') && git add ./Cargo.toml && git add ../../Cargo.lock",
     "example": "npm run example:cli",
@@ -46,5 +37,14 @@
     "build:release": "cargo build --target=wasm32-wasip1 --release",
     "build:cp": "cp ../../target/wasm32-wasip1/release/swc_plugin_power_assert.wasm ./swc_plugin_power_assert.wasm",
     "prepack": "npm run build"
-  }
+  },
+  "devDependencies": {
+    "@swc-node/register": "^1.10.0",
+    "@swc/cli": "^0.5.0",
+    "@swc/core": "^1.10.0"
+  },
+  "peerDependencies": {
+    "@power-assert/runtime": "^0.2.1"
+  },
+  "preferUnplugged": true
 }
