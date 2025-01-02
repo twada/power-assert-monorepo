@@ -57,7 +57,7 @@
   "scripts": {
     "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
-    "fix": "npm run lint:src -- --fix",
+    "fix": "npm run lint -- --fix",
     "test": "npm run build:clean && node --enable-source-maps --import=tsimp/import --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
   }
 }

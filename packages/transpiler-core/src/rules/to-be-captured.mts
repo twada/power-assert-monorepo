@@ -55,7 +55,7 @@ const shouldNotCaptureImmediateNode = (currentNode: Node, parentNode: Node, curr
     isChildOfTaggedTemplateExpression(parentNode);
 };
 
-const toBeCaptured = ({ currentNode, parentNode, currentKey }: {currentNode: Node, parentNode: Node | null, currentKey: NodeKey}) => {
+const toBeCaptured = ({ currentNode, parentNode, currentKey }: { currentNode: Node, parentNode: Node | null, currentKey: NodeKey }) => {
   assert(parentNode, 'Parent node must exist');
   return isCaputuringTargetNode(currentNode) &&
     !shouldNotCaptureImmediateNode(currentNode, parentNode, currentKey);

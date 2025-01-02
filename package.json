@@ -12,20 +12,17 @@
   "license": "MIT",
   "type": "module",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.0.2",
-    "@eslint/js": "^9.0.0",
     "@twada/benchmark-commits": "^0.3.1",
     "@types/convert-source-map": "^2.0.0",
     "@types/estree": "^1.0.1",
     "@types/multi-stage-sourcemap": "^0.3.0",
     "@types/node": "^22.0.0",
     "depcheck": "^1.4.7",
-    "eslint": "^8.39.0",
-    "eslint-config-semistandard": "^17.0.0",
+    "eslint": "^9.0.0",
+    "neostandard": "^0.12.0",
     "rimraf": "^6.0.0",
     "tsimp": "^2.0.11",
-    "typescript": "^5.0.4",
-    "typescript-eslint": "^7.6.0"
+    "typescript": "^5.0.4"
   },
   "scripts": {
     "prepack": "npm run rebuild && npm run test:prove",
@@ -34,6 +31,7 @@
     "test:prove": "prove --exec 'node --no-warnings --test --test-reporter=tap' -r packages --ext=_test.mjs",
     "clean:all": "npm run build:clean --workspaces --if-present",
     "lint:all": "npm run lint --workspaces --if-present",
+    "fix:all": "npm run fix --workspaces --if-present",
     "build:all": "tsc --build tsconfig.build.json",
     "test:all": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*test.mjs'"
   },

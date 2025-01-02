@@ -56,7 +56,7 @@
     "vitest": "vitest run",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src",
-    "fix": "npm run lint:src -- --fix",
+    "fix": "npm run lint -- --fix",
     "test": "node --no-warnings --test --test-reporter=spec 'dist/**/*test.mjs'"
   }
 }

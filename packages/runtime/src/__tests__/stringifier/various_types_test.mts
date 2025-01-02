@@ -132,15 +132,15 @@ const fixtures: Suite = {
   },
   'Array object': {
     /* eslint-disable @typescript-eslint/no-array-constructor */
-    /* eslint-disable no-array-constructor */
+
     input: new Array(),
-    /* eslint-enable no-array-constructor */
+
     /* eslint-enable @typescript-eslint/no-array-constructor */
     expected: '[]',
     pruned: '#Array#'
   },
   'Object object': {
-    input: new Object(), // eslint-disable-line no-new-object
+    input: {},
     expected: 'Object{}',
     pruned: '#Object#'
   },
@@ -150,7 +150,7 @@ const fixtures: Suite = {
     pruned: 'function@anonymous'
   },
   'arguments object': {
-    input: (function () { return arguments; })(), // eslint-disable-line prefer-rest-params
+    input: (function () { return arguments; })(),
     expected: 'Arguments{}',
     pruned: '#Arguments#'
   },
@@ -185,12 +185,12 @@ const fixtures: Suite = {
     expected: 'Person{name:"alice",age:5}',
     pruned: '#Person#'
   },
-  'NaN': { // eslint-disable-line quote-props
+  NaN: {
     input: NaN,
     expected: 'NaN',
     pruned: 'NaN'
   },
-  'Infinity': { // eslint-disable-line quote-props
+  Infinity: {
     input: Infinity,
     expected: 'Infinity',
     pruned: 'Infinity'
@@ -200,12 +200,12 @@ const fixtures: Suite = {
     expected: '-Infinity',
     pruned: '-Infinity'
   },
-  'Math': { // eslint-disable-line quote-props
+  Math: {
     input: Math,
     expected: 'Math{}',
     pruned: '#Math#'
   },
-  'JSON': { // eslint-disable-line quote-props
+  JSON: {
     input: JSON,
     expected: 'JSON{}',
     pruned: '#JSON#'

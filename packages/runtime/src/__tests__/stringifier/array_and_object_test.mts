@@ -118,9 +118,9 @@ describe('stringify Object', () => {
   it('quote prop name if necessary', () => {
     const obj: { [key: string]: unknown } = {};
     obj['^pr"op-na:me'] = 'foo';
-    obj['a'] = 'a'; // eslint-disable-line dot-notation
-    obj['a2'] = 'a2'; // eslint-disable-line dot-notation
-    obj['1a'] = '1a'; // eslint-disable-line dot-notation
+    obj['a'] = 'a';
+    obj['a2'] = 'a2';
+    obj['1a'] = '1a';
     assert.strictEqual(stringify(obj), 'Object{"^pr\\"op-na:me":"foo",a:"a",a2:"a2","1a":"1a"}');
   });
 });

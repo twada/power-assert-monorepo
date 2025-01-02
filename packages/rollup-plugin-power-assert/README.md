@@ -7,6 +7,7 @@ Note that rollup-plugin-power-assert also supports [Vitest's assert API](https:/
 
 [![power-assert][power-assert-banner]][power-assert-url]
 
+[![Code Style][style-image]][style-url]
 [![License][license-image]][license-url]
 
 ```
@@ -218,6 +219,9 @@ Licensed under the [MIT](https://twada.mit-license.org/) license.
 
 [power-assert-url]: https://github.com/power-assert-js
 [power-assert-banner]: https://raw.githubusercontent.com/power-assert-js/power-assert-js-logo/master/banner/banner-official-fullcolor.png
+
+[style-url]: https://github.com/neostandard/neostandard
+[style-image]: https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat
 
 [license-url]: https://twada.mit-license.org/
 [license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg

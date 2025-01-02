@@ -15,7 +15,6 @@ import type {
 import type { Scoped } from './node-factory.mjs';
 import type { SyncHandler } from 'estree-walker';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeyValue = { [key: string]: any };
 
 type Visitor = {

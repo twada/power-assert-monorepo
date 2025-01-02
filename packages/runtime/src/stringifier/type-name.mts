@@ -1,6 +1,5 @@
 const toStr = Object.prototype.toString;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 function funcName (f: Function): string {
   if (f.name) {
     return f.name;
@@ -10,7 +9,6 @@ function funcName (f: Function): string {
   return match ? match[1] : '';
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ctorName (obj: any): string {
   const strName = toStr.call(obj).slice(8, -1);
   if ((strName === 'Object' || strName === 'Error') && obj.constructor) {
@@ -19,7 +17,6 @@ function ctorName (obj: any): string {
   return strName;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function typeName (val: any): string {
   if (val === null) {
     return 'null';

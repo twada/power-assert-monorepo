@@ -27,17 +27,15 @@ type RecordedArgument = {
 type ArgumentRecorder = {
   tap(value: unknown, left: number): unknown;
   rec(value: unknown, left?: number): ArgumentRecorder;
-}
+};
 
 type PowerAssert = {
   recorder(argumentNumber: number): ArgumentRecorder;
   run(...args: unknown[]): unknown;
-}
+};
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra?: unknown) => PowerAssert;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isPromiseLike (o: any): o is Promise<any> {
   return typeof o === 'object' && o !== null && typeof o.then === 'function' && typeof o.catch === 'function';
 }
@@ -181,12 +179,10 @@ function isMultiline (s: string): boolean {
 const stringify = stringifier();
 
 class PowerAssertImpl implements PowerAssert {
-  // eslint-disable-next-line @typescript-eslint/ban-types
   readonly #callee: Function;
   readonly #receiver: unknown;
   readonly #assertionMetadata: PowerAssertMetadata;
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   constructor (callee: Function, receiver: unknown, assertionMetadata: PowerAssertMetadata) {
     this.#callee = callee;
     this.#receiver = receiver;
@@ -271,7 +267,6 @@ function createPowerAssertMetadata (content: string, extra?: unknown): PowerAsse
   }, extra);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 const _power_: PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra?: unknown) => {
   return new PowerAssertImpl(callee, receiver, createPowerAssertMetadata(content, extra));
 };
