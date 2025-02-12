@@ -1,3 +1,11 @@
+### [0.5.2](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-v0.5.2) (2025-02-12)
+
+
+#### Bug Fixes
+
+  * set acorn `ecmaVersion` to `2025` to support import attributes again ([f4b3cb3f](https://github.com/twada/power-assert-monorepo/commit/f4b3cb3f7a6d635675ccf119ee7ba94e4c0c21b4))
+
+
 ### [0.5.1](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-v0.5.1) (2024-12-31)
 
 #### Chore
