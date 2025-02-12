@@ -39,7 +39,7 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.5.1",
+    "@power-assert/transpiler": "^0.5.2",
     "@power-assert/transpiler-core": "^0.4.1",
     "@rollup/pluginutils": "^5.1.0"
   },

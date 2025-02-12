@@ -55,7 +55,7 @@
     "testing"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.5.1"
+    "@power-assert/transpiler": "^0.5.2"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.2.1"

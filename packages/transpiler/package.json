@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/transpiler",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "power-assert transpiler with sourcemap support",
   "author": {
     "name": "Takuto WADA",
