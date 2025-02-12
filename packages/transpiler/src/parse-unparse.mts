@@ -20,7 +20,7 @@ export type CodeWithSourceMapConverter = {
 export async function transpileWith (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): Promise<CodeWithSourceMapConverter> {
   const ast: Node = parse(code, {
     sourceType: 'module',
-    ecmaVersion: 2024,
+    ecmaVersion: 2025,
     locations: true, // true for SourceMap
     ranges: false,
     sourceFile: filePathOrUrl
