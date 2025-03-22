@@ -50,7 +50,7 @@ use swc_core::ecma::ast::{
     Function,
     Callee
 };
-use swc_core::ecma::atoms::JsWord;
+use swc_core::ecma::atoms::Atom;
 use swc_core::ecma::visit::{
     visit_mut_pass,
     VisitMut,
@@ -120,9 +120,9 @@ impl SmallPos for Utf16Pos {
 
 #[derive(Debug)]
 struct AssertionMetadata {
-    ident_name: JsWord,
-    callee_ident_name: JsWord,
-    receiver_ident_name: Option<JsWord>,
+    ident_name: Atom,
+    callee_ident_name: Atom,
+    receiver_ident_name: Option<Atom>,
     assertion_code: String,
     assertion_start_pos: Utf8Pos,
     contains_multibyte_char: bool,
@@ -132,9 +132,9 @@ struct AssertionMetadata {
 #[derive(Debug)]
 struct ArgumentMetadata {
     is_captured: bool,
-    ident_name: JsWord,
+    ident_name: Atom,
     arg_index: usize,
-    powered_ident_name: JsWord
+    powered_ident_name: Atom
 }
 
 pub struct TransformVisitor {
@@ -142,7 +142,7 @@ pub struct TransformVisitor {
     powered_var_cnt: usize,
     argrec_var_cnt: usize,
     target_variables: FxHashSet<Id>,
-    target_modules: FxHashMap<JsWord, FxHashSet<JsWord>>,
+    target_modules: FxHashMap<Atom, FxHashSet<Atom>>,
     assertion_metadata_vec: Vec<AssertionMetadata>,
     assertion_metadata: Option<AssertionMetadata>,
     argument_metadata_vec: Vec<ArgumentMetadata>,
@@ -174,13 +174,13 @@ impl Default for TransformVisitor {
             "assert",
             "assert/strict",
         ].iter() {
-            visitor.target_modules.insert(JsWord::from(*module_name), FxHashSet::default());
+            visitor.target_modules.insert(Atom::from(*module_name), FxHashSet::default());
         }
         {
             // allowlist for vitest
             let mut vitest_allowlist = FxHashSet::default();
-            vitest_allowlist.insert(JsWord::from("assert"));
-            visitor.target_modules.insert(JsWord::from("vitest"), vitest_allowlist);
+            vitest_allowlist.insert(Atom::from("assert"));
+            visitor.target_modules.insert(Atom::from("vitest"), vitest_allowlist);
         }
         visitor
     }
@@ -249,12 +249,12 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
 }
 
 impl TransformVisitor {
-    fn next_powered_runner_variable_name(&mut self) -> JsWord {
+    fn next_powered_runner_variable_name(&mut self) -> Atom {
         self.powered_var_cnt += 1;
         format!("_pasrt{}", self.powered_var_cnt).into()
     }
 
-    fn next_argrec_variable_name(&mut self) -> JsWord {
+    fn next_argrec_variable_name(&mut self) -> Atom {
         self.argrec_var_cnt += 1;
         format!("_parg{}", self.argrec_var_cnt).into()
     }
@@ -286,7 +286,7 @@ impl TransformVisitor {
         ))
     }
 
-    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &JsWord, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut IdentName)) -> bool {
+    fn apply_to_tap_if_exists_directly_under_the_current_node(&self, expr: &mut Box<Expr>, argrec_ident_name: &Atom, f: &dyn Fn(&mut Vec<ExprOrSpread>, &mut IdentName)) -> bool {
         match expr.as_mut() {
             Expr::Call(CallExpr { callee: Callee::Expr(callee), args, .. }) => {
                 match callee.as_mut() {
@@ -307,7 +307,7 @@ impl TransformVisitor {
         false
     }
 
-    fn replace_with_rec_if_tap_exists_directly_under_the_arg(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) -> bool {
+    fn replace_with_rec_if_tap_exists_directly_under_the_arg(&self, arg: &mut ExprOrSpread, argrec_ident_name: &Atom) -> bool {
         self.apply_to_tap_if_exists_directly_under_the_current_node(&mut arg.expr, argrec_ident_name, &|_args, prop_ident| {
             prop_ident.sym = "rec".into();
         })
@@ -325,7 +325,7 @@ impl TransformVisitor {
         })
     }
 
-    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &JsWord) {
+    fn apply_binexp_hint(&self, arg: &mut ExprOrSpread, argrec_ident_name: &Atom) {
         self.apply_to_tap_if_exists_directly_under_the_current_node(&mut arg.expr, argrec_ident_name, &|args, _prop_ident| {
             let value = &mut args[0];
             // let mut pos = &args[1];
@@ -554,7 +554,7 @@ impl TransformVisitor {
         }))
     }
 
-    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: JsWord, obj_ident_name: Option<JsWord>) {
+    fn capture_assertion(&mut self, n: &mut CallExpr, prop_ident_name: Atom, obj_ident_name: Option<Atom>) {
         let mut is_some_arg_captured = false;
         let powered_ident_name = self.next_powered_runner_variable_name();
         let assertion_start_pos = Utf8Pos(n.span.lo.to_u32());
@@ -754,7 +754,7 @@ impl VisitMut for TransformVisitor {
             n.visit_mut_children_with(self);
             return;
         }
-        let (prop_name, obj_name): (Option<JsWord>, Option<JsWord>) = match n.callee {
+        let (prop_name, obj_name): (Option<Atom>, Option<Atom>) = match n.callee {
             Callee::Expr(ref mut expr) => {
                 match expr.as_mut() {
                     Expr::Member(MemberExpr{ prop: MemberProp::Ident(prop_ident), obj, .. }) => {
