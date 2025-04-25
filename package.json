@@ -12,7 +12,7 @@
   "license": "MIT",
   "type": "module",
   "devDependencies": {
-    "@twada/benchmark-commits": "^0.3.1",
+    "@twada/benchmark-commits": "^0.5.0",
     "@types/convert-source-map": "^2.0.0",
     "@types/estree": "^1.0.1",
     "@types/multi-stage-sourcemap": "^0.3.0",
