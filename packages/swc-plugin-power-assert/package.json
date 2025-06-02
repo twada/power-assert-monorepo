@@ -1,6 +1,6 @@
 {
   "name": "swc-plugin-power-assert",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "SWC plugin for power-assert",
   "keywords": [
     "swc-plugin",
