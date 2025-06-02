@@ -36,6 +36,7 @@ import type {
   ImportSpecifier,
   ImportDefaultSpecifier,
   ImportNamespaceSpecifier,
+  ImportAttribute,
   SpreadElement,
   Pattern,
   Property,
@@ -224,10 +225,11 @@ class NodeCreator {
     });
   }
 
-  importDeclaration (specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal): ImportDeclaration {
+  importDeclaration (specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal, attributes: ImportAttribute[] = []): ImportDeclaration {
     return this.newNode<ImportDeclaration>({
       type: 'ImportDeclaration',
       specifiers,
+      attributes,
       source
     });
   }
