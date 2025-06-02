@@ -1,3 +1,11 @@
+## [0.7.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-0.7.0) (2025-06-02)
+
+
+#### Features
+
+* **swc-plugin-power-assert:** upgrade swc_core crate to 26.3.* ([eed8cde6](https://github.com/twada/power-assert-monorepo/commit/eed8cde6884621319e334ae07d05b6b00dc85ae6))
+
+
 ## [0.6.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.6.0) (2025-01-01)
 
 #### Features
