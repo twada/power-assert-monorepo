@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/transpiler-core",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "power-assert transpiler core",
   "author": {
     "name": "Takuto WADA",
