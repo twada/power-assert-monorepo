@@ -1,3 +1,11 @@
+### [0.4.2](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.4.2) (2025-06-02)
+
+
+#### Bug Fixes
+
+* **transpiler-core:** add `attributes` field to ImportDeclaration ([e9b90068](https://github.com/twada/power-assert-monorepo/commit/e9b90068af01af2ab9df47a7819989e8c7565d56))
+
+
 ### [0.4.1](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.4.1) (2024-12-31)
 
 #### Chore
