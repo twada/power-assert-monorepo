@@ -1,8 +1,8 @@
 import { strict as assert } from 'node:assert';
 import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
 import { readFile } from 'node:fs/promises';
-import { dirname, extname, resolve as resolvePath } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { extname } from 'node:path';
+import { findPackageJSON } from 'node:module';
 import type { LoadFnOutput, LoadHookContext, ResolveFnOutput, ResolveHookContext } from 'node:module';
 
 type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
@@ -108,24 +108,12 @@ async function getPackageType (url: string): Promise<string | false> {
   // this simple truthy check for whether `url` contains a file extension will
   // work for most projects but does not cover some edge-cases (such as
   // extensionless files or a url ending in a trailing space)
-  const isFilePath = !!extname(url);
-  // If it is a file path, get the directory it's in
-  const dir = isFilePath
-    ? dirname(fileURLToPath(url))
-    : url;
-  // Compose a file path to a package.json in the same directory,
-  // which may or may not exist
-  const packagePath = resolvePath(dir, 'package.json');
-  // Try to read the possibly nonexistent package.json
-  const type = await readFile(packagePath, { encoding: 'utf8' })
-    .then((filestring) => JSON.parse(filestring).type)
-    .catch((err) => {
-      if (err?.code !== 'ENOENT') console.error(err);
-    });
-  // If package.json existed and contained a `type` field with a value, voilà
-  if (type) return type;
-  // Otherwise, (if not at the root) continue checking the next directory up
-  // If at the root, stop and return false
-  return dir.length > 1 && getPackageType(resolvePath(dir, '..'));
+  const pJson = findPackageJSON(url);
+  assert(pJson !== undefined, 'cannot find package.json');
+
+  return readFile(pJson, 'utf8')
+    .then(JSON.parse)
+    .then((json) => json?.type)
+    .catch(() => undefined);
 }
 // end borrowing from https://nodejs.org/api/module.html#transpilation
