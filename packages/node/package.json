@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/node",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "power-assert custom hook for Node Test Runner",
   "author": {
     "name": "Takuto WADA",
