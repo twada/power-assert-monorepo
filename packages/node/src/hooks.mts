@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
-import { findPackageJSON } from 'node:module';
+import { findPackageJSON, stripTypeScriptTypes } from 'node:module';
 import type { LoadFnOutput, LoadHookContext, ResolveFnOutput, ResolveHookContext } from 'node:module';
 
 type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
@@ -44,7 +44,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     return nextResolveWithShortCircuitFalse(specifier, context);
   }
 
-  const { url: nextUrl } = await nextResolveWithShortCircuitFalse(specifier, context);
+  const { url: nextUrl, format } = await nextResolveWithShortCircuitFalse(specifier, context);
   const url = nextUrl ?? new URL(specifier, context.parentURL).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
@@ -60,7 +60,7 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
   importAttributes.powerAssert = 'power-assert';
   // const extraAttrs = { powerAssert: 'power-assert' };
   const resolved: ResolveFnOutput = {
-    format: 'module',
+    format: format === 'module-typescript' ? 'module-typescript' : 'module',
     // importAttributes: { ...importAttributes, ...extraAttrs },
     importAttributes,
     shortCircuit: false,
@@ -82,7 +82,7 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
     const loaded = await nextLoad(url, context);
     return { ...loaded, shortCircuit: false };
   };
-  const { importAttributes } = context;
+  const { importAttributes, format } = context;
   if (!importAttributes.powerAssert) {
     return nextLoadWithShortCircuitFalse(url, context);
   }
@@ -90,10 +90,13 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
 
   const { source: rawSource } = await nextLoadWithShortCircuitFalse(url, context);
   assert(rawSource !== undefined, 'rawSource should not be undefined');
-  const incomingCode = rawSource.toString();
+  let incomingCode = rawSource.toString();
+  if (format === 'module-typescript') {
+    incomingCode = stripTypeScriptTypes(incomingCode);
+  }
   const transpiled = await transpileWithInlineSourceMap(incomingCode, { file: url });
   return {
-    format: 'module',
+    format,
     shortCircuit: false,
     source: transpiled.code
   };

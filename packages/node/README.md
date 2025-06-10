@@ -134,7 +134,23 @@ Then you will see the power-assert output.
 TypeScript Support
 ---------------------------------------
 
-For TypeScript, just importing [tsimp](https://github.com/tapjs/tsimp)'s `tsimp/import` hook __BEFORE__ `@power-assert/node` hook works fine.
+### Lightweight TypeScript support
+
+For lightweight TypeScript support, you can use the built-in support for [Type stripping](https://nodejs.org/docs/latest/api/typescript.html#type-stripping). Node.js will execute TypeScript files that contains only erasable TypeScript syntax. `@power-assert/node` hook works fine with this feature.
+
+```
+node --enable-source-maps --import @power-assert/node --test some.test.ts
+```
+
+For Node version `>=22.6.0 <23.6.0` requires `--experimental-strip-types` flag explicitly.
+
+```
+node --experimental-strip-types --enable-source-maps --import @power-assert/node --test some.test.ts
+```
+
+### Full TypeScript support
+
+For full TypeScript support, just importing [tsimp](https://github.com/tapjs/tsimp)'s `tsimp/import` hook __BEFORE__ `@power-assert/node` hook works fine.
 
 ```
 node --enable-source-maps --import tsimp/import --import @power-assert/node --test some.test.ts

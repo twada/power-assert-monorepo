@@ -64,9 +64,12 @@
     "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint -- --fix",
-    "example:ts": "node --enable-source-maps --import tsimp/import --import @power-assert/node --test examples/bowling.test.mts",
+    "example:tsimp": "node --enable-source-maps --import tsimp/import --import @power-assert/node --test examples/bowling.test.mts",
+    "example:ts": "node --experimental-strip-types --enable-source-maps --import @power-assert/node --test examples/bowling.test.mts",
     "example": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs",
     "demo": "node --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
-    "test": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:110:7'"
+    "test:js": "node --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:110:7'",
+    "test:ts": "node --experimental-strip-types --enable-source-maps --import @power-assert/node --test examples/bowling.test.mts | grep 'examples/bowling.test.mts:114:7'",
+    "test": "npm run test:js && npm run test:ts"
   }
 }
