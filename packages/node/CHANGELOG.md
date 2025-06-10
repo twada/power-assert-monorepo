@@ -1,3 +1,16 @@
+## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.5.0) (2025-06-10)
+
+
+#### Features
+
+* [Support direct TypeScript test execution with Node.js's Type stripping feature](https://github.com/twada/power-assert-monorepo/pull/22)
+
+
+#### Breaking Changes
+
+* set Node minimum version to v22.14.0, the version where `findPackageJSON` is introduced ([9d4db06f](https://github.com/twada/power-assert-monorepo/commit/9d4db06f54134ee0e56f132c8063aa21649c4f4f))
+
+
 ### [0.4.2](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.4.2) (2024-12-09)
 
 #### Bug Fixes
