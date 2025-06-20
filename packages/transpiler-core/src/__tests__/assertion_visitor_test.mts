@@ -155,12 +155,10 @@ assert.ok(truthy);
     });
 
     describe('resultNode of leaveArgument', () => {
-      // _parg1._rec(truthy, 'arguments/0', 10)
       it('its type', () => {
         assert.equal(resultNode.type, 'CallExpression');
       });
       it('its callee', () => {
-        // _parg1._rec
         const callee = resultNode.callee;
         assert.equal(callee.type, 'MemberExpression');
         assert.equal(callee.object.type, 'Identifier');
@@ -169,12 +167,21 @@ assert.ok(truthy);
         assert.equal(callee.property.name, 'rec');
       });
       it('its arguments', () => {
-        // (truthy, 'arguments/0', 10)
         const args = resultNode.arguments;
-        assert.equal(args.length, 2);
+        assert.equal(args.length, 5);
         assert.equal(args[0], currentNode);
+        // markerPos
         assert.equal(args[1].type, 'Literal');
         assert.equal(args[1].value, 10);
+        // startPos
+        assert.equal(args[2].type, 'Literal');
+        assert.equal(args[2].value, 10);
+        // endPos
+        assert.equal(args[3].type, 'Literal');
+        assert.equal(args[3].value, 16);
+        // evalOrder
+        assert.equal(args[4].type, 'Literal');
+        assert.equal(args[4].value, 0);
       });
     });
   });

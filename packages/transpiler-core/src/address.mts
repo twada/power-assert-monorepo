@@ -18,6 +18,12 @@ type AcornSwcNode = Node & {
   end: number;
 };
 
+export type Address = {
+  markerPos: number;
+  startPos: number;
+  endPos: number;
+};
+
 function isAcornSwcNode (node: Node): node is AcornSwcNode {
   return Object.hasOwn(node, 'start') && Object.hasOwn(node, 'end');
 }
@@ -33,11 +39,19 @@ function getRange (node: Node): Range {
   }
 }
 
-export function searchAddress (currentNode: Node, offset: Position | number, code: string): number {
+export function searchAddress (currentNode: Node, offset: Position | number, code: string): Address {
   if (typeof offset === 'number') {
-    return calculateAddressOf(currentNode, offset, code) - offset;
+    return {
+      markerPos: calculateAddressOf(currentNode, offset, code) - offset,
+      startPos: startAddressOf(currentNode, offset) - offset,
+      endPos: endAddressOf(currentNode, offset) - offset
+    };
   } else {
-    return calculateAddressOf(currentNode, offset, code) - offset.column;
+    return {
+      markerPos: calculateAddressOf(currentNode, offset, code) - offset.column,
+      startPos: startAddressOf(currentNode, offset) - offset.column,
+      endPos: endAddressOf(currentNode, offset) - offset.column
+    };
   }
 }
 
@@ -114,6 +128,15 @@ function startAddressOf (node: Node, offset: Position | number): number {
   } else {
     assert(node.loc, 'Node must have location information');
     return node.loc.start.column;
+  }
+}
+
+function endAddressOf (node: Node, offset: Position | number): number {
+  if (typeof offset === 'number') {
+    return getRange(node)[1];
+  } else {
+    assert(node.loc, 'Node must have location information');
+    return node.loc.end.column;
   }
 }
 
