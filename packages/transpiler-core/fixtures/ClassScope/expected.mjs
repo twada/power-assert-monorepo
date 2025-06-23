@@ -8,4 +8,4 @@ class Dog {
   }
 }
 const d = new Dog();
-_pasrt1.run(_parg1.rec(_parg1.tap(d, 7, 7, 8, 1).say(), 9, 7, 14, 0));
+_pasrt1.run(_parg1.rec(_parg1.tap(d, 7, 7, 8).say(), 9, 7, 14));

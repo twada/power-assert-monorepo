@@ -168,7 +168,7 @@ assert.ok(truthy);
       });
       it('its arguments', () => {
         const args = resultNode.arguments;
-        assert.equal(args.length, 5);
+        assert.equal(args.length, 4);
         assert.equal(args[0], currentNode);
         // markerPos
         assert.equal(args[1].type, 'Literal');
@@ -179,9 +179,6 @@ assert.ok(truthy);
         // endPos
         assert.equal(args[3].type, 'Literal');
         assert.equal(args[3].value, 16);
-        // evalOrder
-        assert.equal(args[4].type, 'Literal');
-        assert.equal(args[4].value, 0);
       });
     });
   });

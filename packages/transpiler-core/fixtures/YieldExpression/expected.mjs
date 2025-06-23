@@ -5,9 +5,9 @@ function* gen(a) {
     binexp: "==="
   });
   const _parg1 = _pasrt1.recorder(0);
-  _pasrt1.run(_parg1.rec(_parg1.tap(yield a, 8, 8, 17, 1, {
+  _pasrt1.run(_parg1.rec(_parg1.tap(yield a, 8, 8, 17, {
     hint: "left"
-  }) === _parg1.tap(3, 23, 23, 24, 2, {
+  }) === _parg1.tap(3, 23, 23, 24, {
     hint: "right"
-  }), 19, 7, 24, 0));
+  }), 19, 7, 24));
 }
