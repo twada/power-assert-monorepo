@@ -16,9 +16,9 @@ type CapturedValueMetadata = {
 
 type CapturedValue = {
   value: unknown;
-  left: number;
-  start: number;
-  end: number;
+  markerPos: number;
+  startPos: number;
+  endPos: number;
   evalOrder: number;
   metadata?: CapturedValueMetadata;
 };
@@ -29,8 +29,8 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  tap(value: unknown, left: number, start: number, end: number, metadata?: CapturedValueMetadata): unknown;
-  rec(value: unknown, left?: number, start?: number, end?: number): ArgumentRecorder;
+  tap(value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown;
+  rec(value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder;
 };
 
 type PowerAssert = {
@@ -92,36 +92,34 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, left: number, start: number, end: number, metadata?: CapturedValueMetadata): unknown {
+  tap (value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown {
     const evalOrder = ++this.#evalOrder;
     this.#capturedValues.push({
       value: wrap(value),
-      // espath,
-      left,
-      start,
-      end,
+      markerPos,
+      startPos,
+      endPos,
       evalOrder,
       metadata
     });
     return value;
   }
 
-  rec (value: unknown, left?: number, start?: number, end?: number): ArgumentRecorder {
+  rec (value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder {
     try {
-      if (typeof left === 'undefined') {
+      if (typeof markerPos === 'undefined') {
         // node right under the assertion is not captured
         return this;
       }
       const evalOrder = ++this.#evalOrder;
-      assert(typeof left === 'number', 'left must be a number');
-      assert(typeof start === 'number', 'start must be a number');
-      assert(typeof end === 'number', 'end must be a number');
+      assert(typeof markerPos === 'number', 'markerPos must be a number');
+      assert(typeof startPos === 'number', 'startPos must be a number');
+      assert(typeof endPos === 'number', 'endPos must be a number');
       const cap = {
         value: wrap(value),
-        // espath,
-        left,
-        start,
-        end,
+        markerPos,
+        startPos,
+        endPos,
         evalOrder
       };
       this.#capturedValues.push(cap);
@@ -227,8 +225,7 @@ class PowerAssertImpl implements PowerAssert {
           for (const cap of rec.capturedValues) {
             logs.push({
               value: cap.value,
-              leftIndex: cap.left,
-              markerPos: cap.left,
+              markerPos: cap.markerPos,
               startPos: cap.start,
               endPos: cap.end,
               evalOrder: cap.evalOrder,
@@ -254,8 +251,8 @@ class PowerAssertImpl implements PowerAssert {
         newMessageFragments.push('# Human-readable format:');
         newMessageFragments.push(diagram);
       }
-      newMessageFragments.push('');
 
+      newMessageFragments.push('');
       const stepwiseLines = renderStepwise(assertionLine, logs);
       newMessageFragments.push('# AI-readable format:');
       newMessageFragments.push('Assertion failed: ' + assertionLine);
