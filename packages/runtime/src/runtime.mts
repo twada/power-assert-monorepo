@@ -20,6 +20,7 @@ type CapturedValue = {
   startPos: number;
   endPos: number;
   evalOrder: number;
+  argIndex: number;
   metadata?: CapturedValueMetadata;
 };
 
@@ -96,6 +97,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     const evalOrder = ++this.#evalOrder;
     this.#capturedValues.push({
       value: wrap(value),
+      argIndex: this.#argumentNumber,
       markerPos,
       startPos,
       endPos,
@@ -117,6 +119,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
       assert(typeof endPos === 'number', 'endPos must be a number');
       const cap = {
         value: wrap(value),
+        argIndex: this.#argumentNumber,
         markerPos,
         startPos,
         endPos,
@@ -218,20 +221,10 @@ class PowerAssertImpl implements PowerAssert {
       }
       const recorded = poweredArgs.map((p) => eject(p));
       const logs = [];
-      let argIndex = 0;
       for (const rec of recorded) {
-        argIndex++;
         if (rec.type === 'PoweredArgument') {
           for (const cap of rec.capturedValues) {
-            logs.push({
-              value: cap.value,
-              markerPos: cap.markerPos,
-              startPos: cap.start,
-              endPos: cap.end,
-              evalOrder: cap.evalOrder,
-              argIndex,
-              metadata: cap.metadata
-            });
+            logs.push(cap);
           }
         }
       }
