@@ -11,31 +11,34 @@ type Log = {
 
 const stringify = stringifier();
 
-// soft by argIndex asc then by evalOrder desc
-const stepwiseOrder = (a: Log, b: Log) => {
-  if (a.argIndex !== b.argIndex) {
-    // Sort by argIndex first. This is to ensure that the order of arguments is preserved
-    return a.argIndex - b.argIndex;
-  }
-  return a.evalOrder - b.evalOrder;
-};
-
 export function renderStepwise (assertionLine: string, logs: Log[]): string {
+  // create shallow copy of logs to avoid mutating the original array
   const capturedEvents: Log[] = ([] as Log[]).concat(logs);
-  capturedEvents.sort(stepwiseOrder);
   return constructRows(assertionLine, capturedEvents).join('\n');
 }
 
 function constructRows (assertionLine: string, logs: Log[]): string[] {
   const rows: string[] = [];
-  let step = 0;
-  for (const log of logs) {
-    step++;
-    const dumpedValue = stringify(log.value);
-    const expression = assertionLine.slice(log.startPos, log.endPos);
-    // rows.push(`Step ${step}: arg: ${log.argIndex}: \`${expression}\` => ${dumpedValue}`);
-    rows.push(`Step ${step}: arg: ${log.argIndex} eval:${log.evalOrder}: \`${expression}\` => ${dumpedValue}`);
-    // rows.push(`Step ${step}: \`${expression}\` => ${dumpedValue}`);
+  for (const argIndex of uniqueArgIndexes(logs)) {
+    rows.push(`=== arg:${argIndex} ===`);
+    const steps = logs.filter(log => log.argIndex === argIndex);
+    steps.sort((a, b) => a.evalOrder - b.evalOrder);
+    for (const step of steps) {
+      const dumpedValue = stringify(step.value);
+      const expression = assertionLine.slice(step.startPos, step.endPos);
+      rows.push(`Step ${step.evalOrder}: \`${expression}\` => ${dumpedValue}`);
+    }
   }
   return rows;
+}
+
+function uniqueArgIndexes (logs: Log[]): number[] {
+  const uniqueArgIndexes: number[] = logs.reduce((found: number[], log: Log) => {
+    if (!found.includes(log.argIndex)) {
+      found.push(log.argIndex);
+    }
+    return found;
+  }, []);
+  uniqueArgIndexes.sort((a, b) => a - b);
+  return uniqueArgIndexes;
 }
