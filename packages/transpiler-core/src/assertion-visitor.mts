@@ -1,5 +1,5 @@
 import { nodeFactory } from './node-factory.mjs';
-import { searchAddress } from './address.mjs';
+import { calculateAddressFor } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
@@ -61,17 +61,6 @@ function isMemberExpression (node: Node): node is MemberExpression {
 
 function isAcornSwcNode (node: Node): node is AcornSwcNode {
   return Object.hasOwn(node, 'start') && Object.hasOwn(node, 'end');
-}
-
-function getStartRangeValue (node: Node): number {
-  if (node.range) {
-    return node.range[0];
-  }
-  if (isAcornSwcNode(node)) {
-    return node.start;
-  } else {
-    assert(false, 'Node must have range or start/end');
-  }
 }
 
 // extract string from code between start and end position
@@ -164,23 +153,12 @@ class ArgumentModification {
   }
 
   saveAddress (currentNode: Node): void {
-    const address = this.#calculateAddress(currentNode);
+    const address = calculateAddressFor(currentNode, this.#callexp, this.#assertionCode);
     this.#addresses.set(currentNode, address);
   }
 
   #targetAddress (currentNode: Node): Address | undefined {
     return this.#addresses.get(currentNode);
-  }
-
-  #calculateAddress (currentNode: Node): Address {
-    const code = this.#assertionCode;
-    if (this.#callexp.loc) {
-      const offsetPosition = this.#callexp.loc.start;
-      return searchAddress(currentNode, offsetPosition, code);
-    } else {
-      const offset = getStartRangeValue(this.#callexp);
-      return searchAddress(currentNode, offset, code);
-    }
   }
 
   #relativeAstPath (astPath: AstPath): AstPath {
@@ -273,7 +251,7 @@ export class AssertionVisitor {
     }
     if (this.#callexp.range !== undefined) {
       this.#assertionCode = wholeCode.slice(this.#callexp.range[0], this.#callexp.range[1]);
-    } else if (this.#callexp.start !== undefined && this.#callexp.end !== undefined) {
+    } else if (isAcornSwcNode(this.#callexp)) {
       // Acorn/SWC like node (has start and end property)
       this.#assertionCode = wholeCode.slice(this.#callexp.start, this.#callexp.end);
     } else if (this.#callexp.loc) {
