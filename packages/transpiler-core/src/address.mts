@@ -40,30 +40,21 @@ function getRange (node: Node): Range {
 }
 
 export function calculateAddressFor (currentNode: Node, offsetNode: Node, code: string): Address {
+  let offset: Position | number;
   if (offsetNode.range) {
-    const offset = offsetNode.range[0];
-    return {
-      markerPos: calculateMarkerPosOf(currentNode, offset, code) - offset,
-      startPos: startPosOf(currentNode, offset, code) - offset,
-      endPos: endPosOf(currentNode, offset, code) - offset
-    };
+    offset = offsetNode.range[0];
   } else if (isAcornSwcNode(offsetNode)) {
-    const offset = offsetNode.start;
-    return {
-      markerPos: calculateMarkerPosOf(currentNode, offset, code) - offset,
-      startPos: startPosOf(currentNode, offset, code) - offset,
-      endPos: endPosOf(currentNode, offset, code) - offset
-    };
+    offset = offsetNode.start;
   } else if (offsetNode.loc) {
-    const offset = offsetNode.loc.start;
-    return {
-      markerPos: calculateMarkerPosOf(currentNode, offset, code),
-      startPos: startPosOf(currentNode, offset, code),
-      endPos: endPosOf(currentNode, offset, code)
-    };
+    offset = offsetNode.loc.start;
   } else {
     assert(false, 'Node must have range or location information');
   }
+  return {
+    markerPos: calculateMarkerPosOf(currentNode, offset, code),
+    startPos: startPosOf(currentNode, offset, code),
+    endPos: endPosOf(currentNode, offset, code)
+  };
 }
 
 function calculateMarkerPosOf (currentNode: Node, offset: Position | number, code: string): number {
@@ -134,28 +125,20 @@ function infixOperatorAddressOf (expression: BinaryExpression | LogicalExpressio
 }
 
 function startPosOf (node: Node, offset: Position | number, code: string): number {
-  if (node.range) {
-    return node.range[0];
-  } else if (isAcornSwcNode(node)) {
-    return node.start;
-  } else if (node.loc) {
-    assert(typeof offset !== 'number', 'Offset must not be a number when node has location information');
-    return columnToPos(node.loc.start, offset, code);
+  if (typeof offset === 'number') {
+    return getRange(node)[0] - offset;
   } else {
-    assert(false, 'Node must have range or location information');
+    assert(node.loc, 'Node must have location information');
+    return columnToPos(node.loc.start, offset, code);
   }
 }
 
 function endPosOf (node: Node, offset: Position | number, code: string): number {
-  if (node.range) {
-    return node.range[1];
-  } else if (isAcornSwcNode(node)) {
-    return node.end;
-  } else if (node.loc) {
-    assert(typeof offset !== 'number', 'Offset must not be a number when node has location information');
-    return columnToPos(node.loc.end, offset, code);
+  if (typeof offset === 'number') {
+    return getRange(node)[1] - offset;
   } else {
-    assert(false, 'Node must have range or location information');
+    assert(node.loc, 'Node must have location information');
+    return columnToPos(node.loc.end, offset, code);
   }
 }
 
@@ -165,9 +148,9 @@ function searchFor (searchString: string, searchStartNode: Node, offset: Positio
     const searchStart = baseLoc[1] - offset - 1;
     const found = code.indexOf(searchString, searchStart);
     if (found !== -1) {
-      return found + offset;
+      return found;
     } else {
-      return baseLoc[0];
+      return baseLoc[0] - offset;
     }
   } else {
     assert(searchStartNode.loc, 'Node must have location information');
