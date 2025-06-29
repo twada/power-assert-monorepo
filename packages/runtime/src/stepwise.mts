@@ -6,7 +6,8 @@ type Log = {
   startPos: number
   endPos: number,
   evalOrder: number,
-  argIndex: number
+  argIndex: number,
+  metadata?: { [key: string]: any }
 };
 
 const stringify = stringifier();
