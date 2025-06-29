@@ -48,20 +48,12 @@ type ArgumentModificationParams = {
   assertionCode: string,
   transformation: Transformation,
   poweredAssertIdent: Identifier,
-  evalOrder: number,
   binexp?: string
 };
 
 type ExtraProps = {
   [key: string]: string | number | boolean | null | undefined
 };
-
-export type StepInfo = {
-  markerPos: number;
-  startPos: number;
-  endPos: number;
-  evalOrder: number;
-}
 
 function isMemberExpression (node: Node): node is MemberExpression {
   return node && node.type === 'MemberExpression';
@@ -107,13 +99,12 @@ class ArgumentModification {
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
-  readonly #addresses: Map<Node, StepInfo>;
+  readonly #addresses: Map<Node, Address>;
   readonly #argumentRecorderIdent: Identifier;
   readonly #binexp: string | undefined;
-  #evalOrder: number;
   #argumentModified: boolean;
 
-  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent, evalOrder, binexp }: ArgumentModificationParams) {
+  constructor ({ currentNode, argNum, argNode, callexp, assertionPath, assertionCode, transformation, poweredAssertIdent, binexp }: ArgumentModificationParams) {
     this.#argNum = argNum;
     this.#argNode = argNode;
     this.#callexp = callexp;
@@ -123,8 +114,7 @@ class ArgumentModification {
     this.#poweredAssertIdent = poweredAssertIdent;
     this.#binexp = binexp;
     this.#argumentModified = false;
-    this.#addresses = new Map<Node, StepInfo>();
-    this.#evalOrder = evalOrder;
+    this.#addresses = new Map<Node, Address>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
     const types = nodeFactory(currentNode);
     const ident = types.identifier(recorderVariableName);
@@ -153,10 +143,6 @@ class ArgumentModification {
     }
   }
 
-  lastEvalOrder (): number {
-    return this.#evalOrder;
-  }
-
   isArgumentModified (): boolean {
     return !!this.#argumentModified;
   }
@@ -179,16 +165,10 @@ class ArgumentModification {
 
   saveAddress (currentNode: Node): void {
     const address = this.#calculateAddress(currentNode);
-    const stepInfo = {
-      markerPos: address.markerPos,
-      startPos: address.startPos,
-      endPos: address.endPos,
-      evalOrder: this.#evalOrder++
-    };
-    this.#addresses.set(currentNode, stepInfo);
+    this.#addresses.set(currentNode, address);
   }
 
-  #targetAddress (currentNode: Node): StepInfo | undefined {
+  #targetAddress (currentNode: Node): Address | undefined {
     return this.#addresses.get(currentNode);
   }
 
@@ -215,12 +195,11 @@ class ArgumentModification {
       // types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
-      const stepInfo = this.#targetAddress(currentNode);
-      assert(typeof stepInfo !== 'undefined', 'stepInfo must exist');
-      args.push(types.numericLiteral(stepInfo.markerPos));
-      args.push(types.numericLiteral(stepInfo.startPos));
-      args.push(types.numericLiteral(stepInfo.endPos));
-      args.push(types.numericLiteral(stepInfo.evalOrder));
+      const address = this.#targetAddress(currentNode);
+      assert(typeof address !== 'undefined', 'address must exist');
+      args.push(types.numericLiteral(address.markerPos));
+      args.push(types.numericLiteral(address.startPos));
+      args.push(types.numericLiteral(address.endPos));
     }
     const extraProps: ExtraProps = {};
     if (this.#binexp && (relativeAstPath.join('/') === 'arguments/0/left')) {
@@ -367,8 +346,6 @@ export class AssertionVisitor {
     const currentNode = node;
     // going to capture every argument
     const argNum = this.#argumentModifications.length;
-    const lastModification = this.#argumentModifications[argNum - 1];
-    const starEvalOrder = lastModification ? lastModification.lastEvalOrder() : 0;
     const modification = new ArgumentModification({
       currentNode,
       argNum,
@@ -378,7 +355,6 @@ export class AssertionVisitor {
       assertionCode: this.#assertionCode,
       transformation: this.#transformation,
       poweredAssertIdent: this.#poweredAssertIdent,
-      evalOrder: starEvalOrder,
       binexp: this.#binexp
     });
     // modification.enter(controller);
