@@ -29,8 +29,8 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  tap(value: unknown, left: number, start: number, end: number, evalOrder: number, metadata?: CapturedValueMetadata): unknown;
-  rec(value: unknown, left?: number, start?: number, end?: number, evalOrder?: number): ArgumentRecorder;
+  tap(value: unknown, left: number, start: number, end: number, metadata?: CapturedValueMetadata): unknown;
+  rec(value: unknown, left?: number, start?: number, end?: number): ArgumentRecorder;
 };
 
 type PowerAssert = {
@@ -69,6 +69,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   #capturedValues: CapturedValue[];
   #recorded: RecordedArgument | null;
   #val: unknown;
+  #evalOrder: number;
 
   constructor (powerAssert: PowerAssert, argumentNumber: number) {
     this.#powerAssert = powerAssert;
@@ -76,6 +77,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     this.#capturedValues = [];
     this.#recorded = null;
     this.#val = null;
+    this.#evalOrder = 0;
   }
 
   actualValue (): unknown {
@@ -90,7 +92,8 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, left: number, start: number, end: number, evalOrder: number, metadata?: CapturedValueMetadata): unknown {
+  tap (value: unknown, left: number, start: number, end: number, metadata?: CapturedValueMetadata): unknown {
+    const evalOrder = ++this.#evalOrder;
     this.#capturedValues.push({
       value: wrap(value),
       // espath,
@@ -103,16 +106,16 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  rec (value: unknown, left?: number, start?: number, end?: number, evalOrder?: number): ArgumentRecorder {
+  rec (value: unknown, left?: number, start?: number, end?: number): ArgumentRecorder {
     try {
       if (typeof left === 'undefined') {
         // node right under the assertion is not captured
         return this;
       }
+      const evalOrder = ++this.#evalOrder;
       assert(typeof left === 'number', 'left must be a number');
       assert(typeof start === 'number', 'start must be a number');
       assert(typeof end === 'number', 'end must be a number');
-      assert(typeof evalOrder === 'number', 'evalOrder must be a number');
       const cap = {
         value: wrap(value),
         // espath,
@@ -217,7 +220,9 @@ class PowerAssertImpl implements PowerAssert {
       }
       const recorded = poweredArgs.map((p) => eject(p));
       const logs = [];
+      let argIndex = 0;
       for (const rec of recorded) {
+        argIndex++;
         if (rec.type === 'PoweredArgument') {
           for (const cap of rec.capturedValues) {
             logs.push({
@@ -227,6 +232,7 @@ class PowerAssertImpl implements PowerAssert {
               startPos: cap.start,
               endPos: cap.end,
               evalOrder: cap.evalOrder,
+              argIndex,
               metadata: cap.metadata
             });
           }
