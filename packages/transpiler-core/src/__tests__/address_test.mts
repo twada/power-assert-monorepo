@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { calculateAddressFor } from '../address.mjs';
+import { calculateAssertionRelativeOffsetFor } from '../address.mjs';
 import { parse } from 'acorn';
 import { parseModule } from 'meriyah';
 import type { Node, Program, ExpressionStatement } from 'estree';
@@ -36,7 +36,7 @@ function parseByAcorn (code: string, locations: boolean, ranges: boolean): Progr
 }
 parseByAcorn.parserName = 'acorn';
 
-describe('calculateAddressFor', () => {
+describe('calculateAssertionRelativeOffsetFor', () => {
   const fixtures = [
     {
       name: 'Identifier',
@@ -97,7 +97,7 @@ describe('calculateAddressFor', () => {
               const ast = parseFixture(code, loc, range);
               const callExpression = (ast.body[0] as ExpressionStatement).expression;
               const targetNode = dig(callExpression, espath);
-              const actual = calculateAddressFor(targetNode, callExpression, code);
+              const actual = calculateAssertionRelativeOffsetFor(targetNode, callExpression, code);
               assert.deepEqual(actual, expected);
             });
           };

@@ -1,10 +1,10 @@
 import { nodeFactory } from './node-factory.mjs';
-import { calculateAddressFor } from './address.mjs';
+import { calculateAssertionRelativeOffsetFor } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
 
-import type { Address } from './address.mjs';
+import type { AssertionRelativeOffset } from './address.mjs';
 import type { Transformation } from './transformation.mjs';
 import type {
   Node,
@@ -88,7 +88,7 @@ class ArgumentModification {
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
-  readonly #addresses: Map<Node, Address>;
+  readonly #addresses: Map<Node, AssertionRelativeOffset>;
   readonly #argumentRecorderIdent: Identifier;
   readonly #binexp: string | undefined;
   #argumentModified: boolean;
@@ -103,7 +103,7 @@ class ArgumentModification {
     this.#poweredAssertIdent = poweredAssertIdent;
     this.#binexp = binexp;
     this.#argumentModified = false;
-    this.#addresses = new Map<Node, Address>();
+    this.#addresses = new Map<Node, AssertionRelativeOffset>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
     const types = nodeFactory(currentNode);
     const ident = types.identifier(recorderVariableName);
@@ -153,11 +153,11 @@ class ArgumentModification {
   }
 
   saveAddress (currentNode: Node): void {
-    const address = calculateAddressFor(currentNode, this.#callexp, this.#assertionCode);
+    const address = calculateAssertionRelativeOffsetFor(currentNode, this.#callexp, this.#assertionCode);
     this.#addresses.set(currentNode, address);
   }
 
-  #targetAddress (currentNode: Node): Address | undefined {
+  #assertionRelativeOffsetFor (currentNode: Node): AssertionRelativeOffset | undefined {
     return this.#addresses.get(currentNode);
   }
 
@@ -173,11 +173,11 @@ class ArgumentModification {
       // types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
-      const address = this.#targetAddress(currentNode);
-      assert(typeof address !== 'undefined', 'address must exist');
-      args.push(types.numericLiteral(address.markerPos));
-      args.push(types.numericLiteral(address.startPos));
-      args.push(types.numericLiteral(address.endPos));
+      const assertionRelativeOffset = this.#assertionRelativeOffsetFor(currentNode);
+      assert(typeof assertionRelativeOffset !== 'undefined', 'assertionRelativeOffset must exist');
+      args.push(types.numericLiteral(assertionRelativeOffset.markerPos));
+      args.push(types.numericLiteral(assertionRelativeOffset.startPos));
+      args.push(types.numericLiteral(assertionRelativeOffset.endPos));
     }
     const extraProps: ExtraProps = {};
     if (this.#binexp && (relativeAstPath.join('/') === 'arguments/0/left')) {

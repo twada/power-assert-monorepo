@@ -18,7 +18,7 @@ type AcornSwcNode = Node & {
   end: number;
 };
 
-export type Address = {
+export type AssertionRelativeOffset = {
   markerPos: number;
   startPos: number;
   endPos: number;
@@ -39,137 +39,136 @@ function getRange (node: Node): Range {
   }
 }
 
-export function calculateAddressFor (currentNode: Node, offsetNode: Node, code: string): Address {
-  let offset: Position | number;
-  if (offsetNode.range) {
-    offset = offsetNode.range[0];
-  } else if (isAcornSwcNode(offsetNode)) {
-    offset = offsetNode.start;
-  } else if (offsetNode.loc) {
-    offset = offsetNode.loc.start;
+export function calculateAssertionRelativeOffsetFor (currentNode: Node, baseNode: Node, code: string): AssertionRelativeOffset {
+  let base: Position | number;
+  if (baseNode.range) {
+    base = baseNode.range[0];
+  } else if (isAcornSwcNode(baseNode)) {
+    base = baseNode.start;
+  } else if (baseNode.loc) {
+    base = baseNode.loc.start;
   } else {
     assert(false, 'Node must have range or location information');
   }
   return {
-    markerPos: calculateMarkerPosOf(currentNode, offset, code),
-    startPos: startPosOf(currentNode, offset, code),
-    endPos: endPosOf(currentNode, offset, code)
+    markerPos: calculateMarkerPosOf(currentNode, base, code),
+    startPos: startPosOf(currentNode, base, code),
+    endPos: endPosOf(currentNode, base, code)
   };
 }
 
-function calculateMarkerPosOf (currentNode: Node, offset: Position | number, code: string): number {
+function calculateMarkerPosOf (currentNode: Node, base: Position | number, code: string): number {
   switch (currentNode.type) {
     case 'MemberExpression':
-      return propertyAddressOf(currentNode, offset, code);
+      return propertyAddressOf(currentNode, base, code);
     case 'CallExpression':
-      return calculateCallExpressionAddress(currentNode, offset, code);
+      return calculateCallExpressionAddress(currentNode, base, code);
     case 'BinaryExpression':
     case 'LogicalExpression':
     case 'AssignmentExpression':
-      return infixOperatorAddressOf(currentNode, offset, code);
+      return infixOperatorAddressOf(currentNode, base, code);
     case 'ConditionalExpression':
-      return questionMarkAddressOf(currentNode, offset, code);
+      return questionMarkAddressOf(currentNode, base, code);
     case 'UpdateExpression':
       if (currentNode.prefix) {
-        return startPosOf(currentNode, offset, code);
+        return startPosOf(currentNode, base, code);
       } else {
-        return suffixOperatorAddressOf(currentNode, offset, code);
+        return suffixOperatorAddressOf(currentNode, base, code);
       }
     default:
       break;
   }
-  return startPosOf(currentNode, offset, code);
+  return startPosOf(currentNode, base, code);
 }
 
-function propertyAddressOf (memberExpression: MemberExpression, offset: Position | number, code: string): number {
+function propertyAddressOf (memberExpression: MemberExpression, base: Position | number, code: string): number {
   if (memberExpression.computed) {
-    return searchFor('[', memberExpression.object, offset, code);
+    return searchFor('[', memberExpression.object, base, code);
   } else {
-    return startPosOf(memberExpression.property, offset, code);
+    return startPosOf(memberExpression.property, base, code);
   }
 }
 
-function questionMarkAddressOf (conditionalExpression: ConditionalExpression, offset: Position | number, code: string): number {
-  return searchFor('?', conditionalExpression.test, offset, code);
+function questionMarkAddressOf (conditionalExpression: ConditionalExpression, base: Position | number, code: string): number {
+  return searchFor('?', conditionalExpression.test, base, code);
 }
 
-function calculateCallExpressionAddress (callExpression: CallExpression, offset: Position | number, code: string): number {
+function calculateCallExpressionAddress (callExpression: CallExpression, base: Position | number, code: string): number {
   switch (callExpression.callee.type) {
     case 'Identifier':
       // for callee like `foo()`, foo's offset is used
-      return startPosOf(callExpression.callee, offset, code);
+      return startPosOf(callExpression.callee, base, code);
     case 'MemberExpression':
       if (!callExpression.callee.computed) {
         // for callee like `foo.bar()`, bar's offset is used
-        return propertyAddressOf(callExpression.callee, offset, code);
+        return propertyAddressOf(callExpression.callee, base, code);
       }
       break;
     default:
       break;
   }
   // otherwise, offset of opening parenthesis is used
-  return openingParenAddressOf(callExpression, offset, code);
+  return openingParenAddressOf(callExpression, base, code);
 }
 
-function openingParenAddressOf (callExpression: CallExpression, offset: Position | number, code: string): number {
-  return searchFor('(', callExpression.callee, offset, code);
+function openingParenAddressOf (callExpression: CallExpression, base: Position | number, code: string): number {
+  return searchFor('(', callExpression.callee, base, code);
 }
 
-function suffixOperatorAddressOf (expression: UpdateExpression, offset: Position | number, code: string): number {
-  return searchFor(expression.operator, expression.argument, offset, code);
+function suffixOperatorAddressOf (expression: UpdateExpression, base: Position | number, code: string): number {
+  return searchFor(expression.operator, expression.argument, base, code);
 }
 
 // calculate address of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
-function infixOperatorAddressOf (expression: BinaryExpression | LogicalExpression | AssignmentExpression, offset: Position | number, code: string): number {
-  return searchFor(expression.operator, expression.left, offset, code);
+function infixOperatorAddressOf (expression: BinaryExpression | LogicalExpression | AssignmentExpression, base: Position | number, code: string): number {
+  return searchFor(expression.operator, expression.left, base, code);
 }
 
-function startPosOf (node: Node, offset: Position | number, code: string): number {
-  if (typeof offset === 'number') {
-    return getRange(node)[0] - offset;
+function startPosOf (node: Node, base: Position | number, code: string): number {
+  if (typeof base === 'number') {
+    return getRange(node)[0] - base;
   } else {
     assert(node.loc, 'Node must have location information');
-    return columnToPos(node.loc.start, offset, code);
+    return columnToPos(node.loc.start, base, code);
   }
 }
 
-function endPosOf (node: Node, offset: Position | number, code: string): number {
-  if (typeof offset === 'number') {
-    return getRange(node)[1] - offset;
+function endPosOf (node: Node, base: Position | number, code: string): number {
+  if (typeof base === 'number') {
+    return getRange(node)[1] - base;
   } else {
     assert(node.loc, 'Node must have location information');
-    return columnToPos(node.loc.end, offset, code);
+    return columnToPos(node.loc.end, base, code);
   }
 }
 
-function searchFor (searchString: string, searchStartNode: Node, offset: Position | number, code: string): number {
-  if (typeof offset === 'number') {
-    const baseLoc = getRange(searchStartNode);
-    const searchStart = baseLoc[1] - offset - 1;
+function searchFor (searchString: string, searchStartNode: Node, base: Position | number, code: string): number {
+  if (typeof base === 'number') {
+    const startNodeRange = getRange(searchStartNode);
+    const searchStart = startNodeRange[1] - base - 1;
     const found = code.indexOf(searchString, searchStart);
     if (found !== -1) {
       return found;
     } else {
-      return baseLoc[0] - offset;
+      return startNodeRange[0] - base;
     }
   } else {
     assert(searchStartNode.loc, 'Node must have location information');
-    const baseLoc = searchStartNode.loc.end;
-    const searchStart = columnToPos(baseLoc, offset, code) - 1;
+    const searchStart = columnToPos(searchStartNode.loc.end, base, code) - 1;
     const found = code.indexOf(searchString, searchStart);
     if (found !== -1) {
       return found;
     } else {
-      return columnToPos(searchStartNode.loc.start, offset, code);
+      return columnToPos(searchStartNode.loc.start, base, code);
     }
   }
 }
 
-function columnToPos (target: Position, offset: Position, code: string): number {
-  if (target.line === offset.line) {
-    return target.column - offset.column;
+function columnToPos (target: Position, base: Position, code: string): number {
+  if (target.line === base.line) {
+    return target.column - base.column;
   }
-  const howManyLines = target.line - offset.line;
+  const howManyLines = target.line - base.line;
   const lines = code.split('\n');
   let pos = 0;
   for (let i = 0; i < howManyLines; i++) {
