@@ -1,4 +1,5 @@
 import { renderDiagram } from './diagram.mjs';
+import { renderStepwise } from './stepwise.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert, AssertionError } from 'node:assert';
 
@@ -16,6 +17,9 @@ type CapturedValueMetadata = {
 type CapturedValue = {
   value: unknown;
   left: number;
+  start: number;
+  end: number;
+  evalOrder: number;
   metadata?: CapturedValueMetadata;
 };
 
@@ -25,8 +29,8 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  tap(value: unknown, left: number): unknown;
-  rec(value: unknown, left?: number): ArgumentRecorder;
+  tap(value: unknown, left: number, start: number, end: number, evalOrder: number, metadata?: CapturedValueMetadata): unknown;
+  rec(value: unknown, left?: number, start?: number, end?: number, evalOrder?: number): ArgumentRecorder;
 };
 
 type PowerAssert = {
@@ -86,26 +90,36 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, left: number, metadata?: CapturedValueMetadata): unknown {
+  tap (value: unknown, left: number, start: number, end: number, evalOrder: number, metadata?: CapturedValueMetadata): unknown {
     this.#capturedValues.push({
       value: wrap(value),
       // espath,
       left,
+      start,
+      end,
+      evalOrder,
       metadata
     });
     return value;
   }
 
-  rec (value: unknown, left?: number): ArgumentRecorder {
+  rec (value: unknown, left?: number, start?: number, end?: number, evalOrder?: number): ArgumentRecorder {
     try {
       if (typeof left === 'undefined') {
         // node right under the assertion is not captured
         return this;
       }
+      assert(typeof left === 'number', 'left must be a number');
+      assert(typeof start === 'number', 'start must be a number');
+      assert(typeof end === 'number', 'end must be a number');
+      assert(typeof evalOrder === 'number', 'evalOrder must be a number');
       const cap = {
         value: wrap(value),
         // espath,
-        left
+        left,
+        start,
+        end,
+        evalOrder
       };
       this.#capturedValues.push(cap);
       // capture asesert.throws, assert.doesNotThrow, assert.rejects, assert.doesNotReject
@@ -209,6 +223,10 @@ class PowerAssertImpl implements PowerAssert {
             logs.push({
               value: cap.value,
               leftIndex: cap.left,
+              markerPos: cap.left,
+              startPos: cap.start,
+              endPos: cap.end,
+              evalOrder: cap.evalOrder,
               metadata: cap.metadata
             });
           }
@@ -227,8 +245,16 @@ class PowerAssertImpl implements PowerAssert {
       } else {
         // rethrow AssertionError with diagram message
         const diagram = renderDiagram(assertionLine, logs);
+        newMessageFragments.push('# Human-readable format:');
         newMessageFragments.push(diagram);
       }
+      newMessageFragments.push('');
+
+      const stepwiseLines = renderStepwise(assertionLine, logs);
+      newMessageFragments.push('# AI-readable format:');
+      newMessageFragments.push('Assertion failed: ' + assertionLine);
+      newMessageFragments.push(stepwiseLines);
+
       newMessageFragments.push('');
 
       const newAssertionErrorProps = {
