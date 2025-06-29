@@ -138,7 +138,7 @@ struct ArgumentMetadata {
 }
 
 #[derive(Debug)]
-struct Utf16NodeAddress {
+struct AssertionRelativeOffset {
     start_pos: Utf16Pos,
     end_pos: Utf16Pos,
     marker_pos: Utf16Pos
@@ -365,7 +365,7 @@ impl TransformVisitor {
         });
     }
 
-    fn wrap_with_tap(&mut self, expr: &mut Expr, addr: &Utf16NodeAddress) {
+    fn wrap_with_tap(&mut self, expr: &mut Expr, assertion_relative_offset: &AssertionRelativeOffset) {
         let arg_rec = self.argument_metadata.as_mut().unwrap();
         arg_rec.is_captured = true;
         let argrec_ident_name = &arg_rec.ident_name;
@@ -381,22 +381,22 @@ impl TransformVisitor {
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(addr.marker_pos.to_u32() as f64))))),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(addr.start_pos.to_u32() as f64))))),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(addr.end_pos.to_u32() as f64)))))
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.marker_pos.to_u32() as f64))))),
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.start_pos.to_u32() as f64))))),
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.end_pos.to_u32() as f64)))))
                 ],
                 ..Default::default()
             })
         });
     }
 
-    fn calculate_utf16_node_address(&self, expr: &Expr) -> Utf16NodeAddress {
+    fn calculate_utf16_assertion_relative_offset(&self, expr: &Expr) -> AssertionRelativeOffset {
         let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
         let assertion_start_pos = &assertion_metadata.assertion_start_pos;
         let marker_pos_utf8 = self.calculate_utf8_marker_pos(expr, assertion_start_pos);
         let start_pos_utf8 = Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32());
         let end_pos_utf8 = Utf8Pos(expr.span_hi().to_u32() - assertion_start_pos.to_u32());
-        Utf16NodeAddress {
+        AssertionRelativeOffset {
             start_pos: to_utf16_pos(assertion_metadata, start_pos_utf8),
             end_pos: to_utf16_pos(assertion_metadata, end_pos_utf8),
             marker_pos: to_utf16_pos(assertion_metadata, marker_pos_utf8)
@@ -902,12 +902,12 @@ impl VisitMut for TransformVisitor {
         }
         let do_not_capture_current_expr = self.do_not_capture_immediate_child;
         self.do_not_capture_immediate_child = false;
-        // calculate expr position before entering children
-        let node_address = self.calculate_utf16_node_address(n);
+        // calculate assertion relative offset before entering children
+        let assertion_relative_offset = self.calculate_utf16_assertion_relative_offset(n);
         // enter children
         n.visit_mut_children_with(self);
         if !do_not_capture_current_expr {
-            self.wrap_with_tap(n, &node_address);
+            self.wrap_with_tap(n, &assertion_relative_offset);
         }
     }
 }
