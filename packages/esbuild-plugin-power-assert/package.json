@@ -27,7 +27,7 @@
     "@power-assert/transpiler": "^0.5.2"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.2.1"
+    "@power-assert/runtime": "^0.3.0"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"

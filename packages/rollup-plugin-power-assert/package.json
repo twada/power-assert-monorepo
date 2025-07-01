@@ -44,7 +44,7 @@
     "@rollup/pluginutils": "^5.1.0"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.2.1"
+    "@power-assert/runtime": "^0.3.0"
   },
   "devDependencies": {
     "@types/estree": "^1.0.1",

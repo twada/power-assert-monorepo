@@ -44,7 +44,7 @@
     "@swc/core": "^1.11.0"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.2.1"
+    "@power-assert/runtime": "^0.3.0"
   },
   "preferUnplugged": true
 }
