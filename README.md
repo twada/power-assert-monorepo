@@ -15,12 +15,12 @@ Power Assert enhances the standard `assert` function to provide descriptive erro
 ```typescript
 import assert from 'node:assert/strict';
 
-type Person = { name: string };
+const ary: number[] = [1,2,3];
 
-const alice: Person = { name: 'alice' };
-const bob: Person = { name: 'bob' };
+const zero: number = 0;
+const two: number = 2;
 
-assert(`${alice.name} and ${bob.name}` === `bob and alice`);
+assert(ary.indexOf(zero) === two);
 ```
 
 With power-assert, this produces:
@@ -28,18 +28,65 @@ With power-assert, this produces:
 ```
 AssertionError [ERR_ASSERTION]:
 
-assert(`${alice.name} and ${bob.name}` === `bob and alice`)
-       |  |     |           |   |      |   |
-       |  |     |           |   |      |   "bob and alice"
-       |  |     |           |   |      false
-       |  |     |           |   "bob"
-       |  |     |           Object{name:"bob"}
-       |  |     "alice"
-       |  Object{name:"alice"}
-       "alice and bob"
+# Human-readable format:
+assert(ary.indexOf(zero) === two)
+       |   |       |     |   |
+       |   |       |     |   2
+       |   |       |     false
+       |   |       0
+       |   -1
+       [1,2,3]
 
-"alice and bob" === "bob and alice"
+# AI-readable format:
+Assertion failed: assert(ary.indexOf(zero) === two)
+=== arg:0 ===
+Step 1: `ary` => [1,2,3]
+Step 2: `zero` => 0
+Step 3: `ary.indexOf(zero)` => -1
+Step 4: `two` => 2
+Step 5: `ary.indexOf(zero) === two` => false
+
+-1 === 2
 ```
+
+### LLM-Friendly Stepwise Format
+
+In addition to the traditional diagram format, power-assert now provides an AI-readable "stepwise" format that presents assertion failures as numbered sequential steps. This format is particularly useful for LLM/AI systems that need to parse and understand assertion failures.
+
+When an assertion fails, both formats are displayed:
+
+### Traditional Format + Stepwise Format Example
+
+Output:
+```
+AssertionError [ERR_ASSERTION]:
+
+# Human-readable format:
+assert(scoreOf(rollsOf(frames)) === 132)
+       |       |       |        |   |
+       |       |       |        |   132
+       |       |       |        false
+       |       |       [[1,4],[4,5],[6,4],[5,5],[10],[0,1],[7,3],[6,4],[10],[2,8,6]]
+       |       [1,4,4,5,6,4,5,5,10,0,1,7,3,6,4,10,2,8,6]
+       133
+
+# AI-readable format:
+Assertion failed: assert(scoreOf(rollsOf(frames)) === 132)
+=== arg:0 ===
+Step 1: `frames` => [[1,4],[4,5],[6,4],[5,5],[10],[0,1],[7,3],[6,4],[10],[2,8,6]]
+Step 2: `rollsOf(frames)` => [1,4,4,5,6,4,5,5,10,0,1,7,3,6,4,10,2,8,6]
+Step 3: `scoreOf(rollsOf(frames))` => 133
+Step 4: `132` => 132
+Step 5: `scoreOf(rollsOf(frames)) === 132` => false
+
+133 === 132
+```
+
+The stepwise format provides:
+- **Clear execution order**: Each step shows the evaluation sequence
+- **Expression extraction**: Original source expressions are preserved
+- **Argument grouping**: Multiple argument assertions are organized by argument
+- **LLM-friendly parsing**: Structured format that's easy for AI systems to understand
 
 ## Module System
 
