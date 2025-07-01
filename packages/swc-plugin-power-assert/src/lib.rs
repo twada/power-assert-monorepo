@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use bytes_str::BytesStr;
 use rustc_hash::{
     FxHashSet,
     FxHashMap
@@ -156,7 +156,7 @@ pub struct TransformVisitor {
     argument_metadata: Option<ArgumentMetadata>,
     is_runtime_imported: bool,
     do_not_capture_immediate_child: bool,
-    code: Arc<String>
+    code: BytesStr
 }
 
 impl Default for TransformVisitor {
@@ -173,7 +173,7 @@ impl Default for TransformVisitor {
             argument_metadata: None,
             do_not_capture_immediate_child: false,
             is_runtime_imported: false,
-            code: Arc::new("".into())
+            code: BytesStr::from("")
         };
         for module_name in [
             "node:assert",
@@ -210,7 +210,7 @@ fn resolve_path_in_sandbox(filename: &String, cwd_str: &String) -> String {
 impl From<&String> for TransformVisitor {
     fn from(code: &String) -> Self {
         TransformVisitor {
-            code: Arc::new(code.into()),
+            code: BytesStr::from(code.clone()),
             .. Default::default()
         }
     }
@@ -245,7 +245,7 @@ impl From<TransformPluginProgramMetadata> for TransformVisitor {
                 // read all file contens into string
                 let error_message = format!("failed to read file: {}", path_in_sandbox);
                 let code = std::fs::read_to_string(path_in_sandbox).expect(&error_message);
-                Arc::new(code)
+                BytesStr::from(code)
             }
         };
         TransformVisitor {

@@ -19,6 +19,7 @@ crate-type = ["cdylib"]
 [dependencies]
 rustc-hash = "2"
 swc_core = { version = "29.4.*", features = ["ecma_plugin_transform"] }
+bytes-str = "0.2.*"
 
 [dev-dependencies]
 swc_ecma_transforms_testing = "21.0.*"
