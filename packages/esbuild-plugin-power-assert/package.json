@@ -24,7 +24,7 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.5.2"
+    "@power-assert/transpiler": "^0.6.0"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.3.0"
