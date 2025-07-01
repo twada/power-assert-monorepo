@@ -1,3 +1,10 @@
+## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.5.0) (2025-07-01)
+
+#### Features
+
+* [feat: "stepwise" assertion format for LLM-friendly output](https://github.com/twada/power-assert-monorepo/pull/23)
+
+
 ### [0.4.2](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-core-v0.4.2) (2025-06-02)
 
 
