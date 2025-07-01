@@ -18,15 +18,15 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rustc-hash = "2"
-swc_core = { version = "26.3.*", features = ["ecma_plugin_transform"] }
+swc_core = { version = "29.4.*", features = ["ecma_plugin_transform"] }
 
 [dev-dependencies]
-swc_ecma_transforms_testing = "18.0.*"
-swc_ecma_parser = "14.0.*"
-testing = "12.0.*"
+swc_ecma_transforms_testing = "21.0.*"
+swc_ecma_parser = "17.2.*"
+testing = "14.0.*"
 
 # dealing with "the trait `Hash` is not implemented for `serde_json::Value`"
-serde_json = "1.0.134"
+serde_json = "1.0.*"
 
 # .cargo/config defines few alias to build plugin.
 # cargo build-wasi generates wasm-wasi32 binary
