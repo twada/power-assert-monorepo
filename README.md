@@ -153,9 +153,19 @@ import { defineConfig } from 'vite';
 import powerAssert from 'rollup-plugin-power-assert';
 
 export default defineConfig({
-  plugins: [powerAssert()]
+  plugins: [
+    powerAssert({
+      include: ['**/*.test.ts', '**/*.test.js'],
+      exclude: ['**/dist/**']
+    })
+  ]
 });
 ```
+
+#### Configuration Options
+
+- **`include`**: Array of glob patterns specifying which files to transform (e.g., test files)
+- **`exclude`**: Array of glob patterns specifying which files to ignore (e.g., build outputs)
 
 ```typescript
 // test/example.test.ts
