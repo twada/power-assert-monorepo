@@ -9,7 +9,7 @@
     "@power-assert/node": "^0.6.0",
     "@power-assert/runtime": "^0.3.0",
     "@swc/core": "^1.10.0",
-    "swc-plugin-power-assert": "^0.7.0",
+    "swc-plugin-power-assert": "^0.8.0",
     "source-map": "^0.7.4"
   },
   "scripts": {
