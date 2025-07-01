@@ -1,3 +1,10 @@
+## [0.6.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-0.6.0) (2025-07-01)
+
+#### Features
+
+* [feat: "stepwise" assertion format for LLM-friendly output](https://github.com/twada/power-assert-monorepo/pull/23)
+
+
 ## [0.5.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-v0.5.0) (2025-06-10)
 
 
