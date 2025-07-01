@@ -1,4 +1,5 @@
 import { renderDiagram } from './diagram.mjs';
+import { renderStepwise } from './stepwise.mjs';
 import { stringifier } from './stringifier/stringifier.mjs';
 import { strict as assert, AssertionError } from 'node:assert';
 
@@ -15,7 +16,11 @@ type CapturedValueMetadata = {
 
 type CapturedValue = {
   value: unknown;
-  left: number;
+  markerPos: number;
+  startPos: number;
+  endPos: number;
+  evalOrder: number;
+  argIndex: number;
   metadata?: CapturedValueMetadata;
 };
 
@@ -25,8 +30,8 @@ type RecordedArgument = {
 };
 
 type ArgumentRecorder = {
-  tap(value: unknown, left: number): unknown;
-  rec(value: unknown, left?: number): ArgumentRecorder;
+  tap(value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown;
+  rec(value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder;
 };
 
 type PowerAssert = {
@@ -65,6 +70,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   #capturedValues: CapturedValue[];
   #recorded: RecordedArgument | null;
   #val: unknown;
+  #evalOrder: number;
 
   constructor (powerAssert: PowerAssert, argumentNumber: number) {
     this.#powerAssert = powerAssert;
@@ -72,6 +78,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     this.#capturedValues = [];
     this.#recorded = null;
     this.#val = null;
+    this.#evalOrder = 0;
   }
 
   actualValue (): unknown {
@@ -86,26 +93,37 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, left: number, metadata?: CapturedValueMetadata): unknown {
+  tap (value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown {
+    const evalOrder = ++this.#evalOrder;
     this.#capturedValues.push({
       value: wrap(value),
-      // espath,
-      left,
+      argIndex: this.#argumentNumber,
+      markerPos,
+      startPos,
+      endPos,
+      evalOrder,
       metadata
     });
     return value;
   }
 
-  rec (value: unknown, left?: number): ArgumentRecorder {
+  rec (value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder {
     try {
-      if (typeof left === 'undefined') {
+      if (typeof markerPos === 'undefined') {
         // node right under the assertion is not captured
         return this;
       }
+      const evalOrder = ++this.#evalOrder;
+      assert(typeof markerPos === 'number', 'markerPos must be a number');
+      assert(typeof startPos === 'number', 'startPos must be a number');
+      assert(typeof endPos === 'number', 'endPos must be a number');
       const cap = {
         value: wrap(value),
-        // espath,
-        left
+        argIndex: this.#argumentNumber,
+        markerPos,
+        startPos,
+        endPos,
+        evalOrder
       };
       this.#capturedValues.push(cap);
       // capture asesert.throws, assert.doesNotThrow, assert.rejects, assert.doesNotReject
@@ -206,11 +224,7 @@ class PowerAssertImpl implements PowerAssert {
       for (const rec of recorded) {
         if (rec.type === 'PoweredArgument') {
           for (const cap of rec.capturedValues) {
-            logs.push({
-              value: cap.value,
-              leftIndex: cap.left,
-              metadata: cap.metadata
-            });
+            logs.push(cap);
           }
         }
       }
@@ -227,8 +241,16 @@ class PowerAssertImpl implements PowerAssert {
       } else {
         // rethrow AssertionError with diagram message
         const diagram = renderDiagram(assertionLine, logs);
+        newMessageFragments.push('# Human-readable format:');
         newMessageFragments.push(diagram);
       }
+
+      newMessageFragments.push('');
+      const stepwiseLines = renderStepwise(assertionLine, logs);
+      newMessageFragments.push('# AI-readable format:');
+      newMessageFragments.push('Assertion failed: ' + assertionLine);
+      newMessageFragments.push(stepwiseLines);
+
       newMessageFragments.push('');
 
       const newAssertionErrorProps = {

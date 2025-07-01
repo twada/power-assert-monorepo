@@ -8,7 +8,7 @@ describe('description', () => {
     const obj = {
       prop: false
     };
-    _pasrt1.run(_parg1.rec(_parg1.tap(obj, 7).prop, 11));
+    _pasrt1.run(_parg1.rec(_parg1.tap(obj, 7, 7, 10).prop, 11, 7, 15));
   });
   it('computed', () => {
     const _pasrt2 = _power_(assert, null, "assert(obj[key])");
@@ -17,7 +17,7 @@ describe('description', () => {
       prop: false
     };
     const key = 'prop';
-    _pasrt2.run(_parg2.rec(_parg2.tap(obj, 7)[_parg2.tap(key, 11)], 10));
+    _pasrt2.run(_parg2.rec(_parg2.tap(obj, 7, 7, 10)[_parg2.tap(key, 11, 11, 14)], 10, 7, 15));
   });
   it('more MemberExpression computed:true', () => {
     const _pasrt3 = _power_(assert, null, "assert(obj[[[keys[zero], foo][zero], bar][one]][one])");
@@ -32,6 +32,6 @@ describe('description', () => {
     const obj = {
       'b a r': [true, false]
     };
-    _pasrt3.run(_parg3.rec(_parg3.tap(_parg3.tap(obj, 7)[_parg3.tap(_parg3.tap([_parg3.tap(_parg3.tap([_parg3.tap(_parg3.tap(keys, 13)[_parg3.tap(zero, 18)], 17), _parg3.tap(foo, 25)], 12)[_parg3.tap(zero, 30)], 29), _parg3.tap(bar, 37)], 11)[_parg3.tap(one, 42)], 41)], 10)[_parg3.tap(one, 48)], 47));
+    _pasrt3.run(_parg3.rec(_parg3.tap(_parg3.tap(obj, 7, 7, 10)[_parg3.tap(_parg3.tap([_parg3.tap(_parg3.tap([_parg3.tap(_parg3.tap(keys, 13, 13, 17)[_parg3.tap(zero, 18, 18, 22)], 17, 13, 23), _parg3.tap(foo, 25, 25, 28)], 12, 12, 29)[_parg3.tap(zero, 30, 30, 34)], 29, 12, 35), _parg3.tap(bar, 37, 37, 40)], 11, 11, 41)[_parg3.tap(one, 42, 42, 45)], 41, 11, 46)], 10, 7, 47)[_parg3.tap(one, 48, 48, 51)], 47, 7, 52));
   });
 });

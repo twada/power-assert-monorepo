@@ -137,6 +137,13 @@ struct ArgumentMetadata {
     powered_ident_name: Atom
 }
 
+#[derive(Debug)]
+struct AssertionRelativeOffset {
+    start_pos: Utf16Pos,
+    end_pos: Utf16Pos,
+    marker_pos: Utf16Pos
+}
+
 pub struct TransformVisitor {
     span_offset: u32,
     powered_var_cnt: usize,
@@ -358,7 +365,7 @@ impl TransformVisitor {
         });
     }
 
-    fn wrap_with_tap(&mut self, expr: &mut Expr, pos: &Utf16Pos) {
+    fn wrap_with_tap(&mut self, expr: &mut Expr, assertion_relative_offset: &AssertionRelativeOffset) {
         let arg_rec = self.argument_metadata.as_mut().unwrap();
         arg_rec.is_captured = true;
         let argrec_ident_name = &arg_rec.ident_name;
@@ -374,34 +381,29 @@ impl TransformVisitor {
                 ))),
                 args: vec![
                     ExprOrSpread::from(Box::new(ex)),
-                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(pos.to_u32() as f64)))))
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.marker_pos.to_u32() as f64))))),
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.start_pos.to_u32() as f64))))),
+                    ExprOrSpread::from(Box::new(Expr::Lit(Lit::Num(Number::from(assertion_relative_offset.end_pos.to_u32() as f64)))))
                 ],
                 ..Default::default()
             })
         });
     }
 
-    fn calculate_utf16_pos(&self, expr: &Expr) -> Utf16Pos {
+    fn calculate_utf16_assertion_relative_offset(&self, expr: &Expr) -> AssertionRelativeOffset {
         let assertion_metadata = self.assertion_metadata.as_ref().unwrap();
         let assertion_start_pos = &assertion_metadata.assertion_start_pos;
-        let utf8_pos = self.calculate_utf8_pos(expr, assertion_start_pos);
-        if !assertion_metadata.contains_multibyte_char {
-            return Utf16Pos(utf8_pos.to_u32())
+        let marker_pos_utf8 = self.calculate_utf8_marker_pos(expr, assertion_start_pos);
+        let start_pos_utf8 = Utf8Pos(expr.span_lo().to_u32() - assertion_start_pos.to_u32());
+        let end_pos_utf8 = Utf8Pos(expr.span_hi().to_u32() - assertion_start_pos.to_u32());
+        AssertionRelativeOffset {
+            start_pos: to_utf16_pos(assertion_metadata, start_pos_utf8),
+            end_pos: to_utf16_pos(assertion_metadata, end_pos_utf8),
+            marker_pos: to_utf16_pos(assertion_metadata, marker_pos_utf8)
         }
-        let utf8_pos_usize = utf8_pos.to_usize();
-        let assertion_code = &assertion_metadata.assertion_code;
-        let mut iter = assertion_code.chars();
-        let mut current_utf16_pos = 0;
-        let mut current_utf8_pos = 0;
-        while current_utf8_pos < utf8_pos_usize {
-            let c = iter.next().unwrap();
-            current_utf8_pos += c.len_utf8();
-            current_utf16_pos += c.len_utf16();
-        }
-        Utf16Pos(current_utf16_pos as u32)
     }
 
-    fn calculate_utf8_pos(&self, expr: &Expr, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
+    fn calculate_utf8_marker_pos(&self, expr: &Expr, assertion_start_pos: &Utf8Pos) -> Utf8Pos {
         match expr {
             Expr::Member(MemberExpr{ prop, .. }) => {
                 match prop {
@@ -645,6 +647,22 @@ impl TransformVisitor {
 
 }
 
+fn to_utf16_pos(assertion_metadata: &AssertionMetadata, utf8_pos: Utf8Pos) -> Utf16Pos {
+    if !assertion_metadata.contains_multibyte_char {
+        return Utf16Pos(utf8_pos.to_u32())
+    }
+    let utf8_pos_usize = utf8_pos.to_usize();
+    let assertion_code = &assertion_metadata.assertion_code;
+    let mut iter = assertion_code.chars();
+    let mut current_utf16_pos = 0;
+    let mut current_utf8_pos = 0;
+    while current_utf8_pos < utf8_pos_usize {
+        let c = iter.next().unwrap();
+        current_utf8_pos += c.len_utf8();
+        current_utf16_pos += c.len_utf16();
+    }
+    Utf16Pos(current_utf16_pos as u32)
+}
 
 impl VisitMut for TransformVisitor {
     // Implement necessary visit_mut_* methods for actual custom transform.
@@ -884,12 +902,12 @@ impl VisitMut for TransformVisitor {
         }
         let do_not_capture_current_expr = self.do_not_capture_immediate_child;
         self.do_not_capture_immediate_child = false;
-        // calculate expr position before entering children
-        let expr_pos = self.calculate_utf16_pos(n);
+        // calculate assertion relative offset before entering children
+        let assertion_relative_offset = self.calculate_utf16_assertion_relative_offset(n);
         // enter children
         n.visit_mut_children_with(self);
         if !do_not_capture_current_expr {
-            self.wrap_with_tap(n, &expr_pos);
+            self.wrap_with_tap(n, &assertion_relative_offset);
         }
     }
 }

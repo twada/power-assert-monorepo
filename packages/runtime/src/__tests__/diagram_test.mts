@@ -5,9 +5,9 @@ import { renderDiagram } from '../diagram.mjs';
 describe('renderDiagram', () => {
   it('BinaryExpression', () => {
     const diagram = renderDiagram('assert.ok(truthy === falsy)', [
-      { value: '1', leftIndex: 10 },
-      { value: 0, leftIndex: 21 },
-      { value: false, leftIndex: 17 }
+      { value: '1', markerPos: 10 },
+      { value: 0, markerPos: 21 },
+      { value: false, markerPos: 17 }
     ]);
     const expected = `
 assert.ok(truthy === falsy)
@@ -21,9 +21,9 @@ assert.ok(truthy === falsy)
 
   it('rendering kanji', () => {
     const diagram = renderDiagram('assert(a === b)', [
-      { value: '𠮷', leftIndex: 7 },
-      { value: 'ab', leftIndex: 13 },
-      { value: false, leftIndex: 9 }
+      { value: '𠮷', markerPos: 7 },
+      { value: 'ab', markerPos: 13 },
+      { value: false, markerPos: 9 }
     ]);
     const expected = `
 assert(a === b)
@@ -37,9 +37,9 @@ assert(a === b)
 
   it('rendering combining character', () => {
     const diagram = renderDiagram('assert(a === b)', [
-      { value: 'a\u0300b', leftIndex: 7 },
-      { value: 'ab', leftIndex: 13 },
-      { value: false, leftIndex: 9 }
+      { value: 'a\u0300b', markerPos: 7 },
+      { value: 'ab', markerPos: 13 },
+      { value: false, markerPos: 9 }
     ]);
     const expected = `
 assert(a === b)

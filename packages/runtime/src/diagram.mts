@@ -1,27 +1,27 @@
 import { stringifier } from './stringifier/stringifier.mjs';
 
-type LogWithLeftIndex = {
+type LogWithMarkerPos = {
   value: unknown,
-  leftIndex: number
+  markerPos: number
 };
 
 const stringify = stringifier();
-const rightToLeft = (a: LogWithLeftIndex, b: LogWithLeftIndex) => b.leftIndex - a.leftIndex;
+const rightToLeft = (a: LogWithMarkerPos, b: LogWithMarkerPos) => b.markerPos - a.markerPos;
 
-export function renderDiagram (assertionLine: string, logs: LogWithLeftIndex[]): string {
-  const capturedEvents: LogWithLeftIndex[] = ([] as LogWithLeftIndex[]).concat(logs);
+export function renderDiagram (assertionLine: string, logs: LogWithMarkerPos[]): string {
+  const capturedEvents: LogWithMarkerPos[] = ([] as LogWithMarkerPos[]).concat(logs);
   capturedEvents.sort(rightToLeft);
   return [assertionLine].concat(constructRows(capturedEvents)).join('\n');
 }
 
-function constructRows (capturedEvents: LogWithLeftIndex[]): string[] {
+function constructRows (capturedEvents: LogWithMarkerPos[]): string[] {
   const rows: string[] = [];
   rows.push('');
   for (const captured of capturedEvents) {
     const dumpedValue = stringify(captured.value);
     rows.push('');
-    renderVerticalBarAt(captured.leftIndex, rows);
-    renderValueAt(captured.leftIndex, dumpedValue, rows);
+    renderVerticalBarAt(captured.markerPos, rows);
+    renderValueAt(captured.markerPos, dumpedValue, rows);
   }
   return rows;
 }

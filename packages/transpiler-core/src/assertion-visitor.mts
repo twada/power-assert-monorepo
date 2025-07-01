@@ -1,9 +1,10 @@
 import { nodeFactory } from './node-factory.mjs';
-import { searchAddress } from './address.mjs';
+import { calculateAssertionRelativeOffsetFor } from './address.mjs';
 import { toBeSkipped } from './rules/to-be-skipped.mjs';
 import { toBeCaptured } from './rules/to-be-captured.mjs';
 import { strict as assert } from 'node:assert';
 
+import type { AssertionRelativeOffset } from './address.mjs';
 import type { Transformation } from './transformation.mjs';
 import type {
   Node,
@@ -62,17 +63,6 @@ function isAcornSwcNode (node: Node): node is AcornSwcNode {
   return Object.hasOwn(node, 'start') && Object.hasOwn(node, 'end');
 }
 
-function getStartRangeValue (node: Node): number {
-  if (node.range) {
-    return node.range[0];
-  }
-  if (isAcornSwcNode(node)) {
-    return node.start;
-  } else {
-    assert(false, 'Node must have range or start/end');
-  }
-}
-
 // extract string from code between start and end position
 export function extractArea (code: string, start: Position, end: Position): string {
   // split lines by CR/LF or LF ?
@@ -98,7 +88,7 @@ class ArgumentModification {
   readonly #assertionCode: string;
   readonly #transformation: Transformation;
   readonly #poweredAssertIdent: Identifier;
-  readonly #addresses: Map<Node, number>;
+  readonly #addresses: Map<Node, AssertionRelativeOffset>;
   readonly #argumentRecorderIdent: Identifier;
   readonly #binexp: string | undefined;
   #argumentModified: boolean;
@@ -113,7 +103,7 @@ class ArgumentModification {
     this.#poweredAssertIdent = poweredAssertIdent;
     this.#binexp = binexp;
     this.#argumentModified = false;
-    this.#addresses = new Map<Node, number>();
+    this.#addresses = new Map<Node, AssertionRelativeOffset>();
     const recorderVariableName = this.#transformation.generateUniqueName('arg');
     const types = nodeFactory(currentNode);
     const ident = types.identifier(recorderVariableName);
@@ -163,23 +153,12 @@ class ArgumentModification {
   }
 
   saveAddress (currentNode: Node): void {
-    const targetAddr = this.#calculateAddress(currentNode);
-    this.#addresses.set(currentNode, targetAddr);
+    const address = calculateAssertionRelativeOffsetFor(currentNode, this.#callexp, this.#assertionCode);
+    this.#addresses.set(currentNode, address);
   }
 
-  #targetAddress (currentNode: Node): number | undefined {
+  #assertionRelativeOffsetFor (currentNode: Node): AssertionRelativeOffset | undefined {
     return this.#addresses.get(currentNode);
-  }
-
-  #calculateAddress (currentNode: Node): number {
-    const code = this.#assertionCode;
-    if (this.#callexp.loc) {
-      const offsetPosition = this.#callexp.loc.start;
-      return searchAddress(currentNode, offsetPosition, code);
-    } else {
-      const offset = getStartRangeValue(this.#callexp);
-      return searchAddress(currentNode, offset, code);
-    }
   }
 
   #relativeAstPath (astPath: AstPath): AstPath {
@@ -194,9 +173,11 @@ class ArgumentModification {
       // types.stringLiteral(relativeAstPath.join('/'))
     ];
     if (capture) {
-      const targetAddr = this.#targetAddress(currentNode);
-      assert(typeof targetAddr !== 'undefined', 'targetAddr must exist');
-      args.push(types.numericLiteral(targetAddr));
+      const assertionRelativeOffset = this.#assertionRelativeOffsetFor(currentNode);
+      assert(typeof assertionRelativeOffset !== 'undefined', 'assertionRelativeOffset must exist');
+      args.push(types.numericLiteral(assertionRelativeOffset.markerPos));
+      args.push(types.numericLiteral(assertionRelativeOffset.startPos));
+      args.push(types.numericLiteral(assertionRelativeOffset.endPos));
     }
     const extraProps: ExtraProps = {};
     if (this.#binexp && (relativeAstPath.join('/') === 'arguments/0/left')) {
@@ -270,7 +251,7 @@ export class AssertionVisitor {
     }
     if (this.#callexp.range !== undefined) {
       this.#assertionCode = wholeCode.slice(this.#callexp.range[0], this.#callexp.range[1]);
-    } else if (this.#callexp.start !== undefined && this.#callexp.end !== undefined) {
+    } else if (isAcornSwcNode(this.#callexp)) {
       // Acorn/SWC like node (has start and end property)
       this.#assertionCode = wholeCode.slice(this.#callexp.start, this.#callexp.end);
     } else if (this.#callexp.loc) {
