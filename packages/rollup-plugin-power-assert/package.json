@@ -40,7 +40,7 @@
   ],
   "dependencies": {
     "@power-assert/transpiler": "^0.5.2",
-    "@power-assert/transpiler-core": "^0.4.2",
+    "@power-assert/transpiler-core": "^0.5.0",
     "@rollup/pluginutils": "^5.1.0"
   },
   "peerDependencies": {
