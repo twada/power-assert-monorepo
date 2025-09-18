@@ -27,7 +27,18 @@
   "type": "module",
   "main": "./dist/rollup-plugin-power-assert.mjs",
   "exports": {
-    ".": "./dist/rollup-plugin-power-assert.mjs",
+    ".": {
+      "module-sync": {
+        "types": "./dist/rollup-plugin-power-assert.d.mts",
+        "dev": "./src/rollup-plugin-power-assert.mts",
+        "default": "./dist/rollup-plugin-power-assert.mjs"
+      },
+      "import": {
+        "types": "./dist/rollup-plugin-power-assert.d.mts",
+        "dev": "./src/rollup-plugin-power-assert.mts",
+        "default": "./dist/rollup-plugin-power-assert.mjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -57,6 +68,6 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
     "lint": "eslint src",
     "fix": "npm run lint -- --fix",
-    "test": "node --no-warnings --test --test-reporter=spec 'dist/**/*test.mjs'"
+    "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
   }
 }

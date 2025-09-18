@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rollup } from 'rollup';
-import { powerAssert } from '../rollup-plugin-power-assert.mjs';
+import { powerAssert } from '../rollup-plugin-power-assert.mts';
 import type { RollupBuild } from 'rollup';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
