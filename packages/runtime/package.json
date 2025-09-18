@@ -48,7 +48,7 @@
     "package.json"
   ],
   "scripts": {
-    "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint -- --fix",
     "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
