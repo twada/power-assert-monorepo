@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { calculateAssertionRelativeOffsetFor } from '../address.mjs';
+import { calculateAssertionRelativeOffsetFor } from '../address.mts';
 import { parse } from 'acorn';
 import { parseModule } from 'meriyah';
 import type { Node, Program, ExpressionStatement } from 'estree';
