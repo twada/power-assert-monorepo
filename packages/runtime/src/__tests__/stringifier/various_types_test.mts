@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { stringify } from '../../stringifier/stringifier.mjs';
-import { typeName } from '../../stringifier/type-name.mjs';
+import { stringify } from '../../stringifier/stringifier.mts';
+import { typeName } from '../../stringifier/type-name.mts';
 
 // type Person = {
 //   readonly name: string;

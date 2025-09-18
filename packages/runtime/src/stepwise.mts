@@ -1,4 +1,4 @@
-import { stringifier } from './stringifier/stringifier.mjs';
+import { stringifier } from './stringifier/stringifier.mts';
 
 type Log = {
   value: unknown,
