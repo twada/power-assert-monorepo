@@ -1,2 +1,3 @@
 import { register } from 'node:module';
-register('./hooks.mjs', import.meta.url);
+// use package self-reference to use conditional exports with type-stripping
+register('@power-assert/node/hooks', import.meta.url);
