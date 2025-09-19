@@ -34,8 +34,6 @@
   },
   "scripts": {
     "example": "node build.mjs && node --test --enable-source-maps tmp/bowling.test.js",
-    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
-    "lint": "eslint src",
-    "fix": "npm run lint -- --fix"
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp"
   }
 }

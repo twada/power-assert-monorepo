@@ -66,8 +66,6 @@
     "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
     "vitest": "vitest run",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo && rimraf tmp",
-    "lint": "eslint src",
-    "fix": "npm run lint -- --fix",
     "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
   }
 }

@@ -74,8 +74,6 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "lint": "eslint src",
-    "fix": "npm run lint -- --fix",
     "example:ts": "node --conditions=dev --experimental-strip-types --enable-source-maps --import @power-assert/node --test examples/bowling.test.mts",
     "example": "node --conditions=dev --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs",
     "demo": "node --conditions=dev --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
