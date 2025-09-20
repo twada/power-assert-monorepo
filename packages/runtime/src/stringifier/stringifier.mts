@@ -1,8 +1,8 @@
-import { typeName } from './type-name.mjs';
-import { traverseWith } from './traverse.mjs';
-import { strategies as s } from './strategies.mjs';
-import type { State, InitialState, TraverseCallback } from './traverse.mjs';
-import type { Accumulator, Component, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mjs';
+import { typeName } from './type-name.mts';
+import { traverseWith } from './traverse.mts';
+import { strategies as s } from './strategies.mts';
+import type { State, InitialState, TraverseCallback } from './traverse.mts';
+import type { Accumulator, Component, CollectorFunc, StringifyConfig, MapKeyStringifierFactory } from './strategies.mts';
 
 type StringifyCallback = (push: CollectorFunc, item: unknown, state: State) => CollectorFunc;
 

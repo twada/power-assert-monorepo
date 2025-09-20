@@ -17,7 +17,7 @@
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint -- --fix",
-    "test": "node --no-warnings --test --test-reporter=spec '**/__tests__/**/*test.mjs'"
+    "test": "node --conditions=dev --no-warnings --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
   },
   "keywords": [
     "power-assert"

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert/strict';
-import { renderStepwise } from '../stepwise.mjs';
+import { renderStepwise } from '../stepwise.mts';
 
 describe('renderStepwise', () => {
   it('BinaryExpression', () => {

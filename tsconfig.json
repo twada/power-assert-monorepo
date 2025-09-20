@@ -11,6 +11,9 @@
     "moduleResolution": "node16",
     // use project references
     "composite": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "erasableSyntaxOnly": true,
     // any imports or exports without a type modifier are left around
     "verbatimModuleSyntax": true,
     "strict": true

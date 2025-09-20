@@ -1,7 +1,7 @@
 import {
   isScopedFunction,
   isArrowFunctionExpressionWithConciseBody
-} from './node-factory.mjs';
+} from './node-factory.mts';
 import { strict as assert } from 'node:assert';
 import type {
   ImportDeclaration,
@@ -11,7 +11,7 @@ import type {
   Node,
   VariableDeclaration
 } from 'estree';
-import type { Scoped } from './node-factory.mjs';
+import type { Scoped } from './node-factory.mts';
 
 type MutationCallback = (matchNode: Scoped) => void;
 type NameCounts = { [key: string]: number };

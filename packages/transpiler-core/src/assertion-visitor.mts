@@ -1,11 +1,11 @@
-import { nodeFactory } from './node-factory.mjs';
-import { calculateAssertionRelativeOffsetFor } from './address.mjs';
-import { toBeSkipped } from './rules/to-be-skipped.mjs';
-import { toBeCaptured } from './rules/to-be-captured.mjs';
+import { nodeFactory } from './node-factory.mts';
+import { calculateAssertionRelativeOffsetFor } from './address.mts';
+import { toBeSkipped } from './rules/to-be-skipped.mts';
+import { toBeCaptured } from './rules/to-be-captured.mts';
 import { strict as assert } from 'node:assert';
 
-import type { AssertionRelativeOffset } from './address.mjs';
-import type { Transformation } from './transformation.mjs';
+import type { AssertionRelativeOffset } from './address.mts';
+import type { Transformation } from './transformation.mts';
 import type {
   Node,
   Identifier,

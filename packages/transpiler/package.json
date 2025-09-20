@@ -24,10 +24,12 @@
     ".": {
       "module-sync": {
         "types": "./dist/transpile-with-sourcemap.d.mts",
+        "dev": "./src/transpile-with-sourcemap.mts",
         "default": "./dist/transpile-with-sourcemap.mjs"
       },
       "import": {
         "types": "./dist/transpile-with-sourcemap.d.mts",
+        "dev": "./src/transpile-with-sourcemap.mts",
         "default": "./dist/transpile-with-sourcemap.mjs"
       }
     },

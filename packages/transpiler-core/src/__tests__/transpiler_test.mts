@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { espowerAst } from '../transpiler-core.mjs';
+import { espowerAst } from '../transpiler-core.mts';
 import { strict as assert } from 'node:assert';
 import { resolve, dirname } from 'node:path';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -8,7 +8,7 @@ import { parseModule } from 'meriyah';
 import { generate } from 'astring';
 import { fileURLToPath } from 'node:url';
 import type { Node } from 'estree';
-import type { EspowerOptions } from '../transpiler-core.mjs';
+import type { EspowerOptions } from '../transpiler-core.mts';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function parseByMeriyah (filepath: string, loc: boolean, ranges: boolean): Node {

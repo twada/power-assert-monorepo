@@ -1,5 +1,5 @@
-import { typeName } from './type-name.mjs';
-import type { State } from './traverse.mjs';
+import { typeName } from './type-name.mts';
+import type { State } from './traverse.mts';
 import { strict as assert } from 'node:assert';
 
 const END = Symbol('end');

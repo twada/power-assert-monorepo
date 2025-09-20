@@ -1,6 +1,6 @@
-import { Transformation } from './transformation.mjs';
-import { AssertionVisitor } from './assertion-visitor.mjs';
-import { nodeFactory, isScoped } from './node-factory.mjs';
+import { Transformation } from './transformation.mts';
+import { AssertionVisitor } from './assertion-visitor.mts';
+import { nodeFactory, isScoped } from './node-factory.mts';
 import { strict as assert } from 'node:assert';
 import { walk } from 'estree-walker';
 
@@ -12,7 +12,7 @@ import type {
   ImportDeclaration,
   SpreadElement
 } from 'estree';
-import type { Scoped } from './node-factory.mjs';
+import type { Scoped } from './node-factory.mts';
 import type { SyncHandler } from 'estree-walker';
 
 type KeyValue = { [key: string]: any };

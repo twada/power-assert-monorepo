@@ -27,8 +27,14 @@
   "main": "dist/runtime.mjs",
   "exports": {
     ".": {
+      "module-sync": {
+        "types": "./dist/runtime.d.mts",
+        "dev": "./src/runtime.mts",
+        "default": "./dist/runtime.mjs"
+      },
       "import": {
         "types": "./dist/runtime.d.mts",
+        "dev": "./src/runtime.mts",
         "default": "./dist/runtime.mjs"
       }
     },
@@ -42,9 +48,9 @@
     "package.json"
   ],
   "scripts": {
-    "build:clean": "rimraf dist && rimraf .tsimp && rm -f tsconfig.tsbuildinfo",
+    "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "lint": "eslint src",
     "fix": "npm run lint -- --fix",
-    "test": "npm run build:clean && node --enable-source-maps --import=tsimp/import --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
+    "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
   }
 }

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert/strict';
-import { renderDiagram } from '../diagram.mjs';
+import { renderDiagram } from '../diagram.mts';
 
 describe('renderDiagram', () => {
   it('BinaryExpression', () => {

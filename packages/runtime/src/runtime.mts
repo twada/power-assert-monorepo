@@ -1,6 +1,6 @@
-import { renderDiagram } from './diagram.mjs';
-import { renderStepwise } from './stepwise.mjs';
-import { stringifier } from './stringifier/stringifier.mjs';
+import { renderDiagram } from './diagram.mts';
+import { renderStepwise } from './stepwise.mts';
+import { stringifier } from './stringifier/stringifier.mts';
 import { strict as assert, AssertionError } from 'node:assert';
 
 type PowerAssertMetadata = {

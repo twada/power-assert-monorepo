@@ -1,8 +1,8 @@
-import { transpileWith } from './parse-unparse.mjs';
+import { transpileWith } from './parse-unparse.mts';
 import { espowerAst } from '@power-assert/transpiler-core';
 import type { Node } from 'estree';
 import type { TargetImportSpecifier } from '@power-assert/transpiler-core';
-import type { TranspileAstFunc } from './parse-unparse.mjs';
+import type { TranspileAstFunc } from './parse-unparse.mts';
 
 export type TranspileWithSourceMapOptions = {
   file?: string,

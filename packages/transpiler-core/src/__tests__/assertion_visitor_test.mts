@@ -1,11 +1,11 @@
 import { describe, it, beforeEach } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { AssertionVisitor, extractArea } from '../assertion-visitor.mjs';
+import { AssertionVisitor, extractArea } from '../assertion-visitor.mts';
 import { parseExpressionAt } from 'acorn';
 import type { Options as AcornOptions } from 'acorn';
 
 import type { Node, CallExpression, Identifier, ImportDeclaration, VariableDeclaration } from 'estree';
-import type { Transformation } from '../transformation.mjs';
+import type { Transformation } from '../transformation.mts';
 
 describe('extractArea', () => {
   it('single line assertion', () => {
