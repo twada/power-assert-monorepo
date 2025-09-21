@@ -13,7 +13,7 @@
     "source-map": "^0.7.4"
   },
   "scripts": {
-    "demo": "node --test --import @power-assert/node '**/demo/*demo.mjs'",
+    "demo": "node --conditions=dev --no-warnings --enable-source-maps --test --import @power-assert/node 'src/demo/*demo.mts'",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
     "test": "node --conditions=dev --no-warnings --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
   },
