@@ -75,7 +75,7 @@ describe('espowerAst', () => {
             break;
           }
           const runFixture = (cond?: string, suffix?: string) => {
-            it(`${fixtureName}${cond}${suffix}, parser: ${parseFixture.parserName}, locations:${loc}, ranges:${range}`, () => {
+            it(`${fixtureName}${cond ?? ''}${suffix ?? ''}, parser: ${parseFixture.parserName}, locations:${loc}, ranges:${range}`, () => {
               const fixtureFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, `fixture${cond ?? ''}.mjs`);
               const expectedFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, `expected${suffix ?? ''}.mjs`);
               const actualFilepath = resolve(__dirname, '..', '..', 'fixtures', fixtureName, `actual${suffix ?? ''}.mjs`);
