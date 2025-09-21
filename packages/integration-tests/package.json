@@ -13,8 +13,10 @@
     "source-map": "^0.7.4"
   },
   "scripts": {
-    "demo": "node --conditions=dev --no-warnings --enable-source-maps --test --import @power-assert/node 'src/demo/*demo.mts'",
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
+    "demo": "node --conditions=dev --no-warnings --enable-source-maps --test --import @power-assert/node 'src/demo/*demo.mts'",
+    "demo:dist": "node --no-warnings --enable-source-maps --test --import @power-assert/node 'dist/demo/*demo.mjs'",
+    "test:dist": "node --no-warnings --test --test-reporter=spec 'dist/**/__tests__/**/*test.mjs'",
     "test": "node --conditions=dev --no-warnings --test --test-reporter=spec 'src/**/__tests__/**/*test.mts'"
   },
   "keywords": [
