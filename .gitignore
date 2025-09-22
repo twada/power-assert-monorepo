@@ -158,3 +158,6 @@ target
 .tsimp
 
 .swc/
+/attic/
+/packages/swc-plugin-power-assert/attic/
+/packages/swc-plugin-power-assert/swc_plugin_power_assert.wasm
