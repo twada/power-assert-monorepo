@@ -30,9 +30,9 @@
     "lint": "eslint 'packages/**/src/**/*.mts'",
     "lint:fix": "eslint --fix 'packages/**/src/**/*.mts'",
     "compile": "tsc --build tsconfig.build.json",
-    "test:dist": "node --no-warnings --test --test-reporter=dot 'packages/**/dist/**/*_test.mjs'",
-    "test:prove": "prove --exec 'node --conditions=dev --no-warnings --test --test-reporter=tap' -r packages --ext=_test.mts",
-    "test:dev": "node --conditions=dev --no-warnings --test --test-reporter=dot 'packages/**/src/**/__tests__/**/*_test.mts'",
+    "test:dist": "node --test --test-reporter=dot 'packages/**/dist/**/*_test.mjs'",
+    "test:prove": "prove --exec 'node --conditions=dev --test --test-reporter=tap' -r packages --ext=_test.mts",
+    "test:dev": "node --conditions=dev --test --test-reporter=dot 'packages/**/src/**/__tests__/**/*_test.mts'",
     "test": "npm run lint && npm run test:dev"
   },
   "workspaces": [
