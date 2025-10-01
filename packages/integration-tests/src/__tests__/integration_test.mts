@@ -123,8 +123,6 @@ assert(truthy)
 Assertion failed: assert(truthy)
 === arg:0 ===
 Step 1: \`truthy\` => ""
-
-'' == true
 `);
   });
 
@@ -172,8 +170,6 @@ Assertion failed: assert(foo.bar)
 === arg:0 ===
 Step 1: \`foo\` => Object{bar:false}
 Step 2: \`foo.bar\` => false
-
-false == true
 `);
 
     ptest('MemberExpression computed:true', (transpiledCode) => {
@@ -207,8 +203,6 @@ Step 4: \`keys[zero]\` => "b a r"
 Step 5: \`foo[keys[zero]]\` => [true,false]
 Step 6: \`one\` => 1
 Step 7: \`foo[keys[zero]][one]\` => false
-
-false == true
 `);
 
     ptest('more MemberExpression computed:true', (transpiledCode) => {
@@ -262,8 +256,6 @@ Step 12: \`[[keys[zero], foo][zero], bar][one]\` => "b a r"
 Step 13: \`obj[[[keys[zero], foo][zero], bar][one]]\` => [true,false]
 Step 14: \`one\` => 1
 Step 15: \`obj[[[keys[zero], foo][zero], bar][one]][one]\` => false
-
-false == true
 `);
   });
 
@@ -282,8 +274,6 @@ assert(inner())
 Assertion failed: assert(inner())
 === arg:0 ===
 Step 1: \`inner()\` => false
-
-false == true
 `);
 
     ptest('CallExpression of CallExpression of CallExpression', (transpiledCode) => {
@@ -304,8 +294,6 @@ Assertion failed: assert(outer()()())
 Step 1: \`outer()\` => function@anonymous
 Step 2: \`outer()()\` => function@anonymous
 Step 3: \`outer()()()\` => false
-
-false == true
 `);
 
     ptest('method callee is function', (transpiledCode) => {
@@ -326,8 +314,6 @@ Assertion failed: assert(inner().exact())
 === arg:0 ===
 Step 1: \`inner()\` => Object{exact:function@exact}
 Step 2: \`inner().exact()\` => false
-
-false == true
 `);
 
     ptest('method callee is non-computed MemberExpression', (transpiledCode) => {
@@ -348,8 +334,6 @@ Assertion failed: assert(obj.method())
 === arg:0 ===
 Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`obj.method()\` => false
-
-false == true
 `);
 
     ptest('method callee is non-computed MemberExpression that returns function then invoke immediately', (transpiledCode) => {
@@ -374,8 +358,6 @@ Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`obj.method()\` => function@anonymous
 Step 3: \`obj.method()()\` => function@anonymous
 Step 4: \`obj.method()()()\` => false
-
-false == true
 `);
 
     ptest('method callee is computed MemberExpression', (transpiledCode) => {
@@ -399,8 +381,6 @@ Assertion failed: assert(obj[methodName]())
 Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`methodName\` => "method"
 Step 3: \`obj[methodName]()\` => false
-
-false == true
 `);
   });
 
@@ -425,8 +405,6 @@ Assertion failed: assert(foo ? bar : baz)
 Step 1: \`foo\` => 1
 Step 2: \`bar\` => null
 Step 3: \`foo ? bar : baz\` => null
-
-null == true
 `);
 
     ptest('ConditionalExpression of ConditionalExpression', (transpiledCode) => {
@@ -455,8 +433,6 @@ Step 2: \`bar\` => null
 Step 3: \`foo ? bar : baz\` => null
 Step 4: \`tata\` => 0
 Step 5: \`(foo ? bar : baz) ? toto : tata\` => 0
-
-0 == true
 `);
   });
 
@@ -488,8 +464,6 @@ Step 4: \`b\` => -2
 Step 5: \`0\` => 0
 Step 6: \`b > 0\` => false
 Step 7: \`a > 0 || b > 0\` => false
-
-false == true
 `);
 
     ptest('Logical AND', (transpiledCode) => {
@@ -513,8 +487,6 @@ Step 1: \`a\` => -3
 Step 2: \`0\` => 0
 Step 3: \`a > 0\` => false
 Step 4: \`a > 0 && b > 0\` => false
-
-false == true
 `);
   });
 
@@ -543,7 +515,6 @@ Step 1: \`'falsy is not truthy'\` => "falsy is not truthy"
 falsy is not truthy
 
 '1' !== 0
-
 
 
 '1' !== 0
