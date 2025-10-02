@@ -1,3 +1,10 @@
+### [0.3.1](https://github.com/twada/power-assert-monorepo/releases/tag/runtime-v0.3.1) (2025-10-02)
+
+#### Bug Fixes
+
+* [fix: filter out Node.js auto-generated assertion messages](https://github.com/twada/power-assert-monorepo/pull/26)
+
+
 ## [0.3.0](https://github.com/twada/power-assert-monorepo/releases/tag/runtime-v0.3.0) (2025-07-01)
 
 #### Features
