@@ -4,6 +4,7 @@ Power Assert in JavaScript - Provides descriptive assertion messages through sta
 
 [![power-assert][power-assert-banner]][power-assert-url]
 
+[![Build Status][ci-image]][ci-url]
 [![License][license-image]][license-url]
 
 ## What is power-assert?
@@ -264,3 +265,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 [license-url]: https://twada.mit-license.org/
 [license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg
+
+[ci-image]: https://github.com/twada/power-assert-monorepo/actions/workflows/ci.yml/badge.svg?branch=main
+[ci-url]: https://github.com/twada/power-assert-monorepo/actions/workflows/ci.yml
