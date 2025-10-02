@@ -24,14 +24,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
+    - run: npm run lint
+    - run: npm run test:dev
 
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
       with:
         targets: wasm32-wasip1
-    - run: npm run test -w swc-plugin-power-assert
-    - run: npm run build -w swc-plugin-power-assert
-
-    # - run: npm ci
-    # - run: npm run build --if-present
-    - run: npm test
+    - run: npm run build:dist
+    - run: npm run test:dist
