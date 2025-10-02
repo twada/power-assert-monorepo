@@ -33,30 +33,35 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
   const prelude = "import { strict as assert } from 'node:assert';\n";
   const wholeCode = prelude + expression;
 
-  test('swc-plugin-power-assert - ' + title + ': ' + expression, async () => {
-    // write to file since swc-plugin-power-assert requires target file existence in appropriate path
-    writeFileSync(inputFilepath, wholeCode);
-    const transpiled = await swc.transformFile(inputFilepath, {
-      sourceMaps: true,
-      isModule: true,
-      swcrc: false,
-      jsc: {
-        parser: {
-          syntax: 'ecmascript'
-        },
-        transform: {},
-        target: 'es2022',
-        experimental: {
-          plugins: [
-            ['swc-plugin-power-assert', {}]
-          ]
+  // In this power-assert monorepo, if Node export conditions include 'dev', node test runs typescript code directly by type-stripping feature.
+  // So under that condition, both typescript and rust compiling are skipped, therefore swc-plugin-power-assert will not run at all.
+  // In that case, we skip tests for swc-plugin-power-assert.
+  if (!process.execArgv.includes('--conditions=dev')) {
+    test('swc-plugin-power-assert - ' + title + ': ' + expression, async () => {
+      // write to file since swc-plugin-power-assert requires target file existence in appropriate path
+      writeFileSync(inputFilepath, wholeCode);
+      const transpiled = await swc.transformFile(inputFilepath, {
+        sourceMaps: true,
+        isModule: true,
+        swcrc: false,
+        jsc: {
+          parser: {
+            syntax: 'ecmascript'
+          },
+          transform: {},
+          target: 'es2022',
+          experimental: {
+            plugins: [
+              ['swc-plugin-power-assert', {}]
+            ]
+          }
         }
-      }
+      });
+      assert(transpiled.map !== undefined);
+      const sourceMapConsumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
+      verifyPowerAssertOutput(transpiled.code, sourceMapConsumer);
     });
-    assert(transpiled.map !== undefined);
-    const sourceMapConsumer = await new SourceMapConsumer(JSON.parse(transpiled.map));
-    verifyPowerAssertOutput(transpiled.code, sourceMapConsumer);
-  });
+  }
 
   test('@power-assert/transpiler - ' + title + ': ' + expression, async () => {
     const transpiled = await transpileWithSeparatedSourceMap(wholeCode, {
