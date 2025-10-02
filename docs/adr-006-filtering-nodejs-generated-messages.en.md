@@ -14,7 +14,7 @@ The expression evaluated to a falsy value:
   apply(this.#receiver, actualArgs)
 ```
 
-This message reveals Node.js internal implementation details (`apply(this.#receiver, actualArgs)`) that are:
+This message reveals internal implementation details (`apply(this.#receiver, actualArgs)`) that are:
 
 1. **Redundant**: power-assert already provides detailed, step-by-step evaluation of expressions
 2. **Confusing**: The internal method call representation is meaningless to end users
@@ -182,7 +182,4 @@ newAssertionErrorProps.generatedMessage = true;
 ## References
 
 - Node.js AssertionError documentation: https://nodejs.org/api/assert.html#class-assertassertionerror
-- Investigation document: `docs/investigations/2025-09-30-node-v24.9.0-test-output-changes.en.md`
-- Related commits:
-  - `04c98df`: Documentation of the issue
-  - `9c062e3`: Implementation of the fix
+- Investigation document: [`docs/investigations/2025-09-30-node-v24.9.0-test-output-changes.en.md`](https://github.com/twada/power-assert-monorepo/blob/main/docs/investigations/2025-09-30-node-v24.9.0-test-output-changes.en.md)
