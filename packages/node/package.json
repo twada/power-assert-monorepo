@@ -70,7 +70,7 @@
     "@power-assert/transpiler": "^0.6.0"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.3.0"
+    "@power-assert/runtime": "^0.3.1"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",

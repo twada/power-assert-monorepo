@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/runtime",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "power-assert runtime",
   "author": {
     "name": "Takuto WADA",
