@@ -183,3 +183,4 @@ newAssertionErrorProps.generatedMessage = true;
 
 - Node.js AssertionError documentation: https://nodejs.org/api/assert.html#class-assertassertionerror
 - Investigation document: [`docs/investigations/2025-09-30-node-v24.9.0-test-output-changes.en.md`](https://github.com/twada/power-assert-monorepo/blob/main/docs/investigations/2025-09-30-node-v24.9.0-test-output-changes.en.md)
+- [Related pull-request in Node.js v24.9.0](https://github.com/nodejs/node/pull/59751)
