@@ -18,6 +18,11 @@ export default {
       constBindings: true
     }
   },
+  external: [
+    'node:test',
+    'node:assert/strict',
+    '@power-assert/runtime'
+  ],
   plugins: [
     // externals({
     //   // strip 'node:' prefix
