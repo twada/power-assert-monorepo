@@ -33,6 +33,18 @@
         "default": "./dist/register.mjs"
       }
     },
+    "./sync": {
+      "module-sync": {
+        "types": "./dist/sync.d.mts",
+        "dev": "./src/sync.mts",
+        "default": "./dist/sync.mjs"
+      },
+      "import": {
+        "types": "./dist/sync.d.mts",
+        "dev": "./src/sync.mts",
+        "default": "./dist/sync.mjs"
+      }
+    },
     "./hooks": {
       "module-sync": {
         "types": "./dist/hooks.d.mts",
