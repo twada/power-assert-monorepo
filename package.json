@@ -21,7 +21,7 @@
     "eslint": "^9.0.0",
     "neostandard": "^0.13.0",
     "rimraf": "^6.0.0",
-    "typescript": "^5.9.0"
+    "typescript": "^6.0.0"
   },
   "scripts": {
     "prepack": "npm run build:dist && npm run test:dist",
