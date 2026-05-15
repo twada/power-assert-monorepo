@@ -58,9 +58,8 @@
     "@power-assert/runtime": "^0.3.1"
   },
   "devDependencies": {
-    "@types/estree": "^1.0.1",
     "rollup": "^4.2.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.0.0"
   },
   "scripts": {
     "example": "rollup --config rollup.config.power.mjs && node --test --enable-source-maps tmp/bowling.test.js",
