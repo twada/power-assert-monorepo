@@ -1,6 +1,5 @@
-/* eslint @typescript-eslint/no-unused-vars: 0 */
-/* eslint no-unused-vars: 0 */
-/* eslint no-eval: 0 */
+/* oxlint-disable no-unused-vars */
+/* oxlint-disable no-eval */
 import { test, describe, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
@@ -22,7 +21,7 @@ afterEach(() => {
 type TestFunc = (transpiledCode: string) => void;
 
 function isAssertionError (e: unknown): e is AssertionError {
-  return e instanceof Error && /^AssertionError/.test(e.name);
+  return e instanceof Error && e.name.startsWith('AssertionError');
 }
 
 export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {

@@ -65,6 +65,7 @@ class $Promise$ {
 const wrap = (v: unknown) => isPromiseLike(v) ? new $Promise$(v) : v;
 
 class ArgumentRecorderImpl implements ArgumentRecorder {
+// oxlint-disable-next-line no-unused-private-class-members
   readonly #powerAssert: PowerAssert;
   readonly #argumentNumber: number;
   #capturedValues: CapturedValue[];
@@ -187,7 +188,7 @@ function eject (v: unknown): PoweredArgument | NonPoweredArgument {
 }
 
 function isAssertionError (e: unknown): e is AssertionError {
-  return e instanceof Error && /^AssertionError/.test(e.name);
+  return e instanceof Error && e.name.startsWith('AssertionError');
 }
 
 function isMultiline (s: string): boolean {

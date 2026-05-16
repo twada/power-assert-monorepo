@@ -62,7 +62,7 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
     const stubTransformation: Transformation = {
-      insertDeclIntoCurrentBlock: (decl: ImportDeclaration | VariableDeclaration) => {
+      insertDeclIntoCurrentBlock: (_decl: ImportDeclaration | VariableDeclaration) => {
         // do nothing
       },
       generateUniqueName: (name: string) => `_p${name}1`
