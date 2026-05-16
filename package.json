@@ -20,6 +20,7 @@
     "depcheck": "^1.4.7",
     "eslint": "^9.0.0",
     "neostandard": "^0.13.0",
+    "oxlint": "^1.64.0",
     "rimraf": "^6.0.0",
     "typescript": "^6.0.0"
   },
@@ -27,7 +28,7 @@
     "prepack": "npm run build:dist && npm run test:dist",
     "build:dist": "npm run lint && npm run clean:all && npm run compile && npm run build:swc",
     "clean:all": "npm run build:clean --workspaces --if-present",
-    "lint": "eslint 'packages/**/src/**/*.mts'",
+    "lint": "oxlint",
     "lint:fix": "eslint --fix 'packages/**/src/**/*.mts'",
     "compile": "tsc --build tsconfig.build.json",
     "build:swc": "npm run test -w swc-plugin-power-assert && npm run build -w swc-plugin-power-assert",
