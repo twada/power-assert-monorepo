@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "*.mjs",
+    "*.json",
+    "*.md",
+    "*.toml",
+    ".swcrc",
+    "**/dist/**",
+    "**/examples/**",
+    "**/fixtures/**"
+  ],
+  "printWidth": 320,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "sortImports": false,
+  "sortPackageJson": false
+}
