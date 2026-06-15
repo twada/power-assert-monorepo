@@ -16,7 +16,13 @@
     "erasableSyntaxOnly": true,
     // any imports or exports without a type modifier are left around
     "verbatimModuleSyntax": true,
-    "strict": true
+    "strict": true,
+    "types": [
+      "convert-source-map",
+      "estree",
+      "multi-stage-sourcemap",
+      "node"
+    ]
   },
   // "include": ["./src/**/*.mts"]
 }
