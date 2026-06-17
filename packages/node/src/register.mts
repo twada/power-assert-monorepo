@@ -1,3 +1,9 @@
-import { register } from 'node:module';
-// use package self-reference to use conditional exports with type-stripping
-register('@power-assert/node/hooks', import.meta.url);
+import { registerHooks } from 'node:module';
+import { resolve, load } from './hooks.mts';
+import type { RegisterHooksOptions } from 'node:module';
+
+const hooksOptions: RegisterHooksOptions = {
+  resolve,
+  load
+};
+registerHooks(hooksOptions);

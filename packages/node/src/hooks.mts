@@ -1,12 +1,12 @@
 import { strict as assert } from 'node:assert';
-import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
-import { readFile } from 'node:fs/promises';
+import { transpileWithInlineSourceMapSync } from '@power-assert/transpiler';
+import { readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 import { findPackageJSON, stripTypeScriptTypes } from 'node:module';
-import type { LoadFnOutput, LoadHookContext, ResolveFnOutput, ResolveHookContext } from 'node:module';
+import type { LoadHookSync, LoadFnOutput, LoadHookContext, ResolveHookSync, ResolveFnOutput, ResolveHookContext } from 'node:module';
 
-type NextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput | Promise<ResolveFnOutput>;
-type NextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput | Promise<LoadFnOutput>;
+type SyncNextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
+type SyncNextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
 const supportedExts = new Set([
   '.js',
@@ -16,17 +16,19 @@ const supportedExts = new Set([
 ]);
 
 /**
- * The `resolve` hook chain is responsible for resolving file URL for a given module specifier and parent URL, and optionally its format (such as `'module'`) as a hint to the `load` hook.
- * If a format is specified, the load hook is ultimately responsible for providing the final `format` value (and it is free to ignore the hint provided by `resolve`);
- * if `resolve` provides a format, a custom `load` hook is required even if only to pass the value to the Node.js default `load` hook.
+ * The resolve hook chain is responsible for telling Node.js where to find and how to cache a given import statement or expression, or require call.
+ * It can optionally return a format (such as 'module') as a hint to the load hook.
+ * If a format is specified, the load hook is ultimately responsible for providing the final format value (and it is free to ignore the hint provided by resolve);
+ * if resolve provides a format, a custom load hook is required even if only to pass the value to the Node.js default load hook.
  *
  * @param specifier The specified URL path of the module to be resolved
- * @param context
- * @param nextResolve The subsequent `resolve` hook in the chain, or the Node.js default `resolve` hook after the last user-supplied resolve hook
+ * @param context The context in which the module is being resolved
+ * @param nextResolve The subsequent resolve hook in the chain, or the Node.js default resolve hook after the last user-supplied resolve hook
+ * @returns The result of the resolution, including the resolved URL and optional format
  */
-export async function resolve (specifier: string, context: ResolveHookContext, nextResolve: NextResolveFn): Promise<ResolveFnOutput> {
-  const nextResolveWithShortCircuitFalse = async (specifier: string, context: ResolveHookContext): Promise<ResolveFnOutput> => {
-    const resolved = await nextResolve(specifier, context);
+export const resolve: ResolveHookSync = function resolve (specifier: string, context: ResolveHookContext, nextResolve: SyncNextResolveFn): ResolveFnOutput {
+  const nextResolveWithShortCircuitFalse = (specifier: string, context: ResolveHookContext): ResolveFnOutput => {
+    const resolved = nextResolve(specifier, context);
     return { ...resolved, shortCircuit: false };
   };
 
@@ -44,14 +46,14 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     return nextResolveWithShortCircuitFalse(specifier, context);
   }
 
-  const { url: nextUrl, format } = await nextResolveWithShortCircuitFalse(specifier, context);
+  const { url: nextUrl, format } = nextResolveWithShortCircuitFalse(specifier, context);
   const url = nextUrl ?? new URL(specifier, context.parentURL).href;
   assert(url !== null, 'url should not be null');
   assert.equal(typeof url, 'string', 'url should be a string');
 
   // url ends with .mjs or .mts => module
   // url ends with .js or .ts => detect format from package.json
-  const isModule = ext.startsWith('.m') || (await getPackageType(url)) === 'module';
+  const isModule = ext.startsWith('.m') || getPackageType(url) === 'module';
   if (!isModule) {
     return nextResolveWithShortCircuitFalse(specifier, context);
   }
@@ -67,19 +69,21 @@ export async function resolve (specifier: string, context: ResolveHookContext, n
     url
   };
   return resolved;
-}
+};
 
 /**
- * The `load` hook provides a way to define a custom method of determining how a URL should be interpreted, retrieved, and parsed.
- * It is also in charge of validating the import assertion.
+ * The `load` hook provides a way to define a custom method for retrieving the source code of a resolved URL.
+ * This would allow a loader to potentially avoid reading files from disk.
+ * It could also be used to map an unrecognized format to a supported one, for example yaml to module.
  *
- * @param url The URL/path of the module to be loaded
- * @param context Metadata about the module
- * @param nextLoad The subsequent `load` hook in the chain, or the Node.js default `load` hook after the last user-supplied `load` hook
+ * @param url The URL returned by the resolve chain
+ * @param context Metadata about the module being loaded, including the format and import attributes
+ * @param nextLoad The subsequent load hook in the chain, or the Node.js default load hook after the last user-supplied load hook
+ * @returns The result of the load, including the source code and format
  */
-export async function load (url: string, context: LoadHookContext, nextLoad: NextLoadFn): Promise<LoadFnOutput> {
-  const nextLoadWithShortCircuitFalse = async (url: string, context: LoadHookContext): Promise<LoadFnOutput> => {
-    const loaded = await nextLoad(url, context);
+export const load: LoadHookSync = function load (url: string, context: LoadHookContext, nextLoad: SyncNextLoadFn): LoadFnOutput {
+  const nextLoadWithShortCircuitFalse = (url: string, context: LoadHookContext): LoadFnOutput => {
+    const loaded = nextLoad(url, context);
     return { ...loaded, shortCircuit: false };
   };
   const { importAttributes, format } = context;
@@ -88,22 +92,22 @@ export async function load (url: string, context: LoadHookContext, nextLoad: Nex
   }
   delete importAttributes.powerAssert;
 
-  const { source: rawSource } = await nextLoadWithShortCircuitFalse(url, context);
+  const { source: rawSource } = nextLoadWithShortCircuitFalse(url, context);
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   let incomingCode = rawSource.toString();
   if (format === 'module-typescript') {
     incomingCode = stripTypeScriptTypes(incomingCode);
   }
-  const transpiled = await transpileWithInlineSourceMap(incomingCode, { file: url });
+  const transpiled = transpileWithInlineSourceMapSync(incomingCode, { file: url });
   return {
     format,
     shortCircuit: false,
     source: transpiled.code
   };
-}
+};
 
 // start borrowing from https://nodejs.org/api/module.html#transpilation
-async function getPackageType (url: string): Promise<string | false> {
+function getPackageType (url: string): string | undefined {
   // `url` is only a file path during the first iteration when passed the
   // resolved url from the load() hook
   // an actual file path from load() will contain a file extension as it's
@@ -112,11 +116,14 @@ async function getPackageType (url: string): Promise<string | false> {
   // work for most projects but does not cover some edge-cases (such as
   // extensionless files or a url ending in a trailing space)
   const pJson = findPackageJSON(url);
-  assert(pJson !== undefined, 'cannot find package.json');
-
-  return readFile(pJson, 'utf8')
-    .then(JSON.parse)
-    .then((json) => json?.type)
-    .catch(() => undefined);
+  if (!pJson) {
+    return undefined;
+  }
+  try {
+    const file = readFileSync(pJson, 'utf-8');
+    return JSON.parse(file)?.type;
+  } catch {
+    return undefined;
+  }
 }
 // end borrowing from https://nodejs.org/api/module.html#transpilation
