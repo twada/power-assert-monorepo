@@ -28,7 +28,7 @@ jobs:
     - run: npm run test:dev
 
     - name: Setup Rust
-      uses: dtolnay/rust-toolchain@stable
+      uses: dtolnay/rust-toolchain@1.95.0
       with:
         targets: wasm32-wasip1
     - run: npm run build:dist
