@@ -41,6 +41,16 @@ export async function transpileWithInlineSourceMap (code: string, options?: Tran
   };
 }
 
+export function transpileWithSeparatedSourceMapSync (code: string, options?: TranspileWithSourceMapOptions): CodeWithSeparatedSourceMap {
+  const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
+  const { transpiledCode, outMapConv } = transpileSync(transpile, code, options?.file);
+  return {
+    type: 'CodeWithSeparatedSourceMap',
+    code: transpiledCode,
+    sourceMap: outMapConv.toJSON()
+  };
+}
+
 export function transpileWithInlineSourceMapSync (code: string, options?: TranspileWithSourceMapOptions): CodeWithInlineSourceMap {
   const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
   const { transpiledCode, outMapConv } = transpileSync(transpile, code, options?.file);

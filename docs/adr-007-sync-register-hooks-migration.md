@@ -24,7 +24,7 @@ Node.js has deprecated `module.register()` in favor of `module.registerHooks()`,
 
 The migration was carried out incrementally:
 
-1. **Sync transpiler foundation**: Added synchronous versions of transpile functions (`transpileWithInlineSourceMapSync`, `transpileSync`, `findIncomingSourceMapSync`) to `@power-assert/transpiler`, since the new sync hooks cannot call async functions.
+1. **Sync transpiler foundation**: Added synchronous versions of transpile functions (`transpileWithInlineSourceMapSync`, `transpileWithSeparatedSourceMapSync`, `transpileSync`, `findIncomingSourceMapSync`) to `@power-assert/transpiler`, since the new sync hooks cannot call async functions.
 
 2. **Parallel sync implementation**: Created a standalone `sync.mts` as an independent sync implementation alongside the existing async `hooks.mts`, exposed via a separate `@power-assert/node/sync` export. This allowed validation without disrupting the existing async path.
 
@@ -71,6 +71,7 @@ registerHooks({ resolve, load });
 
 - `readFile` (from `node:fs/promises`) → `readFileSync` (from `node:fs`)
 - `transpileWithInlineSourceMap` (async) → `transpileWithInlineSourceMapSync` (sync)
+- `transpileWithSeparatedSourceMap` (async) → `transpileWithSeparatedSourceMapSync` (sync)
 - `getPackageType` converted from async Promise-chain to sync try/catch
 - All `await` expressions removed from hook functions
 
