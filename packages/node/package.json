@@ -74,8 +74,8 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "example3": "node --experimental-config-file=node.config.json --test examples/bowling.test.mts",
-    "example:ts": "node --conditions=dev --experimental-strip-types --import @power-assert/node --test examples/bowling.test.mts",
+    "example:config": "node --experimental-config-file=node.config.json --test examples/bowling.test.mts",
+    "example:ts": "node --conditions=dev --experimental-strip-types --enable-source-maps --import @power-assert/node --test examples/bowling.test.mts",
     "example": "node --conditions=dev --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs",
     "demo": "node --conditions=dev --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
     "test:js": "node --conditions=dev --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:110:7'",
