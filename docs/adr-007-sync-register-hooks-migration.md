@@ -18,7 +18,7 @@ Node.js has deprecated `module.register()` in favor of `module.registerHooks()`,
 | Hook signatures | `async function resolve(...)`, `async function load(...)` | Sync function signatures (`ResolveHookSync`, `LoadHookSync`) |
 | Registration | Indirect — passes a specifier URL to a hooks file | Direct — passes hook function references |
 | I/O in hooks | `await readFile()`, `await transpile()` | `readFileSync()`, `transpileSync()` |
-| Available since | Node.js 20.6.0 | Node.js 22.18.0 |
+| Available since | Node.js 20.6.0 | Node.js 22.15.0 |
 
 ### Development progression
 
@@ -109,9 +109,9 @@ try {
 ### 6. Node.js version requirement
 
 **Before**: `>=22.14.0`
-**After**: `>=22.18.0`
+**After**: `>=22.15.0`
 
-**Rationale**: `module.registerHooks()` with the required sync hook types (`ResolveHookSync`, `LoadHookSync`) is available from Node.js 22.18.0.
+**Rationale**: `module.registerHooks()` is available from Node.js 22.15.0.
 
 ## Consequences
 
@@ -125,7 +125,7 @@ try {
 
 ### Trade-offs
 
-1. **Breaking change**: Users must update Node.js to >=22.18.0
+1. **Breaking change**: Users must update Node.js to >=22.15.0
 2. **Synchronous I/O**: File reads in hooks block the event loop, though this is acceptable during module loading which is inherently sequential
 3. **Loss of backward compatibility**: Users on older Node.js versions cannot use this version of `@power-assert/node`
 

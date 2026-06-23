@@ -142,7 +142,7 @@ For lightweight TypeScript support, you can use the built-in support for [Type s
 node --enable-source-maps --import @power-assert/node --test some.test.ts
 ```
 
-For Node version `>=22.6.0 <23.6.0` requires `--experimental-strip-types` flag explicitly.
+For Node version `>=22.6.0 <22.18.0` or `>=23.0.0 <23.6.0` require `--experimental-strip-types` flag explicitly.
 
 ```
 node --experimental-strip-types --enable-source-maps --import @power-assert/node --test some.test.ts

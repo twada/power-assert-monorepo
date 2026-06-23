@@ -101,7 +101,7 @@ Power Assert follows the principle of "No API is the best API". You don't need t
 
 ### Using with Node.js Test Runner
 
-For Node.js v22.14.0 or later:
+For Node.js v22.15.0 or later:
 
 ```bash
 npm install --save-dev @power-assert/node
@@ -244,7 +244,7 @@ This monorepo contains the following packages:
 
 ### Integration Packages
 
-- [@power-assert/node](packages/node) - Custom hook for Node.js Test Runner (requires Node.js v22.14.0+)
+- [@power-assert/node](packages/node) - Custom hook for Node.js Test Runner (requires Node.js v22.15.0+)
 - [rollup-plugin-power-assert](packages/rollup-plugin-power-assert) - Plugin for Rollup and Vite (also supports Vitest)
 - [swc-plugin-power-assert](packages/swc-plugin-power-assert) - High-performance SWC plugin written in Rust
 
