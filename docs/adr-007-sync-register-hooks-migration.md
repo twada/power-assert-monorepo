@@ -131,10 +131,7 @@ try {
 
 ### Risks and Mitigations
 
-1. **Risk**: Users on Node.js 22.14.0–22.17.x cannot upgrade
-   - **Mitigation**: Previous versions of `@power-assert/node` continue to work on older Node.js versions. The engines field in package.json prevents accidental installation on incompatible versions.
-
-2. **Risk**: `module.registerHooks()` API changes in future Node.js versions
+1. **Risk**: `module.registerHooks()` API changes in future Node.js versions
    - **Mitigation**: Unlike the deprecated `module.register()`, `registerHooks()` is the actively maintained path. The explicit `ResolveHookSync`/`LoadHookSync` type annotations will catch any signature changes at compile time.
 
 ## References
