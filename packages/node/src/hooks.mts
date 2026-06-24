@@ -5,8 +5,8 @@ import { extname } from 'node:path';
 import { findPackageJSON, stripTypeScriptTypes } from 'node:module';
 import type { LoadHookSync, LoadFnOutput, LoadHookContext, ResolveHookSync, ResolveFnOutput, ResolveHookContext } from 'node:module';
 
-type SyncNextResolveFn = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
-type SyncNextLoadFn = (url: string, context?: LoadHookContext) => LoadFnOutput;
+type NextResolveFnSync = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
+type NextLoadFnSync = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
 const supportedExts = new Set([
   '.js',
@@ -26,7 +26,7 @@ const supportedExts = new Set([
  * @param nextResolve The subsequent resolve hook in the chain, or the Node.js default resolve hook after the last user-supplied resolve hook
  * @returns The result of the resolution, including the resolved URL and optional format
  */
-export const resolve: ResolveHookSync = function resolve (specifier: string, context: ResolveHookContext, nextResolve: SyncNextResolveFn): ResolveFnOutput {
+export const resolve: ResolveHookSync = function resolve (specifier: string, context: ResolveHookContext, nextResolve: NextResolveFnSync): ResolveFnOutput {
   const nextResolveWithShortCircuitFalse = (specifier: string, context: ResolveHookContext): ResolveFnOutput => {
     const resolved = nextResolve(specifier, context);
     return { ...resolved, shortCircuit: false };
@@ -81,7 +81,7 @@ export const resolve: ResolveHookSync = function resolve (specifier: string, con
  * @param nextLoad The subsequent load hook in the chain, or the Node.js default load hook after the last user-supplied load hook
  * @returns The result of the load, including the source code and format
  */
-export const load: LoadHookSync = function load (url: string, context: LoadHookContext, nextLoad: SyncNextLoadFn): LoadFnOutput {
+export const load: LoadHookSync = function load (url: string, context: LoadHookContext, nextLoad: NextLoadFnSync): LoadFnOutput {
   const nextLoadWithShortCircuitFalse = (url: string, context: LoadHookContext): LoadFnOutput => {
     const loaded = nextLoad(url, context);
     return { ...loaded, shortCircuit: false };
