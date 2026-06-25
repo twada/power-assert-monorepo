@@ -5,6 +5,7 @@ import { fromJSON, fromObject, fromMapFileSource, fromSource } from 'convert-sou
 import { transfer } from 'multi-stage-sourcemap';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Node } from 'estree';
 import type { SourceMapConverter } from 'convert-source-map';
@@ -59,6 +60,55 @@ async function findIncomingSourceMap (originalCode: string, fileUrlOrPath?: stri
       // resolve relative path
       const nativePath = URL.canParse(fileUrlOrPath) ? fileURLToPath(fileUrlOrPath) : fileUrlOrPath;
       return readFile(resolve(nativePath, '..', filename), 'utf8');
+    });
+  } else {
+    // inline sourceMap or no sourceMap
+    return fromSource(originalCode);
+  }
+}
+
+export function transpileSync (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): CodeWithSourceMapConverter {
+  const ast: Node = parse(code, {
+    sourceType: 'module',
+    ecmaVersion: 2025,
+    locations: true, // true for SourceMap
+    ranges: false,
+    sourceFile: filePathOrUrl
+  }) as Node;
+  const modifiedAst = transpile(ast, code);
+  const smg = new SourceMapGenerator({
+    file: filePathOrUrl
+  });
+  const transpiledCode = generate(modifiedAst, {
+    sourceMap: smg
+  });
+
+  let outMapConv = fromObject(smg.toJSON());
+  const inMapConv = findIncomingSourceMapSync(code, filePathOrUrl);
+  if (inMapConv) {
+    outMapConv = reconnectSourceMap(inMapConv, outMapConv);
+  }
+
+  return {
+    type: 'CodeWithSourceMapConverter',
+    transpiledCode,
+    outMapConv
+  };
+}
+
+function findIncomingSourceMapSync (originalCode: string, fileUrlOrPath?: string): SourceMapConverter | null {
+  if (!fileUrlOrPath) {
+    // inline sourceMap or no sourceMap
+    return fromSource(originalCode);
+  }
+  const sourceMappingURL = retrieveSourceMapURL(originalCode);
+  // //# sourceMappingURL=foo.js.map or /*# sourceMappingURL=foo.js.map */
+  if (sourceMappingURL && !/^data:application\/json[^,]+base64,/.test(sourceMappingURL)) {
+    // relative file sourceMap
+    return fromMapFileSource(originalCode, (filename: string) => {
+      // resolve relative path
+      const nativePath = URL.canParse(fileUrlOrPath) ? fileURLToPath(fileUrlOrPath) : fileUrlOrPath;
+      return readFileSync(resolve(nativePath, '..', filename), 'utf8');
     });
   } else {
     // inline sourceMap or no sourceMap
