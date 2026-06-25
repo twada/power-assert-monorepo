@@ -41,12 +41,12 @@ type PowerAssert = {
 
 type PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra?: unknown) => PowerAssert;
 
-function isPromiseLike (o: any): o is Promise<any> {
+function isPromiseLike(o: any): o is Promise<any> {
   return typeof o === 'object' && o !== null && typeof o.then === 'function' && typeof o.catch === 'function';
 }
 
 type PromiseWatcher = (...args: unknown[]) => void;
-function mark (wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseWatcher {
+function mark(wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseWatcher {
   return (...args: unknown[]) => {
     wrapper.status = status;
     wrapper.value = args.length === 1 ? args[0] : args;
@@ -56,16 +56,16 @@ function mark (wrapper: $Promise$, status: 'resolved' | 'rejected'): PromiseWatc
 class $Promise$ {
   status: 'pending' | 'resolved' | 'rejected';
   value: unknown;
-  constructor (prms: Promise<unknown>) {
+  constructor(prms: Promise<unknown>) {
     this.status = 'pending';
     prms.then(mark(this, 'resolved'), mark(this, 'rejected'));
   }
 }
 
-const wrap = (v: unknown) => isPromiseLike(v) ? new $Promise$(v) : v;
+const wrap = (v: unknown) => (isPromiseLike(v) ? new $Promise$(v) : v);
 
 class ArgumentRecorderImpl implements ArgumentRecorder {
-// oxlint-disable-next-line no-unused-private-class-members
+  // oxlint-disable-next-line no-unused-private-class-members
   readonly #powerAssert: PowerAssert;
   readonly #argumentNumber: number;
   #capturedValues: CapturedValue[];
@@ -73,7 +73,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   #val: unknown;
   #evalOrder: number;
 
-  constructor (powerAssert: PowerAssert, argumentNumber: number) {
+  constructor(powerAssert: PowerAssert, argumentNumber: number) {
     this.#powerAssert = powerAssert;
     this.#argumentNumber = argumentNumber;
     this.#capturedValues = [];
@@ -82,11 +82,11 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     this.#evalOrder = 0;
   }
 
-  actualValue (): unknown {
+  actualValue(): unknown {
     return this.#val;
   }
 
-  ejectRecordedArgument (): RecordedArgument {
+  ejectRecordedArgument(): RecordedArgument {
     const ret = this.#recorded;
     assert(ret !== null, 'ejectRecordedArgument() should be called after recording');
     this.#recorded = null;
@@ -94,7 +94,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return ret;
   }
 
-  tap (value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown {
+  tap(value: unknown, markerPos: number, startPos: number, endPos: number, metadata?: CapturedValueMetadata): unknown {
     const evalOrder = ++this.#evalOrder;
     this.#capturedValues.push({
       value: wrap(value),
@@ -108,7 +108,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
     return value;
   }
 
-  rec (value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder {
+  rec(value: unknown, markerPos?: number, startPos?: number, endPos?: number): ArgumentRecorder {
     try {
       if (typeof markerPos === 'undefined') {
         // node right under the assertion is not captured
@@ -130,7 +130,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
       // capture asesert.throws, assert.doesNotThrow, assert.rejects, assert.doesNotReject
       if (typeof value === 'function') {
         value = new Proxy(value, {
-          apply (target, thisArg, args) {
+          apply(target, thisArg, args) {
             try {
               const ret = target.apply(thisArg, args);
               cap.value = wrap(ret);
@@ -154,7 +154,7 @@ class ArgumentRecorderImpl implements ArgumentRecorder {
   }
 }
 
-function actual (v: unknown): unknown {
+function actual(v: unknown): unknown {
   if (v instanceof ArgumentRecorderImpl) {
     return v.actualValue();
   } else {
@@ -163,17 +163,17 @@ function actual (v: unknown): unknown {
 }
 
 type PoweredArgument = {
-  type: 'PoweredArgument'
+  type: 'PoweredArgument';
   value: unknown;
   capturedValues: CapturedValue[];
 };
 
 type NonPoweredArgument = {
-  type: 'NonPoweredArgument'
+  type: 'NonPoweredArgument';
   value: unknown;
 };
 
-function eject (v: unknown): PoweredArgument | NonPoweredArgument {
+function eject(v: unknown): PoweredArgument | NonPoweredArgument {
   if (v instanceof ArgumentRecorderImpl) {
     return {
       type: 'PoweredArgument',
@@ -187,11 +187,11 @@ function eject (v: unknown): PoweredArgument | NonPoweredArgument {
   }
 }
 
-function isAssertionError (e: unknown): e is AssertionError {
+function isAssertionError(e: unknown): e is AssertionError {
   return e instanceof Error && e.name.startsWith('AssertionError');
 }
 
-function isMultiline (s: string): boolean {
+function isMultiline(s: string): boolean {
   return s.indexOf('\n') !== -1;
 }
 
@@ -202,17 +202,17 @@ class PowerAssertImpl implements PowerAssert {
   readonly #receiver: unknown;
   readonly #assertionMetadata: PowerAssertMetadata;
 
-  constructor (callee: Function, receiver: unknown, assertionMetadata: PowerAssertMetadata) {
+  constructor(callee: Function, receiver: unknown, assertionMetadata: PowerAssertMetadata) {
     this.#callee = callee;
     this.#receiver = receiver;
     this.#assertionMetadata = assertionMetadata;
   }
 
-  recorder (argumentNumber: number): ArgumentRecorder {
+  recorder(argumentNumber: number): ArgumentRecorder {
     return new ArgumentRecorderImpl(this, argumentNumber);
   }
 
-  run (...poweredArgs: unknown[]): unknown {
+  run(...poweredArgs: unknown[]): unknown {
     const actualArgs = poweredArgs.map((a) => actual(a));
     try {
       return this.#callee.apply(this.#receiver, actualArgs);
@@ -260,7 +260,7 @@ class PowerAssertImpl implements PowerAssert {
         operator: e.operator,
         actual: e.actual,
         expected: e.expected,
-        generatedMessage: true,  // always true because this is generated by power-assert
+        generatedMessage: true, // always true because this is generated by power-assert
         stackStartFn: this.run // the generated stack trace omits frames before this function.
       };
 
@@ -286,18 +286,19 @@ class PowerAssertImpl implements PowerAssert {
   }
 }
 
-function createPowerAssertMetadata (content: string, extra?: unknown): PowerAssertMetadata {
-  return Object.assign({
-    transpiler: 'power-assert',
-    version: '0.0.0',
-    content
-  }, extra);
+function createPowerAssertMetadata(content: string, extra?: unknown): PowerAssertMetadata {
+  return Object.assign(
+    {
+      transpiler: 'power-assert',
+      version: '0.0.0',
+      content
+    },
+    extra
+  );
 }
 
 const _power_: PowerAssertRuntime = (callee: Function, receiver: unknown, content: string, extra?: unknown) => {
   return new PowerAssertImpl(callee, receiver, createPowerAssertMetadata(content, extra));
 };
 
-export {
-  _power_
-};
+export { _power_ };

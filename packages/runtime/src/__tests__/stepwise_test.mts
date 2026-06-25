@@ -32,9 +32,7 @@ Step 2: \`foo.bar\` => 0
   });
 
   it('CallExpression', () => {
-    const actual = renderStepwise('assert(inner())', [
-      { value: false, markerPos: 7, startPos: 7, endPos: 14, evalOrder: 1, argIndex: 0 }
-    ]);
+    const actual = renderStepwise('assert(inner())', [{ value: false, markerPos: 7, startPos: 7, endPos: 14, evalOrder: 1, argIndex: 0 }]);
     const expected = `
 === arg:0 ===
 Step 1: \`inner()\` => false

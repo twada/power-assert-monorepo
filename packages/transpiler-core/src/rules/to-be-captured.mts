@@ -30,9 +30,7 @@ const isCaputuringTargetNode = (currentNode: Node) => {
 };
 
 const isCalleeOfCallExpression = (currentNode: Node, parentNode: Node, currentKey: NodeKey) => {
-  return (parentNode.type === 'CallExpression' || parentNode.type === 'NewExpression') &&
-    currentKey === 'callee' &&
-    currentNode.type !== 'CallExpression';
+  return (parentNode.type === 'CallExpression' || parentNode.type === 'NewExpression') && currentKey === 'callee' && currentNode.type !== 'CallExpression';
 };
 
 const isChildOfTaggedTemplateExpression = (parentNode: Node) => {
@@ -49,18 +47,12 @@ const isChildOfUpdateExpression = (parentNode: Node) => {
 };
 
 const shouldNotCaptureImmediateNode = (currentNode: Node, parentNode: Node, currentKey: NodeKey) => {
-  return isYieldOrAwaitArgument(parentNode, currentKey) ||
-    isChildOfUpdateExpression(parentNode) ||
-    isCalleeOfCallExpression(currentNode, parentNode, currentKey) ||
-    isChildOfTaggedTemplateExpression(parentNode);
+  return isYieldOrAwaitArgument(parentNode, currentKey) || isChildOfUpdateExpression(parentNode) || isCalleeOfCallExpression(currentNode, parentNode, currentKey) || isChildOfTaggedTemplateExpression(parentNode);
 };
 
-const toBeCaptured = ({ currentNode, parentNode, currentKey }: { currentNode: Node, parentNode: Node | null, currentKey: NodeKey }) => {
+const toBeCaptured = ({ currentNode, parentNode, currentKey }: { currentNode: Node; parentNode: Node | null; currentKey: NodeKey }) => {
   assert(parentNode, 'Parent node must exist');
-  return isCaputuringTargetNode(currentNode) &&
-    !shouldNotCaptureImmediateNode(currentNode, parentNode, currentKey);
+  return isCaputuringTargetNode(currentNode) && !shouldNotCaptureImmediateNode(currentNode, parentNode, currentKey);
 };
 
-export {
-  toBeCaptured
-};
+export { toBeCaptured };

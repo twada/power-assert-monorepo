@@ -16,7 +16,7 @@ import { typeName } from '../../stringifier/type-name.mts';
 class Person {
   readonly name: string;
   readonly age: number;
-  constructor (name: string, age: number) {
+  constructor(name: string, age: number) {
     this.name = name;
     this.age = age;
   }
@@ -25,7 +25,7 @@ class Person {
 const AnonPerson = class {
   readonly name: string;
   readonly age: number;
-  constructor (name: string, age: number) {
+  constructor(name: string, age: number) {
     this.name = name;
     this.age = age;
   }
@@ -150,7 +150,9 @@ const fixtures: Suite = {
     pruned: 'function@anonymous'
   },
   'arguments object': {
-    input: (function () { return arguments; })(),
+    input: (function () {
+      return arguments;
+    })(),
     expected: 'Arguments{}',
     pruned: '#Arguments#'
   },
@@ -223,12 +225,12 @@ if (typeName(anonymous) === 'AnonPerson') {
     expected: 'AnonPerson{name:"bob",age:4}',
     pruned: '#AnonPerson#'
   };
-// } else {
-//   fixtures['anonymous constructor'] = {
-//     input: anonymous,
-//     expected: '@Anonymous{name:"bob",age:4}',
-//     pruned: '#@Anonymous#'
-//   };
+  // } else {
+  //   fixtures['anonymous constructor'] = {
+  //     input: anonymous,
+  //     expected: '@Anonymous{name:"bob",age:4}',
+  //     pruned: '#@Anonymous#'
+  //   };
 }
 
 describe('stringify and type-name', () => {

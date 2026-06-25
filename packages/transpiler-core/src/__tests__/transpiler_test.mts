@@ -11,7 +11,7 @@ import type { Node } from 'estree';
 import type { EspowerOptions } from '../transpiler-core.mts';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-function parseByMeriyah (filepath: string, loc: boolean, ranges: boolean): Node {
+function parseByMeriyah(filepath: string, loc: boolean, ranges: boolean): Node {
   return parseModule(readFileSync(filepath).toString(), {
     // The flag to enable start, end offsets and range: [start, end] to each node
     ranges,
@@ -22,7 +22,7 @@ function parseByMeriyah (filepath: string, loc: boolean, ranges: boolean): Node 
 }
 parseByMeriyah.parserName = 'meriyah';
 
-function parseByAcorn (filepath: string, locations: boolean, ranges: boolean): Node {
+function parseByAcorn(filepath: string, locations: boolean, ranges: boolean): Node {
   return parse(readFileSync(filepath).toString(), {
     sourceType: 'module',
     ecmaVersion: 2022,
