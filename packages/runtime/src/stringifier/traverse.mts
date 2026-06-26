@@ -20,7 +20,6 @@ export type State = {
   bailOut: () => void;
   skip: () => void;
 };
-/* eslint-ensable no-use-before-define */
 
 export type BeforeAllChildrenCallback = (state: State, node: unknown) => void;
 export type BeforeEachChildCallback = (state: State, childNode: unknown, key: PropertyKey, beforeEachChildState: State) => void;

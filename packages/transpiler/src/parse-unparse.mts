@@ -119,12 +119,11 @@ function findIncomingSourceMapSync(originalCode: string, fileUrlOrPath?: string)
 // copy from https://github.com/evanw/node-source-map-support/blob/master/source-map-support.js#L99
 function retrieveSourceMapURL(source: string): string | null {
   //        //# sourceMappingURL=foo.js.map                       /*# sourceMappingURL=foo.js.map */
-  // eslint-disable-next-line no-useless-escape
-  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/)[ \t]*$)/gm;
+  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*(?:\*\/)[ \t]*$)/gm;
   // Keep executing the search to find the *last* sourceMappingURL to avoid
   // picking up sourceMappingURLs from comments, strings, etc.
   let lastMatch, match;
-  // eslint-disable-next-line no-cond-assign
+  // oxlint-disable-next-line no-cond-assign
   while ((match = re.exec(source))) {
     lastMatch = match;
   }

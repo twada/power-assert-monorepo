@@ -311,7 +311,7 @@ function afterEachChild(childContext: State, push: CollectorFunc) {
 }
 
 function nan(kvp: KeyValuePair, _acc: Accumulator): boolean {
-  return kvp.value !== kvp.value; // eslint-disable-line no-self-compare
+  return Number.isNaN(kvp.value);
 }
 
 function positiveInfinity(kvp: KeyValuePair, _acc: Accumulator): boolean {

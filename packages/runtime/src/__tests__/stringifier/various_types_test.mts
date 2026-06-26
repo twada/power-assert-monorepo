@@ -106,17 +106,17 @@ const fixtures: Suite = {
     pruned: 'function@input'
   },
   'String object': {
-    input: new String('bar'), // eslint-disable-line no-new-wrappers
+    input: new String('bar'), // oxlint-disable-line no-new-wrappers
     expected: 'new String("bar")',
     pruned: 'new String("bar")'
   },
   'Number object': {
-    input: new Number('3'), // eslint-disable-line no-new-wrappers
+    input: new Number('3'), // oxlint-disable-line no-new-wrappers
     expected: 'new Number(3)',
     pruned: 'new Number(3)'
   },
   'Boolean object': {
-    input: new Boolean('1'), // eslint-disable-line no-new-wrappers
+    input: new Boolean('1'), // oxlint-disable-line no-new-wrappers
     expected: 'new Boolean(true)',
     pruned: 'new Boolean(true)'
   },
@@ -131,11 +131,7 @@ const fixtures: Suite = {
     pruned: '/^not/g'
   },
   'Array object': {
-    /* eslint-disable @typescript-eslint/no-array-constructor */
-
-    input: new Array(),
-
-    /* eslint-enable @typescript-eslint/no-array-constructor */
+    input: new Array(), // oxlint-disable-line no-array-constructor
     expected: '[]',
     pruned: '#Array#'
   },
@@ -145,7 +141,7 @@ const fixtures: Suite = {
     pruned: '#Object#'
   },
   'Function object': {
-    input: new Function('x', 'y', 'return x + y'), // eslint-disable-line no-new-func
+    input: new Function('x', 'y', 'return x + y'), // oxlint-disable-line no-new-func
     expected: 'function@anonymous',
     pruned: 'function@anonymous'
   },

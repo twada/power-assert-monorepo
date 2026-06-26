@@ -4,8 +4,7 @@ function funcName(f: Function): string {
   if (f.name) {
     return f.name;
   }
-  // eslint-disable-next-line no-useless-escape
-  const match = /^\s*function\s*([^\(\s]+)/i.exec(f.toString());
+  const match = /^\s*function\s*([^(\s]+)/i.exec(f.toString());
   return match ? match[1] : '';
 }
 
