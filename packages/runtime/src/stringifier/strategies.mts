@@ -330,11 +330,33 @@ function maxDepth(_kvp: KeyValuePair, acc: Accumulator): boolean {
   return !!(acc.options.maxDepth && acc.options.maxDepth <= acc.context.level);
 }
 
-const prune = compose(always('#'), constructorName(), always('#'), end());
-const omitNaN = when(nan, compose(always('NaN'), end()));
-const omitPositiveInfinity = when(positiveInfinity, compose(always('Infinity'), end()));
-const omitNegativeInfinity = when(negativeInfinity, compose(always('-Infinity'), end()));
-const omitCircular = when(circular, compose(optionValue('circular'), end()));
+// prettier-ignore
+const prune = compose(
+  always('#'),
+  constructorName(),
+  always('#'),
+  end()
+);
+// prettier-ignore
+const omitNaN = when(nan, compose(
+  always('NaN'),
+  end()
+));
+// prettier-ignore
+const omitPositiveInfinity = when(positiveInfinity, compose(
+  always('Infinity'),
+  end()
+));
+// prettier-ignore
+const omitNegativeInfinity = when(negativeInfinity, compose(
+  always('-Infinity'),
+  end()
+));
+// prettier-ignore
+const omitCircular = when(circular, compose(
+  optionValue('circular'),
+  end()
+));
 const omitMaxDepth = when(maxDepth, prune);
 
 const strategies = {
@@ -342,10 +364,30 @@ const strategies = {
   json: () => compose(json(), end()),
   toStr: () => compose(toStr(), end()),
   prune: () => prune,
-  function: () => compose(constructorName(), always('@'), itsName(), end()),
-  number: () => compose(omitNaN, omitPositiveInfinity, omitNegativeInfinity, json(), end()),
+  // prettier-ignore
+  function: () => compose(
+    constructorName(),
+    always('@'),
+    itsName(),
+    end()),
+  // prettier-ignore
+  number: () => compose(
+    omitNaN,
+    omitPositiveInfinity,
+    omitNegativeInfinity,
+    json(),
+    end()
+  ),
   bigint: () => compose(bigint(), end()),
-  newLike: () => compose(always('new '), constructorName(), always('('), json(), always(')'), end()),
+  // prettier-ignore
+  newLike: () => compose(
+    always('new '),
+    constructorName(),
+    always('('),
+    json(),
+    always(')'),
+    end()
+  ),
   // array: (predicate?: Function | null) => {
   array: () =>
     compose(
