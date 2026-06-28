@@ -10,9 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('rollup-plugin-power-assert', () => {
   const options = {
-    plugins: [
-      powerAssert()
-    ]
+    plugins: [powerAssert()]
   };
   let bundle: RollupBuild;
 

@@ -40,6 +40,7 @@ describe('stringify Array with indentation', () => {
   it('3 items array', () => {
     const input = [3, 5, 8];
 
+    // prettier-ignore
     const expected = [
       '[',
       '  3,',
@@ -52,6 +53,7 @@ describe('stringify Array with indentation', () => {
   it('nested array', () => {
     const input = [4, [5, [6, 7, 8], 9], 10];
 
+    // prettier-ignore
     const expected = [
       '[',
       '  4,',
@@ -72,6 +74,7 @@ describe('stringify Array with indentation', () => {
   it('nested empty array', () => {
     const input = [3, [], 8];
 
+    // prettier-ignore
     const expected = [
       '[',
       '  3,',
@@ -84,6 +87,7 @@ describe('stringify Array with indentation', () => {
   it('nested array with maxDepth option', () => {
     const input = [3, [4, 5], 8];
 
+    // prettier-ignore
     const expected = [
       '[',
       '  3,',
@@ -133,6 +137,7 @@ describe('stringify Object with indentation', () => {
   it('two props object', () => {
     const input = { name: 'bob', age: 3 };
 
+    // prettier-ignore
     const expected = [
       'Object{',
       '  name: "bob",',
@@ -144,6 +149,7 @@ describe('stringify Object with indentation', () => {
   it('nested object', () => {
     const input = { a: 'A', b: { ba: 'BA', bb: 'BB' }, c: 4 };
 
+    // prettier-ignore
     const expected = [
       'Object{',
       '  a: "A",',
@@ -159,6 +165,7 @@ describe('stringify Object with indentation', () => {
   it('nested empty object', () => {
     const input = { a: 'A', b: {}, c: 4 };
 
+    // prettier-ignore
     const expected = [
       'Object{',
       '  a: "A",',
@@ -171,6 +178,7 @@ describe('stringify Object with indentation', () => {
   it('nested object with maxDepth option', () => {
     const input = { a: 'A', b: { ba: 'BA', bb: 'BB' }, c: 4 };
 
+    // prettier-ignore
     const expected = [
       'Object{',
       '  a: "A",',
@@ -184,9 +192,10 @@ describe('stringify Object with indentation', () => {
 
 describe('circular references', () => {
   it('circular object', () => {
-    const circularObj: { circularRef?: unknown, list?: unknown[] } = {};
+    const circularObj: { circularRef?: unknown; list?: unknown[] } = {};
     circularObj.circularRef = circularObj;
     circularObj.list = [circularObj, circularObj];
+    // prettier-ignore
     const expected = [
       'Object{',
       '  circularRef: #circular#,',
@@ -201,6 +210,7 @@ describe('circular references', () => {
   it('circular array', () => {
     const circularArray: unknown[] = [3, 5];
     circularArray.push(circularArray);
+    // prettier-ignore
     const expected = [
       '[',
       '  3,',

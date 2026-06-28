@@ -2,25 +2,24 @@
 import { strict as assert } from 'node:assert';
 
 export type State = {
-  node: unknown,
-  path: Array<PropertyKey>,
-  parent: State,
-  parents: Array<State>,
-  key: PropertyKey,
-  isRoot: boolean,
-  level: number,
-  circular: State | null,
-  keys: Array<PropertyKey> | null,
-  size: number | null,
-  isLast?: boolean,
-  beforeAllChildren: (f: BeforeAllChildrenCallback) => void,
-  afterAllChildren: (f: AfterAllChildrenCallback) => void,
-  beforeEachChild: (f: BeforeEachChildCallback) => void,
-  afterEachChild: (f: AfterEachChildCallback) => void,
-  bailOut: () => void,
-  skip: () => void
+  node: unknown;
+  path: Array<PropertyKey>;
+  parent: State;
+  parents: Array<State>;
+  key: PropertyKey;
+  isRoot: boolean;
+  level: number;
+  circular: State | null;
+  keys: Array<PropertyKey> | null;
+  size: number | null;
+  isLast?: boolean;
+  beforeAllChildren: (f: BeforeAllChildrenCallback) => void;
+  afterAllChildren: (f: AfterAllChildrenCallback) => void;
+  beforeEachChild: (f: BeforeEachChildCallback) => void;
+  afterEachChild: (f: AfterEachChildCallback) => void;
+  bailOut: () => void;
+  skip: () => void;
 };
-/* eslint-ensable no-use-before-define */
 
 export type BeforeAllChildrenCallback = (state: State, node: unknown) => void;
 export type BeforeEachChildCallback = (state: State, childNode: unknown, key: PropertyKey, beforeEachChildState: State) => void;
@@ -28,20 +27,20 @@ export type AfterEachChildCallback = (state: State, afterEachChildState: State) 
 export type AfterAllChildrenCallback = (state: State, node: unknown) => void;
 
 export type InitialState = {
-  path: Array<PropertyKey>,
-  parents: Array<State>
+  path: Array<PropertyKey>;
+  parents: Array<State>;
 };
 
 export type TraverseCallback = (item: unknown, state: State) => void;
 
 type Modifiers = {
-  beforeAllChildren?: BeforeAllChildrenCallback,
-  afterAllChildren?: AfterAllChildrenCallback,
-  beforeEachChild?: BeforeEachChildCallback,
-  afterEachChild?: AfterEachChildCallback
+  beforeAllChildren?: BeforeAllChildrenCallback;
+  afterAllChildren?: AfterAllChildrenCallback;
+  beforeEachChild?: BeforeEachChildCallback;
+  afterEachChild?: AfterEachChildCallback;
 };
 
-export function traverseAny (root: unknown, cb: TraverseCallback): void {
+export function traverseAny(root: unknown, cb: TraverseCallback): void {
   const initialState = {
     path: [],
     parents: []
@@ -53,11 +52,11 @@ class BailOut extends Error {}
 
 type PropertyKeyAccessible = { [key: PropertyKey]: unknown };
 
-function hasChildren (node: unknown): node is object & PropertyKeyAccessible {
+function hasChildren(node: unknown): node is object & PropertyKeyAccessible {
   return typeof node === 'object' && node !== null;
 }
 
-function objectKeysIncludeEnumerableSymbols (obj: object): (string | symbol)[] {
+function objectKeysIncludeEnumerableSymbols(obj: object): (string | symbol)[] {
   const strings: (string | symbol)[] = Object.keys(obj);
   const enumerableSymbols = Object.getOwnPropertySymbols(obj).filter((sym) => {
     const desc = Object.getOwnPropertyDescriptor(obj, sym);
@@ -66,7 +65,7 @@ function objectKeysIncludeEnumerableSymbols (obj: object): (string | symbol)[] {
   return strings.concat(enumerableSymbols);
 }
 
-function calculateChildrenSize (state: State): number {
+function calculateChildrenSize(state: State): number {
   if (Array.isArray(state.node)) {
     return state.node.length;
   } else if (state.node instanceof Set) {
@@ -80,10 +79,10 @@ function calculateChildrenSize (state: State): number {
   }
 }
 
-export function traverseWith (root: unknown, cb: TraverseCallback, initialState: InitialState): void {
+export function traverseWith(root: unknown, cb: TraverseCallback, initialState: InitialState): void {
   const { path, parents } = initialState;
   try {
-    (function walker (node: unknown): State {
+    (function walker(node: unknown): State {
       const modifiers: Modifiers = {};
       let keepGoing = true;
       const state: State = {
@@ -97,17 +96,27 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
         circular: null,
         keys: null,
         size: null,
-        beforeAllChildren: function (f) { modifiers.beforeAllChildren = f; },
-        afterAllChildren: function (f) { modifiers.afterAllChildren = f; },
-        beforeEachChild: function (f) { modifiers.beforeEachChild = f; },
-        afterEachChild: function (f) { modifiers.afterEachChild = f; },
+        beforeAllChildren: function (f) {
+          modifiers.beforeAllChildren = f;
+        },
+        afterAllChildren: function (f) {
+          modifiers.afterAllChildren = f;
+        },
+        beforeEachChild: function (f) {
+          modifiers.beforeEachChild = f;
+        },
+        afterEachChild: function (f) {
+          modifiers.afterEachChild = f;
+        },
         bailOut: function () {
           throw new BailOut();
         },
-        skip: function () { keepGoing = false; }
+        skip: function () {
+          keepGoing = false;
+        }
       };
 
-      function markCircularRef (): void {
+      function markCircularRef(): void {
         for (const parent of parents) {
           if (parent.node === node) {
             state.circular = parent;
@@ -153,7 +162,7 @@ export function traverseWith (root: unknown, cb: TraverseCallback, initialState:
           }
           const afterEachChildState = walker(childNode);
           assert(state.size !== null, 'state.size should be set');
-          afterEachChildState.isLast = (index === state.size - 1);
+          afterEachChildState.isLast = index === state.size - 1;
           if (modifiers.afterEachChild) {
             modifiers.afterEachChild.call(null, state, afterEachChildState);
           }

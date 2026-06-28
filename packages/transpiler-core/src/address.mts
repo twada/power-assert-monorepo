@@ -1,14 +1,4 @@
-import type {
-  Node,
-  Position,
-  CallExpression,
-  MemberExpression,
-  BinaryExpression,
-  LogicalExpression,
-  ConditionalExpression,
-  UpdateExpression,
-  AssignmentExpression
-} from 'estree';
+import type { Node, Position, CallExpression, MemberExpression, BinaryExpression, LogicalExpression, ConditionalExpression, UpdateExpression, AssignmentExpression } from 'estree';
 import { strict as assert } from 'node:assert';
 
 type Range = [number, number];
@@ -24,11 +14,11 @@ export type AssertionRelativeOffset = {
   endPos: number;
 };
 
-function isAcornSwcNode (node: Node): node is AcornSwcNode {
+function isAcornSwcNode(node: Node): node is AcornSwcNode {
   return Object.hasOwn(node, 'start') && Object.hasOwn(node, 'end');
 }
 
-function getRange (node: Node): Range {
+function getRange(node: Node): Range {
   if (node.range) {
     return node.range;
   }
@@ -39,7 +29,7 @@ function getRange (node: Node): Range {
   }
 }
 
-export function calculateAssertionRelativeOffsetFor (currentNode: Node, baseNode: Node, code: string): AssertionRelativeOffset {
+export function calculateAssertionRelativeOffsetFor(currentNode: Node, baseNode: Node, code: string): AssertionRelativeOffset {
   let base: Position | number;
   if (baseNode.range) {
     base = baseNode.range[0];
@@ -57,7 +47,7 @@ export function calculateAssertionRelativeOffsetFor (currentNode: Node, baseNode
   };
 }
 
-function calculateMarkerPosOf (currentNode: Node, base: Position | number, code: string): number {
+function calculateMarkerPosOf(currentNode: Node, base: Position | number, code: string): number {
   switch (currentNode.type) {
     case 'MemberExpression':
       return propertyAddressOf(currentNode, base, code);
@@ -81,7 +71,7 @@ function calculateMarkerPosOf (currentNode: Node, base: Position | number, code:
   return startPosOf(currentNode, base, code);
 }
 
-function propertyAddressOf (memberExpression: MemberExpression, base: Position | number, code: string): number {
+function propertyAddressOf(memberExpression: MemberExpression, base: Position | number, code: string): number {
   if (memberExpression.computed) {
     return searchFor('[', memberExpression.object, base, code);
   } else {
@@ -89,11 +79,11 @@ function propertyAddressOf (memberExpression: MemberExpression, base: Position |
   }
 }
 
-function questionMarkAddressOf (conditionalExpression: ConditionalExpression, base: Position | number, code: string): number {
+function questionMarkAddressOf(conditionalExpression: ConditionalExpression, base: Position | number, code: string): number {
   return searchFor('?', conditionalExpression.test, base, code);
 }
 
-function calculateCallExpressionAddress (callExpression: CallExpression, base: Position | number, code: string): number {
+function calculateCallExpressionAddress(callExpression: CallExpression, base: Position | number, code: string): number {
   switch (callExpression.callee.type) {
     case 'Identifier':
       // for callee like `foo()`, foo's offset is used
@@ -111,20 +101,20 @@ function calculateCallExpressionAddress (callExpression: CallExpression, base: P
   return openingParenAddressOf(callExpression, base, code);
 }
 
-function openingParenAddressOf (callExpression: CallExpression, base: Position | number, code: string): number {
+function openingParenAddressOf(callExpression: CallExpression, base: Position | number, code: string): number {
   return searchFor('(', callExpression.callee, base, code);
 }
 
-function suffixOperatorAddressOf (expression: UpdateExpression, base: Position | number, code: string): number {
+function suffixOperatorAddressOf(expression: UpdateExpression, base: Position | number, code: string): number {
   return searchFor(expression.operator, expression.argument, base, code);
 }
 
 // calculate address of infix operator for BinaryExpression, AssignmentExpression and LogicalExpression.
-function infixOperatorAddressOf (expression: BinaryExpression | LogicalExpression | AssignmentExpression, base: Position | number, code: string): number {
+function infixOperatorAddressOf(expression: BinaryExpression | LogicalExpression | AssignmentExpression, base: Position | number, code: string): number {
   return searchFor(expression.operator, expression.left, base, code);
 }
 
-function startPosOf (node: Node, base: Position | number, code: string): number {
+function startPosOf(node: Node, base: Position | number, code: string): number {
   if (typeof base === 'number') {
     return getRange(node)[0] - base;
   } else {
@@ -133,7 +123,7 @@ function startPosOf (node: Node, base: Position | number, code: string): number 
   }
 }
 
-function endPosOf (node: Node, base: Position | number, code: string): number {
+function endPosOf(node: Node, base: Position | number, code: string): number {
   if (typeof base === 'number') {
     return getRange(node)[1] - base;
   } else {
@@ -142,7 +132,7 @@ function endPosOf (node: Node, base: Position | number, code: string): number {
   }
 }
 
-function searchFor (searchString: string, searchStartNode: Node, base: Position | number, code: string): number {
+function searchFor(searchString: string, searchStartNode: Node, base: Position | number, code: string): number {
   if (typeof base === 'number') {
     const startNodeRange = getRange(searchStartNode);
     const searchStart = startNodeRange[1] - base - 1;
@@ -164,7 +154,7 @@ function searchFor (searchString: string, searchStartNode: Node, base: Position 
   }
 }
 
-function columnToPos (target: Position, base: Position, code: string): number {
+function columnToPos(target: Position, base: Position, code: string): number {
   if (target.line === base.line) {
     return target.column - base.column;
   }

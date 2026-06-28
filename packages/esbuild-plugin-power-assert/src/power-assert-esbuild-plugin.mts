@@ -4,12 +4,12 @@ import { relative } from 'node:path';
 import { transpileWithInlineSourceMap } from '@power-assert/transpiler';
 import type { Plugin, PluginBuild, OnLoadArgs, OnLoadResult } from 'esbuild';
 
-type OnLoadCallback = (args: OnLoadArgs) => (OnLoadResult | null | undefined | Promise<OnLoadResult | null | undefined>);
+type OnLoadCallback = (args: OnLoadArgs) => OnLoadResult | null | undefined | Promise<OnLoadResult | null | undefined>;
 
-export function powerAssertPlugin (): Plugin {
+export function powerAssertPlugin(): Plugin {
   return {
     name: 'power-assert',
-    setup (build: PluginBuild): (void | Promise<void>) {
+    setup(build: PluginBuild): void | Promise<void> {
       const callback: OnLoadCallback = async (args: OnLoadArgs) => {
         // console.log(args.path);
         const source = await readFile(args.path, 'utf8');

@@ -1,0 +1,93 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    "*.mjs",
+    "**/dist/**",
+    "**/examples/**",
+    "**/fixtures/**"
+  ],
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "node",
+    "promise"
+  ],
+  "categories": {
+    // "suspicious": "warn",
+    "correctness": "error"
+  },
+  "rules": {
+    // suspicious rules (from neostandard)
+    "no-extend-native": "error",
+    "no-extra-bind": "error",
+    "no-new": "error",
+    "no-unexpected-multiline": "error",
+    "no-unneeded-ternary": "error",
+    "no-useless-constructor": "error",
+
+    // pedantic rules (from neostandard)
+    "accessor-pairs": "error",
+    "array-callback-return": "error",
+    "eqeqeq": "error",
+    "no-array-constructor": "error",
+    "no-case-declarations": "error",
+    "no-fallthrough": "error",
+    "no-new-wrappers": "error",
+    "no-object-constructor": "error",
+    "no-prototype-builtins": "error",
+    "no-redeclare": "error",
+    "no-self-compare": "error",
+    "no-throw-literal": "error",
+    "no-useless-return": "error",
+    "symbol-description": "error",
+
+    // style rules (from neostandard)
+    "curly": "error",
+    "default-case-last": "error",
+    "default-param-last": "error",
+    "new-cap": "error",
+    "no-lone-blocks": "error",
+    "no-multi-str": "error",
+    "no-new-func": "error",
+    "no-return-assign": "error",
+    "no-template-curly-in-string": "error",
+    "no-useless-computed-key": "error",
+    "prefer-promise-reject-errors": "error",
+    "yoda": "error",
+
+    // restriction rules (from neostandard)
+    "no-var": "error",
+    "no-labels": "error",
+    "no-proto": "error",
+    "no-regex-spaces": "error",
+    "no-sequences": "error",
+    "no-void": "error",
+    "unicode-bom": "error",
+
+    // Import plugin rules (import-x in neostandard)
+    "import/first": "error",
+    "import/no-duplicates": "error",
+    "import/no-named-default": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "import/no-absolute-path": "error",
+
+    // Node plugin rules (n in neostandard)
+    "node/no-new-require": "error",
+    "node/no-exports-assign": "error",
+
+    // Promise plugin rules
+    "promise/param-names": "error"
+  },
+  "env": {
+    "builtin": true,
+    "es2022": true,
+    "node": true
+  },
+  "globals": {
+    "document": "readonly",
+    "navigator": "readonly",
+    "window": "readonly"
+  }
+}

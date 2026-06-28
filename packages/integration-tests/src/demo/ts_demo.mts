@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 
-export function add (augend: number, addened: number): number {
+export function add(augend: number, addened: number): number {
   return augend + addened;
 }
 

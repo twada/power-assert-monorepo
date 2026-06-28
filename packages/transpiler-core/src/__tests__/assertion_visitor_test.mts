@@ -38,7 +38,7 @@ assert.equal(truthy,
              'message');
 `;
     const result = extractArea(code, { line: 4, column: 0 }, { line: 6, column: 23 });
-    assert.equal(result, 'assert.equal(truthy,\n             1,\n             \'message\')');
+    assert.equal(result, "assert.equal(truthy,\n             1,\n             'message')");
   });
 });
 
@@ -62,7 +62,7 @@ assert.ok(truthy);
     callexp = parseExpressionAt(code, code.lastIndexOf('assert.ok'), options) as Node as CallExpression;
 
     const stubTransformation: Transformation = {
-      insertDeclIntoCurrentBlock: (decl: ImportDeclaration | VariableDeclaration) => {
+      insertDeclIntoCurrentBlock: (_decl: ImportDeclaration | VariableDeclaration) => {
         // do nothing
       },
       generateUniqueName: (name: string) => `_p${name}1`
@@ -74,13 +74,7 @@ assert.ok(truthy);
 
     const currentNode = callexp;
     const astPath = ['body', 2, 'expression'];
-    assertionVisitor = new AssertionVisitor(
-      currentNode,
-      astPath,
-      stubTransformation,
-      decoratorFunctionIdent,
-      code
-    );
+    assertionVisitor = new AssertionVisitor(currentNode, astPath, stubTransformation, decoratorFunctionIdent, code);
   });
 
   describe('after #constructor', () => {

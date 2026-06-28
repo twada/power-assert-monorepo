@@ -5,7 +5,7 @@ import { parse } from 'acorn';
 import { parseModule } from 'meriyah';
 import type { Node, Program, ExpressionStatement } from 'estree';
 
-function dig (root: Node, espath: string): Node {
+function dig(root: Node, espath: string): Node {
   return espath.split('/').reduce((node, key) => {
     if (node && typeof node === 'object' && key in node) {
       return node[key];
@@ -15,7 +15,7 @@ function dig (root: Node, espath: string): Node {
   }, root as any);
 }
 
-function parseByMeriyah (code: string, loc: boolean, ranges: boolean): Program {
+function parseByMeriyah(code: string, loc: boolean, ranges: boolean): Program {
   return parseModule(code, {
     // The flag to enable start, end offsets and range: [start, end] to each node
     ranges,
@@ -26,12 +26,12 @@ function parseByMeriyah (code: string, loc: boolean, ranges: boolean): Program {
 }
 parseByMeriyah.parserName = 'meriyah';
 
-function parseByAcorn (code: string, locations: boolean, ranges: boolean): Program {
+function parseByAcorn(code: string, locations: boolean, ranges: boolean): Program {
   return parse(code, {
     sourceType: 'module',
     ecmaVersion: 2022,
     locations,
-    ranges,
+    ranges
   }) as Program;
 }
 parseByAcorn.parserName = 'acorn';
@@ -45,7 +45,7 @@ describe('calculateAssertionRelativeOffsetFor', () => {
       expected: {
         markerPos: 10,
         startPos: 10,
-        endPos: 16,
+        endPos: 16
       }
     },
     {
@@ -57,7 +57,7 @@ describe('calculateAssertionRelativeOffsetFor', () => {
       expected: {
         markerPos: 13,
         startPos: 13,
-        endPos: 19,
+        endPos: 19
       }
     },
     {
@@ -69,7 +69,7 @@ describe('calculateAssertionRelativeOffsetFor', () => {
       expected: {
         markerPos: 23,
         startPos: 23,
-        endPos: 28,
+        endPos: 28
       }
     },
     {
@@ -81,9 +81,9 @@ describe('calculateAssertionRelativeOffsetFor', () => {
       expected: {
         markerPos: 21,
         startPos: 7,
-        endPos: 37,
+        endPos: 37
       }
-    },
+    }
   ];
   for (const { name, code, espath, expected } of fixtures) {
     for (const loc of [true, false]) {

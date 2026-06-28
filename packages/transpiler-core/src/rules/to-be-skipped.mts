@@ -26,7 +26,7 @@ const supportedNodes = new Set([
   'Property'
 ]);
 
-function isSupportedNode (node: Node): boolean {
+function isSupportedNode(node: Node): boolean {
   return supportedNodes.has(node.type);
 }
 
@@ -39,11 +39,11 @@ const isChildOfObjectLiteral = (parentNode: Node) => {
   return parentNode.type === 'Property' && parentNode.kind === 'init';
 };
 
-function isObjectLiteralKey (parentNode: Node, currentKey: NodeKey): parentNode is Property {
+function isObjectLiteralKey(parentNode: Node, currentKey: NodeKey): parentNode is Property {
   return isChildOfObjectLiteral(parentNode) && currentKey === 'key';
 }
 
-function isObjectLiteralValue (parentNode: Node, currentKey: NodeKey): parentNode is Property {
+function isObjectLiteralValue(parentNode: Node, currentKey: NodeKey): parentNode is Property {
   return isChildOfObjectLiteral(parentNode) && currentKey === 'value';
 }
 
@@ -67,16 +67,16 @@ const isTypeOfOrDeleteUnaryExpression = (currentNode: Node, parentNode: Node, cu
   return currentNode.type === 'Identifier' && parentNode.type === 'UnaryExpression' && (parentNode.operator === 'typeof' || parentNode.operator === 'delete') && currentKey === 'argument';
 };
 
-const toBeSkipped = ({ currentNode, parentNode, currentKey }: { currentNode: Node, parentNode: Node | null, currentKey: NodeKey }) => {
+const toBeSkipped = ({ currentNode, parentNode, currentKey }: { currentNode: Node; parentNode: Node | null; currentKey: NodeKey }) => {
   assert(parentNode, 'Parent node must exist');
-  return !isSupportedNode(currentNode) ||
-        isLeftHandSideOfAssignment(parentNode, currentKey) ||
-        isNonComputedObjectLiteralKey(parentNode, currentKey) ||
-        isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
-        isCallExpressionWithNonComputedMemberExpression(currentNode, parentNode, currentKey) ||
-        isTypeOfOrDeleteUnaryExpression(currentNode, parentNode, currentKey);
+  return (
+    !isSupportedNode(currentNode) ||
+    isLeftHandSideOfAssignment(parentNode, currentKey) ||
+    isNonComputedObjectLiteralKey(parentNode, currentKey) ||
+    isShorthandedValueOfObjectLiteral(parentNode, currentKey) ||
+    isCallExpressionWithNonComputedMemberExpression(currentNode, parentNode, currentKey) ||
+    isTypeOfOrDeleteUnaryExpression(currentNode, parentNode, currentKey)
+  );
 };
 
-export {
-  toBeSkipped
-};
+export { toBeSkipped };
