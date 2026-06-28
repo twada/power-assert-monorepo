@@ -122,7 +122,7 @@ oxfmt is a Prettier-compatible formatter with opinionated defaults that cannot a
 
 2. **TypeScript type/interface member separator**: `,` → `;`. Prettier always uses semicolons for TypeScript type and interface members. (~95 occurrences)
 
-3. **Multi-line collapsing**: With `printWidth: 320`, array literals and import declarations that were previously spread across multiple lines are collapsed to a single line when they fit
+3. **Multi-line collapsing**: With `printWidth: 320`, array literals and import declarations that were previously spread across multiple lines are collapsed to a single line when they fit. Where multi-line formatting is essential for readability — such as test expectations that mirror indented output structure, or `compose()` chains that represent a pipeline of transformations — a `// prettier-ignore` comment is added to opt out of collapsing on a per-statement basis. oxfmt recognizes this Prettier directive and preserves the original formatting.
 
 4. **Multi-line template literal expansion**: Function calls with multi-line template literal arguments are expanded by Prettier's argument-breaking algorithm (notably in `integration_test.mts`)
 
