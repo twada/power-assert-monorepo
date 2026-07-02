@@ -4,14 +4,7 @@ import { nodeFactory, isScoped } from './node-factory.mts';
 import { strict as assert } from 'node:assert';
 import { walk } from 'estree-walker';
 
-import type {
-  Node,
-  SimpleLiteral,
-  Identifier,
-  MemberExpression,
-  ImportDeclaration,
-  SpreadElement
-} from 'estree';
+import type { Node, SimpleLiteral, Identifier, MemberExpression, ImportDeclaration, SpreadElement } from 'estree';
 import type { Scoped } from './node-factory.mts';
 import type { SyncHandler } from 'estree-walker';
 
@@ -29,16 +22,16 @@ type WalkerContext = {
 type NodeKey = string | number | symbol | null | undefined;
 
 export type TargetImportSpecifier = {
-  source: string,
-  imported: string[]
+  source: string;
+  imported: string[];
 };
 
 export type ModuleSpecifier = string | TargetImportSpecifier;
 
 export type EspowerOptions = {
-  runtime?: string,
-  modules?: ModuleSpecifier[],
-  variables?: string[]
+  runtime?: string;
+  modules?: ModuleSpecifier[];
+  variables?: string[];
 };
 
 interface StringLiteral extends SimpleLiteral {
@@ -46,20 +39,20 @@ interface StringLiteral extends SimpleLiteral {
   value: string;
 }
 
-function isStringLiteral (node: Node | null | undefined): node is StringLiteral {
+function isStringLiteral(node: Node | null | undefined): node is StringLiteral {
   return !!node && node.type === 'Literal' && typeof node.value === 'string';
 }
-function isIdentifier (node: Node | null | undefined): node is Identifier {
+function isIdentifier(node: Node | null | undefined): node is Identifier {
   return !!node && node.type === 'Identifier';
 }
-function isMemberExpression (node: Node | null | undefined): node is MemberExpression {
+function isMemberExpression(node: Node | null | undefined): node is MemberExpression {
   return !!node && node.type === 'MemberExpression';
 }
-function isSpreadElement (node: Node | null | undefined): node is SpreadElement {
+function isSpreadElement(node: Node | null | undefined): node is SpreadElement {
   return !!node && node.type === 'SpreadElement';
 }
 
-function handleModuleSettings (modules?: ModuleSpecifier[]): Map<string, string[]> {
+function handleModuleSettings(modules?: ModuleSpecifier[]): Map<string, string[]> {
   const map = new Map<string, string[]>();
   if (!modules) {
     return map;
@@ -75,20 +68,20 @@ function handleModuleSettings (modules?: ModuleSpecifier[]): Map<string, string[
   return map;
 }
 
-function createVisitor (originalCode: string, options?: EspowerOptions): Visitor {
+function createVisitor(originalCode: string, options?: EspowerOptions): Visitor {
   const config = Object.assign(defaultOptions(), options);
   const targetModules = handleModuleSettings(config.modules);
   const targetVariables = new Set<string>(config.variables);
 
-  function isAssertionModuleName (lit: Node) {
+  function isAssertionModuleName(lit: Node) {
     return isStringLiteral(lit) && targetModules.has(lit.value);
   }
 
-  function isAssertionVariableName (id: Node) {
+  function isAssertionVariableName(id: Node) {
     return isIdentifier(id) && targetVariables.has(id.name);
   }
 
-  function isAssertionMethod (callee: Node): boolean {
+  function isAssertionMethod(callee: Node): boolean {
     if (!isMemberExpression(callee)) {
       return false;
     }
@@ -100,17 +93,17 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
     }
   }
 
-  function isAssertionFunction (callee: Node): boolean {
+  function isAssertionFunction(callee: Node): boolean {
     return isAssertionVariableName(callee);
   }
 
-  function registerIdentifierAsAssertionVariable (id: Node) {
+  function registerIdentifierAsAssertionVariable(id: Node) {
     if (isIdentifier(id)) {
       targetVariables.add(id.name);
     }
   }
 
-  function handleImportSpecifiers (importDeclaration: ImportDeclaration) {
+  function handleImportSpecifiers(importDeclaration: ImportDeclaration) {
     const source = importDeclaration.source;
     if (!isStringLiteral(source)) {
       return;
@@ -134,11 +127,11 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
     }
   }
 
-  function isCaptureTargetAssertion (callee: Node): boolean {
+  function isCaptureTargetAssertion(callee: Node): boolean {
     return isAssertionFunction(callee) || isAssertionMethod(callee);
   }
 
-  function isCalleeOfParentCallExpression (parentNode: Node | null, currentKey: NodeKey): boolean {
+  function isCalleeOfParentCallExpression(parentNode: Node | null, currentKey: NodeKey): boolean {
     return !!parentNode && parentNode.type === 'CallExpression' && currentKey === 'callee';
   }
 
@@ -149,7 +142,7 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
   let decoratorFunctionIdent: Identifier | null = null;
   let assertionVisitor: AssertionVisitor | null = null;
 
-  function popNodePathStackAndBlockStack (currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined): void {
+  function popNodePathStackAndBlockStack(currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined): void {
     if (parentNode && index !== null && typeof key === 'string' && isLastChild(parentNode, key, index)) {
       nodePathStack.pop();
     }
@@ -159,7 +152,7 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
     }
   }
 
-  function applyTransformationIfMatched (walkerContext: WalkerContext, currentNode: Node) {
+  function applyTransformationIfMatched(walkerContext: WalkerContext, currentNode: Node) {
     if (transformation.isTarget(currentNode)) {
       // apply transformation to currentNode (Scope)
       transformation.apply(currentNode);
@@ -169,7 +162,7 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
   }
 
   // estree-walker MEMO: port leave-side logic here since leave() will not be called when skip() is called
-  function skip (walkerContext: WalkerContext, currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined) {
+  function skip(walkerContext: WalkerContext, currentNode: Node, parentNode: Node | null, key: string | number | symbol | null | undefined, index: number | null | undefined) {
     applyTransformationIfMatched(walkerContext, currentNode);
     popNodePathStackAndBlockStack(currentNode, parentNode, key, index);
     walkerContext.skip();
@@ -215,7 +208,7 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
         switch (currentNode.type) {
           case 'ImportDeclaration': {
             const source = currentNode.source;
-            if (!(isAssertionModuleName(source))) {
+            if (!isAssertionModuleName(source)) {
               return undefined;
             }
             skip(this, currentNode, parentNode, key, index);
@@ -301,40 +294,33 @@ function createVisitor (originalCode: string, options?: EspowerOptions): Visitor
   };
 }
 
-function isLastChild (parentNode: Node, currentKey: string, index: number | null | undefined): boolean {
+function isLastChild(parentNode: Node, currentKey: string, index: number | null | undefined): boolean {
   const parent = parentNode as KeyValue;
   return parent[currentKey].length - 1 === index;
 }
 
-function createPowerAssertImports ({ transformation, currentNode, runtime }: { transformation: Transformation, currentNode: Node, runtime: string }): Identifier {
+function createPowerAssertImports({ transformation, currentNode, runtime }: { transformation: Transformation; currentNode: Node; runtime: string }): Identifier {
   const types = nodeFactory(currentNode);
   const decoratorFunctionIdent = types.identifier('_power_');
-  const decl = types.importDeclaration([
-    types.importSpecifier(decoratorFunctionIdent)
-  ], types.stringLiteral(runtime));
+  const decl = types.importDeclaration([types.importSpecifier(decoratorFunctionIdent)], types.stringLiteral(runtime));
   transformation.insertDeclIntoTopLevel(decl);
   return decoratorFunctionIdent;
 }
 
-export function espowerAst (ast: Node, originalCode: string, options?: EspowerOptions): Node {
+export function espowerAst(ast: Node, originalCode: string, options?: EspowerOptions): Node {
   const modifiedAst = walk(ast, createVisitor(originalCode, options));
   assert(modifiedAst !== null, 'modifiedAst should not be null');
   return modifiedAst;
 }
 
 export type DefaultEspowerOptions = {
-  runtime: string,
-  modules: ModuleSpecifier[]
+  runtime: string;
+  modules: ModuleSpecifier[];
 };
 
-export function defaultOptions (): DefaultEspowerOptions {
+export function defaultOptions(): DefaultEspowerOptions {
   return {
     runtime: '@power-assert/runtime',
-    modules: [
-      'assert',
-      'assert/strict',
-      'node:assert',
-      'node:assert/strict'
-    ]
+    modules: ['assert', 'assert/strict', 'node:assert', 'node:assert/strict']
   };
 }

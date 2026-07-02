@@ -6,7 +6,7 @@ import type { Accumulator, Component, CollectorFunc, StringifyConfig, MapKeyStri
 
 type StringifyCallback = (push: CollectorFunc, item: unknown, state: State) => CollectorFunc;
 
-function defaultHandlers () {
+function defaultHandlers() {
   return {
     null: s.always('null'),
     undefined: s.always('undefined'),
@@ -30,7 +30,7 @@ function defaultHandlers () {
   };
 }
 
-function defaultOptions () {
+function defaultOptions() {
   return {
     maxDepth: null,
     indent: null,
@@ -42,23 +42,23 @@ function defaultOptions () {
 }
 
 type StringifyOptions = {
-  maxDepth?: number | null,
-  indent?: string | null,
-  anonymous?: string,
-  circular?: string,
-  snip?: string,
-  lineSeparator?: string,
+  maxDepth?: number | null;
+  indent?: string | null;
+  anonymous?: string;
+  circular?: string;
+  snip?: string;
+  lineSeparator?: string;
   handlers?: {
-    [key: string]: Component
-  }
+    [key: string]: Component;
+  };
 };
 
 type StringifyConfigAndHandlers = StringifyConfig & { handlers?: { [key: string]: Component } };
 
-function createStringifier (customOptions?: StringifyOptions): StringifyCallback {
+function createStringifier(customOptions?: StringifyOptions): StringifyCallback {
   const options: StringifyConfigAndHandlers = Object.assign({}, defaultOptions(), customOptions);
   const handlers = Object.assign({}, defaultHandlers(), options.handlers);
-  const handlerFor = function handlerFor (val: unknown): Component {
+  const handlerFor = function handlerFor(val: unknown): Component {
     const tname = typeName(val);
     if (typeof handlers[tname] === 'function') {
       return handlers[tname];
@@ -76,7 +76,7 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
     };
   };
 
-  return function stringifyAny (push: CollectorFunc, x: unknown, state: State): CollectorFunc {
+  return function stringifyAny(push: CollectorFunc, x: unknown, state: State): CollectorFunc {
     const context = state;
     let handler: Component = handlerFor(context.node);
     if (context.parent && Array.isArray(context.parent.node) && !(context.key in context.parent.node)) {
@@ -94,7 +94,7 @@ function createStringifier (customOptions?: StringifyOptions): StringifyCallback
   };
 }
 
-function walkWith (val: unknown, reducer: StringifyCallback, initialState: InitialState): string {
+function walkWith(val: unknown, reducer: StringifyCallback, initialState: InitialState): string {
   const root = val;
   const buffer: string[] = [];
   const acc: CollectorFunc = function (str) {
@@ -107,7 +107,7 @@ function walkWith (val: unknown, reducer: StringifyCallback, initialState: Initi
   return buffer.join('');
 }
 
-function walk (val: unknown, reducer: StringifyCallback): string {
+function walk(val: unknown, reducer: StringifyCallback): string {
   const initialState = {
     path: [],
     parents: []
@@ -115,11 +115,11 @@ function walk (val: unknown, reducer: StringifyCallback): string {
   return walkWith(val, reducer, initialState);
 }
 
-export function stringify (val: unknown, options?: StringifyOptions): string {
+export function stringify(val: unknown, options?: StringifyOptions): string {
   return walk(val, createStringifier(options));
 }
 
-export function stringifier (options?: StringifyOptions): (val: unknown) => string {
+export function stringifier(options?: StringifyOptions): (val: unknown) => string {
   return function (val: unknown) {
     return walk(val, createStringifier(options));
   };

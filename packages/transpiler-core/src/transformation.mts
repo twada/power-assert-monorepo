@@ -1,16 +1,6 @@
-import {
-  isScopedFunction,
-  isArrowFunctionExpressionWithConciseBody
-} from './node-factory.mts';
+import { isScopedFunction, isArrowFunctionExpressionWithConciseBody } from './node-factory.mts';
 import { strict as assert } from 'node:assert';
-import type {
-  ImportDeclaration,
-  Statement,
-  ModuleDeclaration,
-  Directive,
-  Node,
-  VariableDeclaration
-} from 'estree';
+import type { ImportDeclaration, Statement, ModuleDeclaration, Directive, Node, VariableDeclaration } from 'estree';
 import type { Scoped } from './node-factory.mts';
 
 type MutationCallback = (matchNode: Scoped) => void;
@@ -21,21 +11,21 @@ export class Transformation {
   readonly #nameCounts: NameCounts;
   readonly #blockStack: Scoped[];
 
-  constructor (blockStack: Scoped[]) {
+  constructor(blockStack: Scoped[]) {
     this.#mutations = new Map<Node, MutationCallback[]>();
     this.#nameCounts = {};
     this.#blockStack = blockStack;
   }
 
-  insertDeclIntoCurrentBlock (decl: ImportDeclaration | VariableDeclaration): void {
+  insertDeclIntoCurrentBlock(decl: ImportDeclaration | VariableDeclaration): void {
     this.#insertDecl(decl, findBlockNode(this.#blockStack));
   }
 
-  insertDeclIntoTopLevel (decl: ImportDeclaration | VariableDeclaration): void {
+  insertDeclIntoTopLevel(decl: ImportDeclaration | VariableDeclaration): void {
     this.#insertDecl(decl, this.#blockStack[0]);
   }
 
-  #insertDecl (decl: ImportDeclaration | VariableDeclaration, block: Scoped): void {
+  #insertDecl(decl: ImportDeclaration | VariableDeclaration, block: Scoped): void {
     this.#register(block, (matchNode: Scoped) => {
       let body: (Statement | ModuleDeclaration | Directive)[];
       if (isScopedFunction(matchNode)) {
@@ -48,7 +38,7 @@ export class Transformation {
     });
   }
 
-  #register (node: Node, callback: MutationCallback): void {
+  #register(node: Node, callback: MutationCallback): void {
     if (!this.#mutations.has(node)) {
       this.#mutations.set(node, []);
     }
@@ -57,17 +47,17 @@ export class Transformation {
     callbacks.unshift(callback);
   }
 
-  apply (scope: Scoped): void {
+  apply(scope: Scoped): void {
     for (const callback of this.#mutations.get(scope) || []) {
       callback(scope);
     }
   }
 
-  isTarget (node: Node): node is Scoped {
+  isTarget(node: Node): node is Scoped {
     return this.#mutations.has(node);
   }
 
-  generateUniqueName (name: string): string {
+  generateUniqueName(name: string): string {
     if (!this.#nameCounts[name]) {
       this.#nameCounts[name] = 0;
     }
@@ -76,7 +66,7 @@ export class Transformation {
   }
 }
 
-function findBlockNode (blockStack: Scoped[]): Scoped {
+function findBlockNode(blockStack: Scoped[]): Scoped {
   const lastIndex = blockStack.length - 1;
   const blockNode = blockStack[lastIndex];
   if (!blockNode || isArrowFunctionExpressionWithConciseBody(blockNode)) {
@@ -85,15 +75,15 @@ function findBlockNode (blockStack: Scoped[]): Scoped {
   return blockNode;
 }
 
-function isDirective (node: Node): node is Directive {
+function isDirective(node: Node): node is Directive {
   return node.type === 'ExpressionStatement' && Object.hasOwn(node, 'directive');
 }
 
-function isImportDeclaration (node: Node): node is ImportDeclaration {
+function isImportDeclaration(node: Node): node is ImportDeclaration {
   return node.type === 'ImportDeclaration';
 }
 
-function insertAfterDirectiveOrImportDeclaration (decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
+function insertAfterDirectiveOrImportDeclaration(decl: ImportDeclaration | VariableDeclaration, body: (Statement | ModuleDeclaration | Directive)[]): void {
   // find the first non-directive nor import declaration node then insert the decl before it
   const len = body.length;
   for (let i = 0; i < len; i += 1) {

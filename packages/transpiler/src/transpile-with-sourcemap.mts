@@ -5,24 +5,24 @@ import type { TargetImportSpecifier } from '@power-assert/transpiler-core';
 import type { TranspileAstFunc } from './parse-unparse.mts';
 
 export type TranspileWithSourceMapOptions = {
-  file?: string,
-  runtime?: string,
-  modules?: (string | TargetImportSpecifier)[],
-  variables?: string[]
+  file?: string;
+  runtime?: string;
+  modules?: (string | TargetImportSpecifier)[];
+  variables?: string[];
 };
 
 export type CodeWithSeparatedSourceMap = {
-  type: 'CodeWithSeparatedSourceMap',
-  code: string,
-  sourceMap: string
+  type: 'CodeWithSeparatedSourceMap';
+  code: string;
+  sourceMap: string;
 };
 
 export type CodeWithInlineSourceMap = {
-  type: 'CodeWithInlineSourceMap',
-  code: string
+  type: 'CodeWithInlineSourceMap';
+  code: string;
 };
 
-export async function transpileWithSeparatedSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSeparatedSourceMap> {
+export async function transpileWithSeparatedSourceMap(code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithSeparatedSourceMap> {
   const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
   const { transpiledCode, outMapConv } = await transpileWith(transpile, code, options?.file);
   return {
@@ -32,7 +32,7 @@ export async function transpileWithSeparatedSourceMap (code: string, options?: T
   };
 }
 
-export async function transpileWithInlineSourceMap (code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithInlineSourceMap> {
+export async function transpileWithInlineSourceMap(code: string, options?: TranspileWithSourceMapOptions): Promise<CodeWithInlineSourceMap> {
   const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
   const { transpiledCode, outMapConv } = await transpileWith(transpile, code, options?.file);
   return {
@@ -41,7 +41,7 @@ export async function transpileWithInlineSourceMap (code: string, options?: Tran
   };
 }
 
-export function transpileWithSeparatedSourceMapSync (code: string, options?: TranspileWithSourceMapOptions): CodeWithSeparatedSourceMap {
+export function transpileWithSeparatedSourceMapSync(code: string, options?: TranspileWithSourceMapOptions): CodeWithSeparatedSourceMap {
   const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
   const { transpiledCode, outMapConv } = transpileSync(transpile, code, options?.file);
   return {
@@ -51,7 +51,7 @@ export function transpileWithSeparatedSourceMapSync (code: string, options?: Tra
   };
 }
 
-export function transpileWithInlineSourceMapSync (code: string, options?: TranspileWithSourceMapOptions): CodeWithInlineSourceMap {
+export function transpileWithInlineSourceMapSync(code: string, options?: TranspileWithSourceMapOptions): CodeWithInlineSourceMap {
   const transpile: TranspileAstFunc = (ast: Node, code: string) => espowerAst(ast, code, options);
   const { transpiledCode, outMapConv } = transpileSync(transpile, code, options?.file);
   return {

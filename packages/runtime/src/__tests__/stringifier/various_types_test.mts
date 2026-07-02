@@ -16,7 +16,7 @@ import { typeName } from '../../stringifier/type-name.mts';
 class Person {
   readonly name: string;
   readonly age: number;
-  constructor (name: string, age: number) {
+  constructor(name: string, age: number) {
     this.name = name;
     this.age = age;
   }
@@ -25,7 +25,7 @@ class Person {
 const AnonPerson = class {
   readonly name: string;
   readonly age: number;
-  constructor (name: string, age: number) {
+  constructor(name: string, age: number) {
     this.name = name;
     this.age = age;
   }
@@ -106,17 +106,17 @@ const fixtures: Suite = {
     pruned: 'function@input'
   },
   'String object': {
-    input: new String('bar'), // eslint-disable-line no-new-wrappers
+    input: new String('bar'), // oxlint-disable-line no-new-wrappers
     expected: 'new String("bar")',
     pruned: 'new String("bar")'
   },
   'Number object': {
-    input: new Number('3'), // eslint-disable-line no-new-wrappers
+    input: new Number('3'), // oxlint-disable-line no-new-wrappers
     expected: 'new Number(3)',
     pruned: 'new Number(3)'
   },
   'Boolean object': {
-    input: new Boolean('1'), // eslint-disable-line no-new-wrappers
+    input: new Boolean('1'), // oxlint-disable-line no-new-wrappers
     expected: 'new Boolean(true)',
     pruned: 'new Boolean(true)'
   },
@@ -131,11 +131,7 @@ const fixtures: Suite = {
     pruned: '/^not/g'
   },
   'Array object': {
-    /* eslint-disable @typescript-eslint/no-array-constructor */
-
-    input: new Array(),
-
-    /* eslint-enable @typescript-eslint/no-array-constructor */
+    input: new Array(), // oxlint-disable-line no-array-constructor
     expected: '[]',
     pruned: '#Array#'
   },
@@ -145,12 +141,14 @@ const fixtures: Suite = {
     pruned: '#Object#'
   },
   'Function object': {
-    input: new Function('x', 'y', 'return x + y'), // eslint-disable-line no-new-func
+    input: new Function('x', 'y', 'return x + y'), // oxlint-disable-line no-new-func
     expected: 'function@anonymous',
     pruned: 'function@anonymous'
   },
   'arguments object': {
-    input: (function () { return arguments; })(),
+    input: (function () {
+      return arguments;
+    })(),
     expected: 'Arguments{}',
     pruned: '#Arguments#'
   },
@@ -223,12 +221,12 @@ if (typeName(anonymous) === 'AnonPerson') {
     expected: 'AnonPerson{name:"bob",age:4}',
     pruned: '#AnonPerson#'
   };
-// } else {
-//   fixtures['anonymous constructor'] = {
-//     input: anonymous,
-//     expected: '@Anonymous{name:"bob",age:4}',
-//     pruned: '#@Anonymous#'
-//   };
+  // } else {
+  //   fixtures['anonymous constructor'] = {
+  //     input: anonymous,
+  //     expected: '@Anonymous{name:"bob",age:4}',
+  //     pruned: '#@Anonymous#'
+  //   };
 }
 
 describe('stringify and type-name', () => {

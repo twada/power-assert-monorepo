@@ -8,12 +8,7 @@ import type { LoadHookSync, LoadFnOutput, LoadHookContext, ResolveHookSync, Reso
 type NextResolveFnSync = (specifier: string, context?: ResolveHookContext) => ResolveFnOutput;
 type NextLoadFnSync = (url: string, context?: LoadHookContext) => LoadFnOutput;
 
-const supportedExts = new Set([
-  '.js',
-  '.mjs',
-  '.ts',
-  '.mts'
-]);
+const supportedExts = new Set(['.js', '.mjs', '.ts', '.mts']);
 
 /**
  * The resolve hook chain is responsible for telling Node.js where to find and how to cache a given import statement or expression, or require call.
@@ -26,7 +21,7 @@ const supportedExts = new Set([
  * @param nextResolve The subsequent resolve hook in the chain, or the Node.js default resolve hook after the last user-supplied resolve hook
  * @returns The result of the resolution, including the resolved URL and optional format
  */
-export const resolve: ResolveHookSync = function resolve (specifier: string, context: ResolveHookContext, nextResolve: NextResolveFnSync): ResolveFnOutput {
+export const resolve: ResolveHookSync = function resolve(specifier: string, context: ResolveHookContext, nextResolve: NextResolveFnSync): ResolveFnOutput {
   const nextResolveWithShortCircuitFalse = (specifier: string, context: ResolveHookContext): ResolveFnOutput => {
     const resolved = nextResolve(specifier, context);
     return { ...resolved, shortCircuit: false };
@@ -35,7 +30,7 @@ export const resolve: ResolveHookSync = function resolve (specifier: string, con
   // 1: Any files explicitly provided by the user are executed.
   // 2: node_modules directories are skipped unless explicitly provided by the user.
   // 3: If a directory named test is encountered, the test runner will search it recursively for all all .js, .cjs, and .mjs files. All of these files are treated as test files, and do not need to match the specific naming convention detailed below. This is to accommodate projects that place all of their tests in a single test directory.
-  const isEntryPoint = (context.parentURL === undefined);
+  const isEntryPoint = context.parentURL === undefined;
   if (!isEntryPoint) {
     // modules that are imported by other modules are not transpiled
     return nextResolveWithShortCircuitFalse(specifier, context);
@@ -81,7 +76,7 @@ export const resolve: ResolveHookSync = function resolve (specifier: string, con
  * @param nextLoad The subsequent load hook in the chain, or the Node.js default load hook after the last user-supplied load hook
  * @returns The result of the load, including the source code and format
  */
-export const load: LoadHookSync = function load (url: string, context: LoadHookContext, nextLoad: NextLoadFnSync): LoadFnOutput {
+export const load: LoadHookSync = function load(url: string, context: LoadHookContext, nextLoad: NextLoadFnSync): LoadFnOutput {
   const nextLoadWithShortCircuitFalse = (url: string, context: LoadHookContext): LoadFnOutput => {
     const loaded = nextLoad(url, context);
     return { ...loaded, shortCircuit: false };
@@ -107,7 +102,7 @@ export const load: LoadHookSync = function load (url: string, context: LoadHookC
 };
 
 // start borrowing from https://nodejs.org/api/module.html#transpilation
-function getPackageType (url: string): string | undefined {
+function getPackageType(url: string): string | undefined {
   // `url` is only a file path during the first iteration when passed the
   // resolved url from the load() hook
   // an actual file path from load() will contain a file extension as it's

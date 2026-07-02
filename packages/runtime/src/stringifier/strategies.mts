@@ -7,27 +7,27 @@ const ITERATE = Symbol('iterate');
 type Direction = typeof END | typeof ITERATE;
 
 export type StringifyConfig = {
-  maxDepth: number | null,
-  indent: string | null,
-  anonymous: string,
-  circular: string,
-  snip: string,
-  lineSeparator: string,
+  maxDepth: number | null;
+  indent: string | null;
+  anonymous: string;
+  circular: string;
+  snip: string;
+  lineSeparator: string;
 };
 
 type KeyValueStore = { [key: PropertyKey]: any };
 
-type KeyValuePair = { key: PropertyKey, value: any };
+type KeyValuePair = { key: PropertyKey; value: any };
 
 export type CollectorFunc = (str: string) => void;
 
 export type MapKeyStringifier = (val: unknown, childState: State) => string;
 export type MapKeyStringifierFactory = () => MapKeyStringifier;
 export type Accumulator = {
-  push: CollectorFunc,
-  context: State,
-  options: StringifyConfig & KeyValueStore,
-  createMapKeyStringifier: MapKeyStringifierFactory
+  push: CollectorFunc;
+  context: State;
+  options: StringifyConfig & KeyValueStore;
+  createMapKeyStringifier: MapKeyStringifierFactory;
 };
 type Guard = (kvp: KeyValuePair, acc: Accumulator) => boolean;
 
@@ -35,7 +35,7 @@ export type Component = (acc: Accumulator, x: unknown) => Direction;
 type Composable = (next: Component) => Component;
 
 // chain of components should end with end() or iterate()
-function compose (...components: Composable[]): Component {
+function compose(...components: Composable[]): Component {
   return components.reduceRight((right: Component, left: Composable) => left(right), terminator);
 }
 
@@ -44,7 +44,7 @@ const terminator: Component = (_acc: Accumulator, _x: unknown) => {
 };
 
 // skip children
-function end (): Composable {
+function end(): Composable {
   return (_next: Component) => {
     return (acc: Accumulator, _x: unknown) => {
       acc.context.skip();
@@ -54,13 +54,13 @@ function end (): Composable {
 }
 
 // iterate children
-function iterate (): Composable {
+function iterate(): Composable {
   return (_next: Component) => {
     return (_acc: Accumulator, _x: unknown) => ITERATE;
   };
 }
 
-function allowedKeys (orderedAllowList?: string[]): Composable {
+function allowedKeys(orderedAllowList?: string[]): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       if (!Array.isArray(x) && Array.isArray(orderedAllowList)) {
@@ -71,7 +71,7 @@ function allowedKeys (orderedAllowList?: string[]): Composable {
   };
 }
 
-function when (guard: Guard, then: Component): Composable {
+function when(guard: Guard, then: Component): Composable {
   return (next) => {
     return (acc: Accumulator, x: unknown) => {
       const kvp = {
@@ -86,7 +86,7 @@ function when (guard: Guard, then: Component): Composable {
   };
 }
 
-function constructorName (): Composable {
+function constructorName(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       const name = typeName(x);
@@ -100,7 +100,7 @@ function constructorName (): Composable {
   };
 }
 
-function objectSize (): Composable {
+function objectSize(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.push(`(${acc.context.size})`);
@@ -109,7 +109,7 @@ function objectSize (): Composable {
   };
 }
 
-function always (str: string): Composable {
+function always(str: string): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.push(str);
@@ -118,7 +118,7 @@ function always (str: string): Composable {
   };
 }
 
-function optionValue (key: string): Composable {
+function optionValue(key: string): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.push(acc.options[key]);
@@ -130,7 +130,7 @@ function optionValue (key: string): Composable {
 type ReplacerFunc = (this: unknown, key: string, value: unknown) => unknown;
 type ReplacerAllowList = (string | number)[] | null;
 type Replacer = ReplacerFunc | ReplacerAllowList;
-function json (replacer?: Replacer): Composable {
+function json(replacer?: Replacer): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       if (typeof replacer === 'function') {
@@ -145,7 +145,7 @@ function json (replacer?: Replacer): Composable {
   };
 }
 
-function toStr (): Composable {
+function toStr(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.push(String(x));
@@ -155,11 +155,11 @@ function toStr (): Composable {
 }
 
 type HasName = { name: string };
-function hasName (x: unknown): x is HasName {
+function hasName(x: unknown): x is HasName {
   return typeof x === 'function' || (typeof x === 'object' && x !== null && Object.hasOwn(x, 'name'));
 }
 
-function itsName (): Composable {
+function itsName(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       if (hasName(x)) {
@@ -177,7 +177,7 @@ function itsName (): Composable {
   };
 }
 
-function bigint (): Composable {
+function bigint(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       if (typeof x === 'bigint' || typeof x === 'number' || typeof x === 'string' || typeof x === 'boolean') {
@@ -188,7 +188,7 @@ function bigint (): Composable {
   };
 }
 
-function decorateArray (): Composable {
+function decorateArray(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.context.beforeAllChildren((_state: State, _node: unknown) => {
@@ -209,7 +209,7 @@ function decorateArray (): Composable {
   };
 }
 
-function decorateSet (): Composable {
+function decorateSet(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.context.beforeAllChildren((_state: State, _node: unknown) => {
@@ -230,7 +230,7 @@ function decorateSet (): Composable {
   };
 }
 
-function decorateMap (): Composable {
+function decorateMap(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       const stringifyMapKey = acc.createMapKeyStringifier();
@@ -254,7 +254,7 @@ function decorateMap (): Composable {
   };
 }
 
-function decorateObject (): Composable {
+function decorateObject(): Composable {
   return (next: Component) => {
     return (acc: Accumulator, x: unknown) => {
       acc.context.beforeAllChildren((_state: State, _node: unknown) => {
@@ -276,7 +276,7 @@ function decorateObject (): Composable {
   };
 }
 
-function sanitizeKey (key: PropertyKey): string {
+function sanitizeKey(key: PropertyKey): string {
   if (typeof key === 'symbol') {
     return key.toString();
   } else {
@@ -285,16 +285,17 @@ function sanitizeKey (key: PropertyKey): string {
   }
 }
 
-function afterAllChildren (context: State, push: CollectorFunc, options: StringifyConfig) {
+function afterAllChildren(context: State, push: CollectorFunc, options: StringifyConfig) {
   if (options.indent && context.size !== null && context.size > 0) {
     push(options.lineSeparator);
-    for (let i = 0; i < context.level; i += 1) { // indent level - 1
+    for (let i = 0; i < context.level; i += 1) {
+      // indent level - 1
       push(options.indent);
     }
   }
 }
 
-function beforeEachChild (context: State, push: CollectorFunc, options: StringifyConfig) {
+function beforeEachChild(context: State, push: CollectorFunc, options: StringifyConfig) {
   if (options.indent) {
     push(options.lineSeparator);
     for (let i = 0; i <= context.level; i += 1) {
@@ -303,50 +304,55 @@ function beforeEachChild (context: State, push: CollectorFunc, options: Stringif
   }
 }
 
-function afterEachChild (childContext: State, push: CollectorFunc) {
+function afterEachChild(childContext: State, push: CollectorFunc) {
   if (!childContext.isLast) {
     push(',');
   }
 }
 
-function nan (kvp: KeyValuePair, _acc: Accumulator): boolean {
-  return kvp.value !== kvp.value; // eslint-disable-line no-self-compare
+function nan(kvp: KeyValuePair, _acc: Accumulator): boolean {
+  return Number.isNaN(kvp.value);
 }
 
-function positiveInfinity (kvp: KeyValuePair, _acc: Accumulator): boolean {
+function positiveInfinity(kvp: KeyValuePair, _acc: Accumulator): boolean {
   return !isFinite(kvp.value) && kvp.value === Infinity;
 }
 
-function negativeInfinity (kvp: KeyValuePair, _acc: Accumulator): boolean {
+function negativeInfinity(kvp: KeyValuePair, _acc: Accumulator): boolean {
   return !isFinite(kvp.value) && kvp.value !== Infinity;
 }
 
-function circular (_kvp: KeyValuePair, acc: Accumulator): boolean {
+function circular(_kvp: KeyValuePair, acc: Accumulator): boolean {
   return !!acc.context.circular;
 }
 
-function maxDepth (_kvp: KeyValuePair, acc: Accumulator): boolean {
+function maxDepth(_kvp: KeyValuePair, acc: Accumulator): boolean {
   return !!(acc.options.maxDepth && acc.options.maxDepth <= acc.context.level);
 }
 
+// prettier-ignore
 const prune = compose(
   always('#'),
   constructorName(),
   always('#'),
   end()
 );
+// prettier-ignore
 const omitNaN = when(nan, compose(
   always('NaN'),
   end()
 ));
+// prettier-ignore
 const omitPositiveInfinity = when(positiveInfinity, compose(
   always('Infinity'),
   end()
 ));
+// prettier-ignore
 const omitNegativeInfinity = when(negativeInfinity, compose(
   always('-Infinity'),
   end()
 ));
+// prettier-ignore
 const omitCircular = when(circular, compose(
   optionValue('circular'),
   end()
@@ -358,11 +364,13 @@ const strategies = {
   json: () => compose(json(), end()),
   toStr: () => compose(toStr(), end()),
   prune: () => prune,
+  // prettier-ignore
   function: () => compose(
     constructorName(),
     always('@'),
     itsName(),
     end()),
+  // prettier-ignore
   number: () => compose(
     omitNaN,
     omitPositiveInfinity,
@@ -371,6 +379,7 @@ const strategies = {
     end()
   ),
   bigint: () => compose(bigint(), end()),
+  // prettier-ignore
   newLike: () => compose(
     always('new '),
     constructorName(),
@@ -380,46 +389,50 @@ const strategies = {
     end()
   ),
   // array: (predicate?: Function | null) => {
-  array: () => compose(
-    omitCircular,
-    omitMaxDepth,
-    decorateArray(),
-    // filter(predicate),
-    iterate()
-  ),
+  array: () =>
+    compose(
+      omitCircular,
+      omitMaxDepth,
+      decorateArray(),
+      // filter(predicate),
+      iterate()
+    ),
   // set: (predicate?: Function | null) => {
-  set: () => compose(
-    omitCircular,
-    omitMaxDepth,
-    constructorName(),
-    objectSize(),
-    decorateSet(),
-    // filter(predicate),
-    iterate()
-  ),
+  set: () =>
+    compose(
+      omitCircular,
+      omitMaxDepth,
+      constructorName(),
+      objectSize(),
+      decorateSet(),
+      // filter(predicate),
+      iterate()
+    ),
   // map: (predicate?: Function | null, orderedAllowList?: string[]) => {
   // map: (orderedAllowList?: string[]) => {
-  map: () => compose(
-    omitCircular,
-    omitMaxDepth,
-    constructorName(),
-    objectSize(),
-    decorateMap(),
-    // allowedKeys(orderedAllowList),
-    // filter(predicate),
-    iterate()
-  ),
+  map: () =>
+    compose(
+      omitCircular,
+      omitMaxDepth,
+      constructorName(),
+      objectSize(),
+      decorateMap(),
+      // allowedKeys(orderedAllowList),
+      // filter(predicate),
+      iterate()
+    ),
   // object: (predicate?: Function | null, orderedAllowList?: string[]) => {
-  object: (orderedAllowList?: string[]) => compose(
-    omitCircular,
-    omitMaxDepth,
-    constructorName(),
-    decorateObject(),
-    allowedKeys(orderedAllowList),
-    // safeKeys(),
-    // filter(predicate),
-    iterate()
-  )
+  object: (orderedAllowList?: string[]) =>
+    compose(
+      omitCircular,
+      omitMaxDepth,
+      constructorName(),
+      decorateObject(),
+      allowedKeys(orderedAllowList),
+      // safeKeys(),
+      // filter(predicate),
+      iterate()
+    )
 };
 
 export { strategies };

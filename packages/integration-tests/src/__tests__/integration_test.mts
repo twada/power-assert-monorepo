@@ -1,6 +1,5 @@
-/* eslint @typescript-eslint/no-unused-vars: 0 */
-/* eslint no-unused-vars: 0 */
-/* eslint no-eval: 0 */
+/* oxlint-disable no-unused-vars */
+/* oxlint-disable no-eval */
 import { test, describe, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert'; // variable 'assert' is referenced in eval
 import { _power_ } from '@power-assert/runtime'; // variable '_power_' is referenced in eval
@@ -21,15 +20,15 @@ afterEach(() => {
 
 type TestFunc = (transpiledCode: string) => void;
 
-function isAssertionError (e: unknown): e is AssertionError {
-  return e instanceof Error && /^AssertionError/.test(e.name);
+function isAssertionError(e: unknown): e is AssertionError {
+  return e instanceof Error && e.name.startsWith('AssertionError');
 }
 
-export function ptest (title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
+export function ptest(title: string, testFunc: TestFunc, expected: string, howManyLines = 1) {
   // chop empty lines then extract assertion expression
   const lines = expected.split('\n');
   const startIndex = lines[2] === '# Human-readable format:' ? 3 : 2;
-  const expression = lines.slice(startIndex, (startIndex + howManyLines)).join('\n');
+  const expression = lines.slice(startIndex, startIndex + howManyLines).join('\n');
   const prelude = "import { strict as assert } from 'node:assert';\n";
   const wholeCode = prelude + expression;
 
@@ -51,9 +50,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
           transform: {},
           target: 'es2022',
           experimental: {
-            plugins: [
-              ['swc-plugin-power-assert', {}]
-            ]
+            plugins: [['swc-plugin-power-assert', {}]]
           }
         }
       });
@@ -71,7 +68,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
     verifyPowerAssertOutput(transpiled.code, sourceMapConsumer);
   });
 
-  function verifyPowerAssertOutput (transpiledCode: string, sourceMapConsumer: SourceMapConsumer) {
+  function verifyPowerAssertOutput(transpiledCode: string, sourceMapConsumer: SourceMapConsumer) {
     const transpiledLines = transpiledCode.split('\n');
     // comment lines out since import statement does not work in eval
     transpiledLines[0] = "//port { strict as assert } from 'node:assert';";
@@ -89,7 +86,7 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
     }
   }
 
-  function verifyStackAndSourceMap (e: AssertionError, transpiledLines: string[], consumer: SourceMapConsumer) {
+  function verifyStackAndSourceMap(e: AssertionError, transpiledLines: string[], consumer: SourceMapConsumer) {
     assert(e.stack !== undefined);
     const targetLineInStacktrace = e.stack.split('\n').find((line) => line.startsWith('    at eval'));
     assert(targetLineInStacktrace !== undefined);
@@ -114,10 +111,13 @@ export function ptest (title: string, testFunc: TestFunc, expected: string, howM
 
 describe('Integration of transpiler and runtime', () => {
   describe('Identifier', () => {
-    ptest('Identifier and empty string', (transpiledCode) => {
-      const truthy = '';
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'Identifier and empty string',
+      (transpiledCode) => {
+        const truthy = '';
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(truthy)
@@ -128,15 +128,19 @@ assert(truthy)
 Assertion failed: assert(truthy)
 === arg:0 ===
 Step 1: \`truthy\` => ""
-`);
+`
+    );
   });
 
   describe('BinaryExpression', () => {
-    ptest('BinaryExpression', (transpiledCode) => {
-      const truthy = '1';
-      const falsy = 0;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'BinaryExpression',
+      (transpiledCode) => {
+        const truthy = '1';
+        const falsy = 0;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(truthy === falsy)
@@ -153,16 +157,20 @@ Step 2: \`falsy\` => 0
 Step 3: \`truthy === falsy\` => false
 
 "1" === 0
-`);
+`
+    );
   });
 
   describe('MemberExpression', () => {
-    ptest('MemberExpression computed:false', (transpiledCode) => {
-      const foo = {
-        bar: false
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'MemberExpression computed:false',
+      (transpiledCode) => {
+        const foo = {
+          bar: false
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(foo.bar)
@@ -175,17 +183,21 @@ Assertion failed: assert(foo.bar)
 === arg:0 ===
 Step 1: \`foo\` => Object{bar:false}
 Step 2: \`foo.bar\` => false
-`);
+`
+    );
 
-    ptest('MemberExpression computed:true', (transpiledCode) => {
-      const keys = ['b a r'];
-      const zero = 0;
-      const one = 1;
-      const foo = {
-        'b a r': [true, false]
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'MemberExpression computed:true',
+      (transpiledCode) => {
+        const keys = ['b a r'];
+        const zero = 0;
+        const one = 1;
+        const foo = {
+          'b a r': [true, false]
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(foo[keys[zero]][one])
@@ -208,21 +220,25 @@ Step 4: \`keys[zero]\` => "b a r"
 Step 5: \`foo[keys[zero]]\` => [true,false]
 Step 6: \`one\` => 1
 Step 7: \`foo[keys[zero]][one]\` => false
-`);
+`
+    );
 
-    ptest('more MemberExpression computed:true', (transpiledCode) => {
-      const keys = {
-        0: 'f o o'
-      };
-      const foo = 'f o o';
-      const bar = 'b a r';
-      const zero = 0;
-      const one = 1;
-      const obj = {
-        'b a r': [true, false]
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'more MemberExpression computed:true',
+      (transpiledCode) => {
+        const keys = {
+          0: 'f o o'
+        };
+        const foo = 'f o o';
+        const bar = 'b a r';
+        const zero = 0;
+        const one = 1;
+        const obj = {
+          'b a r': [true, false]
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(obj[[[keys[zero], foo][zero], bar][one]][one])
@@ -261,14 +277,18 @@ Step 12: \`[[keys[zero], foo][zero], bar][one]\` => "b a r"
 Step 13: \`obj[[[keys[zero], foo][zero], bar][one]]\` => [true,false]
 Step 14: \`one\` => 1
 Step 15: \`obj[[[keys[zero], foo][zero], bar][one]][one]\` => false
-`);
+`
+    );
   });
 
   describe('CallExpression', () => {
-    ptest('simple CallExpression', (transpiledCode) => {
-      const inner = () => false;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'simple CallExpression',
+      (transpiledCode) => {
+        const inner = () => false;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(inner())
@@ -279,12 +299,16 @@ assert(inner())
 Assertion failed: assert(inner())
 === arg:0 ===
 Step 1: \`inner()\` => false
-`);
+`
+    );
 
-    ptest('CallExpression of CallExpression of CallExpression', (transpiledCode) => {
-      const outer = () => () => () => false;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'CallExpression of CallExpression of CallExpression',
+      (transpiledCode) => {
+        const outer = () => () => () => false;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(outer()()())
@@ -299,14 +323,20 @@ Assertion failed: assert(outer()()())
 Step 1: \`outer()\` => function@anonymous
 Step 2: \`outer()()\` => function@anonymous
 Step 3: \`outer()()()\` => false
-`);
+`
+    );
 
-    ptest('method callee is function', (transpiledCode) => {
-      const inner = () => ({
-        exact () { return false; }
-      });
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'method callee is function',
+      (transpiledCode) => {
+        const inner = () => ({
+          exact() {
+            return false;
+          }
+        });
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(inner().exact())
@@ -319,14 +349,20 @@ Assertion failed: assert(inner().exact())
 === arg:0 ===
 Step 1: \`inner()\` => Object{exact:function@exact}
 Step 2: \`inner().exact()\` => false
-`);
+`
+    );
 
-    ptest('method callee is non-computed MemberExpression', (transpiledCode) => {
-      const obj = {
-        method () { return false; }
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'method callee is non-computed MemberExpression',
+      (transpiledCode) => {
+        const obj = {
+          method() {
+            return false;
+          }
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(obj.method())
@@ -339,14 +375,20 @@ Assertion failed: assert(obj.method())
 === arg:0 ===
 Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`obj.method()\` => false
-`);
+`
+    );
 
-    ptest('method callee is non-computed MemberExpression that returns function then invoke immediately', (transpiledCode) => {
-      const obj = {
-        method () { return () => () => false; }
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'method callee is non-computed MemberExpression that returns function then invoke immediately',
+      (transpiledCode) => {
+        const obj = {
+          method() {
+            return () => () => false;
+          }
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(obj.method()()())
@@ -363,15 +405,21 @@ Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`obj.method()\` => function@anonymous
 Step 3: \`obj.method()()\` => function@anonymous
 Step 4: \`obj.method()()()\` => false
-`);
+`
+    );
 
-    ptest('method callee is computed MemberExpression', (transpiledCode) => {
-      const methodName = 'method';
-      const obj = {
-        method () { return false; }
-      };
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'method callee is computed MemberExpression',
+      (transpiledCode) => {
+        const methodName = 'method';
+        const obj = {
+          method() {
+            return false;
+          }
+        };
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(obj[methodName]())
@@ -386,16 +434,20 @@ Assertion failed: assert(obj[methodName]())
 Step 1: \`obj\` => Object{method:function@method}
 Step 2: \`methodName\` => "method"
 Step 3: \`obj[methodName]()\` => false
-`);
+`
+    );
   });
 
   describe('ConditionalExpression', () => {
-    ptest('ConditionalExpression', (transpiledCode) => {
-      const foo = 1;
-      const bar = null;
-      const baz = true;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'ConditionalExpression',
+      (transpiledCode) => {
+        const foo = 1;
+        const bar = null;
+        const baz = true;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(foo ? bar : baz)
@@ -410,16 +462,20 @@ Assertion failed: assert(foo ? bar : baz)
 Step 1: \`foo\` => 1
 Step 2: \`bar\` => null
 Step 3: \`foo ? bar : baz\` => null
-`);
+`
+    );
 
-    ptest('ConditionalExpression of ConditionalExpression', (transpiledCode) => {
-      const foo = 1;
-      const bar = null;
-      const baz = true;
-      const toto = 1;
-      const tata = 0;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'ConditionalExpression of ConditionalExpression',
+      (transpiledCode) => {
+        const foo = 1;
+        const bar = null;
+        const baz = true;
+        const toto = 1;
+        const tata = 0;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert((foo ? bar : baz) ? toto : tata)
@@ -438,15 +494,19 @@ Step 2: \`bar\` => null
 Step 3: \`foo ? bar : baz\` => null
 Step 4: \`tata\` => 0
 Step 5: \`(foo ? bar : baz) ? toto : tata\` => 0
-`);
+`
+    );
   });
 
   describe('LogicalExpression', () => {
-    ptest('Logical OR', (transpiledCode) => {
-      const a = -3;
-      const b = -2;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'Logical OR',
+      (transpiledCode) => {
+        const a = -3;
+        const b = -2;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(a > 0 || b > 0)
@@ -469,13 +529,17 @@ Step 4: \`b\` => -2
 Step 5: \`0\` => 0
 Step 6: \`b > 0\` => false
 Step 7: \`a > 0 || b > 0\` => false
-`);
+`
+    );
 
-    ptest('Logical AND', (transpiledCode) => {
-      const a = -3;
-      const b = -2;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'Logical AND',
+      (transpiledCode) => {
+        const a = -3;
+        const b = -2;
+        eval(transpiledCode);
+      },
+      `
 
 # Human-readable format:
 assert(a > 0 && b > 0)
@@ -492,15 +556,19 @@ Step 1: \`a\` => -3
 Step 2: \`0\` => 0
 Step 3: \`a > 0\` => false
 Step 4: \`a > 0 && b > 0\` => false
-`);
+`
+    );
   });
 
   describe('assertion with multiple lines', () => {
-    ptest('assertion with multiple lines', (transpiledCode) => {
-      const truthy = '1';
-      const falsy = 0;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'assertion with multiple lines',
+      (transpiledCode) => {
+        const truthy = '1';
+        const falsy = 0;
+        eval(transpiledCode);
+      },
+      `
 
 assert.equal(truthy,
   falsy,
@@ -523,13 +591,18 @@ falsy is not truthy
 
 
 '1' !== 0
-`, 3);
+`,
+      3
+    );
 
-    ptest('BinaryExpression analysis', (transpiledCode) => {
-      const truthy = '1';
-      const falsy = 0;
-      eval(transpiledCode);
-    }, `
+    ptest(
+      'BinaryExpression analysis',
+      (transpiledCode) => {
+        const truthy = '1';
+        const falsy = 0;
+        eval(transpiledCode);
+      },
+      `
 
 assert(truthy
        ===
@@ -547,6 +620,8 @@ Step 3: \`truthy
        falsy\` => false
 
 "1" === 0
-`, 3);
+`,
+      3
+    );
   });
 });

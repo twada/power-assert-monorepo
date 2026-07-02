@@ -5,7 +5,7 @@ import { traverseAny } from '../../stringifier/traverse.mts';
 describe('traverse', () => {
   it('traverse flat array', () => {
     const acc: unknown[] = [];
-    traverseAny(['a', 'b'], (item, state) => {
+    traverseAny(['a', 'b'], (item, _state) => {
       acc.push(item);
     });
     assert.deepEqual(acc, [['a', 'b'], 'a', 'b']);
@@ -16,7 +16,7 @@ describe('traverse', () => {
     map.set('key1', 'a');
     map.set('key2', 'b');
     const acc: unknown[] = [];
-    traverseAny(map, (item, state) => {
+    traverseAny(map, (item, _state) => {
       acc.push(item);
     });
     assert.deepEqual(acc, [map, 'a', 'b']);

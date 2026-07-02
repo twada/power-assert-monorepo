@@ -67,24 +67,24 @@ type AcornSwcLikeNode = {
   end?: number;
 };
 
-export function isScopedFunction (node: Node): node is ScopedFunction {
+export function isScopedFunction(node: Node): node is ScopedFunction {
   return /Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
-export function isBlockStatement (node: Node): node is BlockStatement {
+export function isBlockStatement(node: Node): node is BlockStatement {
   return node.type === 'BlockStatement';
 }
-export function isArrowFunctionExpressionWithConciseBody (node: Node): node is ArrowFunctionExpressionWithConciseBody {
+export function isArrowFunctionExpressionWithConciseBody(node: Node): node is ArrowFunctionExpressionWithConciseBody {
   return node.type === 'ArrowFunctionExpression' && node.expression === true;
 }
-export function isArrowFunctionExpressionWithBlock (node: Node): node is ArrowFunctionExpressionWithBlock {
+export function isArrowFunctionExpressionWithBlock(node: Node): node is ArrowFunctionExpressionWithBlock {
   return node.type === 'ArrowFunctionExpression' && node.expression === false;
 }
-export function isScoped (node: Node): node is Scoped {
+export function isScoped(node: Node): node is Scoped {
   return /^Program$|Block|Function/.test(node.type) && !isArrowFunctionExpressionWithConciseBody(node);
 }
 
-function withLoc (sourceNode: Node & AcornSwcLikeNode) {
-  return function<T extends (Node & AcornSwcLikeNode)> (destNode: T): T {
+function withLoc(sourceNode: Node & AcornSwcLikeNode) {
+  return function <T extends Node & AcornSwcLikeNode>(destNode: T): T {
     if (Object.hasOwn(sourceNode, 'loc')) {
       destNode.loc = sourceNode.loc;
     }
@@ -101,53 +101,53 @@ function withLoc (sourceNode: Node & AcornSwcLikeNode) {
   };
 }
 
-export function nodeFactory (sourceNode: Node): NodeCreator {
+export function nodeFactory(sourceNode: Node): NodeCreator {
   return new NodeCreator(sourceNode);
 }
 
 class NodeCreator {
   readonly newNode: <T extends Node>(destNode: T) => T;
 
-  constructor (sourceNode: Node) {
+  constructor(sourceNode: Node) {
     this.newNode = withLoc(sourceNode);
   }
 
-  identifier (name: string): Identifier {
+  identifier(name: string): Identifier {
     return this.newNode<Identifier>({
       type: 'Identifier',
       name
     });
   }
 
-  stringLiteral (value: string): SimpleLiteral {
+  stringLiteral(value: string): SimpleLiteral {
     return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
     });
   }
 
-  numericLiteral (value: number): SimpleLiteral {
+  numericLiteral(value: number): SimpleLiteral {
     return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
     });
   }
 
-  booleanLiteral (value: boolean): SimpleLiteral {
+  booleanLiteral(value: boolean): SimpleLiteral {
     return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value
     });
   }
 
-  nullLiteral (): SimpleLiteral {
+  nullLiteral(): SimpleLiteral {
     return this.newNode<SimpleLiteral>({
       type: 'Literal',
       value: null
     });
   }
 
-  callExpression (callee: Expression, args: Array<Expression | SpreadElement>): CallExpression {
+  callExpression(callee: Expression, args: Array<Expression | SpreadElement>): CallExpression {
     return this.newNode<CallExpression>({
       type: 'CallExpression',
       callee,
@@ -156,7 +156,7 @@ class NodeCreator {
     });
   }
 
-  newExpression (callee: Expression, args: Array<Expression | SpreadElement>): NewExpression {
+  newExpression(callee: Expression, args: Array<Expression | SpreadElement>): NewExpression {
     return this.newNode<NewExpression>({
       type: 'NewExpression',
       callee,
@@ -164,7 +164,7 @@ class NodeCreator {
     });
   }
 
-  memberExpression (object: Expression, property: Expression, computed = false, optional = false): MemberExpression {
+  memberExpression(object: Expression, property: Expression, computed = false, optional = false): MemberExpression {
     return this.newNode<MemberExpression>({
       type: 'MemberExpression',
       object,
@@ -174,14 +174,14 @@ class NodeCreator {
     });
   }
 
-  objectExpression (properties: Array<Property | SpreadElement>): ObjectExpression {
+  objectExpression(properties: Array<Property | SpreadElement>): ObjectExpression {
     return this.newNode<ObjectExpression>({
       type: 'ObjectExpression',
       properties
     });
   }
 
-  objectProperty (key: Expression, value: Expression | Pattern, computed = false, shorthand = false): Property {
+  objectProperty(key: Expression, value: Expression | Pattern, computed = false, shorthand = false): Property {
     return this.newNode<Property>({
       type: 'Property',
       key,
@@ -193,7 +193,7 @@ class NodeCreator {
     });
   }
 
-  arrowFunctionExpression (params: Pattern[], body: BlockStatement | Expression, expression = false): ArrowFunctionExpression {
+  arrowFunctionExpression(params: Pattern[], body: BlockStatement | Expression, expression = false): ArrowFunctionExpression {
     return this.newNode<ArrowFunctionExpression>({
       type: 'ArrowFunctionExpression',
       params,
@@ -202,7 +202,7 @@ class NodeCreator {
     });
   }
 
-  unaryExpression (operator: UnaryOperator, argument: Expression): UnaryExpression {
+  unaryExpression(operator: UnaryOperator, argument: Expression): UnaryExpression {
     return this.newNode<UnaryExpression>({
       type: 'UnaryExpression',
       operator,
@@ -211,21 +211,21 @@ class NodeCreator {
     });
   }
 
-  blockStatement (body: Statement[]): BlockStatement {
+  blockStatement(body: Statement[]): BlockStatement {
     return this.newNode<BlockStatement>({
       type: 'BlockStatement',
       body
     });
   }
 
-  returnStatement (argument: Expression | null | undefined): ReturnStatement {
+  returnStatement(argument: Expression | null | undefined): ReturnStatement {
     return this.newNode<ReturnStatement>({
       type: 'ReturnStatement',
       argument
     });
   }
 
-  importDeclaration (specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal, attributes: ImportAttribute[] = []): ImportDeclaration {
+  importDeclaration(specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, source: Literal, attributes: ImportAttribute[] = []): ImportDeclaration {
     return this.newNode<ImportDeclaration>({
       type: 'ImportDeclaration',
       specifiers,
@@ -234,7 +234,7 @@ class NodeCreator {
     });
   }
 
-  importSpecifier (imported: Identifier, local = null): ImportSpecifier {
+  importSpecifier(imported: Identifier, local = null): ImportSpecifier {
     return this.newNode<ImportSpecifier>({
       type: 'ImportSpecifier',
       imported,
@@ -242,7 +242,7 @@ class NodeCreator {
     });
   }
 
-  variableDeclaration (kind: 'var' | 'let' | 'const', declarations: VariableDeclarator[]): VariableDeclaration {
+  variableDeclaration(kind: 'var' | 'let' | 'const', declarations: VariableDeclarator[]): VariableDeclaration {
     return this.newNode<VariableDeclaration>({
       type: 'VariableDeclaration',
       declarations,
@@ -250,7 +250,7 @@ class NodeCreator {
     });
   }
 
-  variableDeclarator (id: Pattern, init?: Expression | null): VariableDeclarator {
+  variableDeclarator(id: Pattern, init?: Expression | null): VariableDeclarator {
     return this.newNode<VariableDeclarator>({
       type: 'VariableDeclarator',
       id,
@@ -258,7 +258,7 @@ class NodeCreator {
     });
   }
 
-  valueToNode (value: unknown): Expression | Pattern {
+  valueToNode(value: unknown): Expression | Pattern {
     // undefined
     if (value === undefined) {
       return this.identifier('undefined');
@@ -299,7 +299,7 @@ type PropKeyAccessible = {
   [key: string]: unknown;
 };
 
-function isPlainObject (value: unknown): value is object & PropKeyAccessible {
+function isPlainObject(value: unknown): value is object & PropKeyAccessible {
   if (!isObject(value) || pToString(value) !== '[object Object]') {
     return false;
   }
@@ -313,10 +313,10 @@ function isPlainObject (value: unknown): value is object & PropKeyAccessible {
   return Object.getPrototypeOf(value) === proto;
 }
 
-function pToString (obj: unknown): string {
+function pToString(obj: unknown): string {
   return Object.prototype.toString.call(obj);
 }
 
-function isObject (arg: unknown): boolean {
+function isObject(arg: unknown): boolean {
   return typeof arg === 'object' && arg !== null;
 }

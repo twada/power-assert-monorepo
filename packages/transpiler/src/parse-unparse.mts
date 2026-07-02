@@ -13,12 +13,12 @@ import type { SourceMapConverter } from 'convert-source-map';
 export type TranspileAstFunc = (ast: Node, code: string) => Node;
 
 export type CodeWithSourceMapConverter = {
-  type: 'CodeWithSourceMapConverter',
-  transpiledCode: string,
-  outMapConv: SourceMapConverter
+  type: 'CodeWithSourceMapConverter';
+  transpiledCode: string;
+  outMapConv: SourceMapConverter;
 };
 
-export async function transpileWith (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): Promise<CodeWithSourceMapConverter> {
+export async function transpileWith(transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): Promise<CodeWithSourceMapConverter> {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2025,
@@ -47,7 +47,7 @@ export async function transpileWith (transpile: TranspileAstFunc, code: string, 
   };
 }
 
-async function findIncomingSourceMap (originalCode: string, fileUrlOrPath?: string): Promise<SourceMapConverter | null> {
+async function findIncomingSourceMap(originalCode: string, fileUrlOrPath?: string): Promise<SourceMapConverter | null> {
   if (!fileUrlOrPath) {
     // inline sourceMap or no sourceMap
     return fromSource(originalCode);
@@ -67,7 +67,7 @@ async function findIncomingSourceMap (originalCode: string, fileUrlOrPath?: stri
   }
 }
 
-export function transpileSync (transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): CodeWithSourceMapConverter {
+export function transpileSync(transpile: TranspileAstFunc, code: string, filePathOrUrl?: string): CodeWithSourceMapConverter {
   const ast: Node = parse(code, {
     sourceType: 'module',
     ecmaVersion: 2025,
@@ -96,7 +96,7 @@ export function transpileSync (transpile: TranspileAstFunc, code: string, filePa
   };
 }
 
-function findIncomingSourceMapSync (originalCode: string, fileUrlOrPath?: string): SourceMapConverter | null {
+function findIncomingSourceMapSync(originalCode: string, fileUrlOrPath?: string): SourceMapConverter | null {
   if (!fileUrlOrPath) {
     // inline sourceMap or no sourceMap
     return fromSource(originalCode);
@@ -117,15 +117,14 @@ function findIncomingSourceMapSync (originalCode: string, fileUrlOrPath?: string
 }
 
 // copy from https://github.com/evanw/node-source-map-support/blob/master/source-map-support.js#L99
-function retrieveSourceMapURL (source: string): string | null {
+function retrieveSourceMapURL(source: string): string | null {
   //        //# sourceMappingURL=foo.js.map                       /*# sourceMappingURL=foo.js.map */
-  // eslint-disable-next-line no-useless-escape
-  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^\*]+?)[ \t]*(?:\*\/)[ \t]*$)/mg;
+  const re = /(?:\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+?)[ \t]*$)|(?:\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*(?:\*\/)[ \t]*$)/gm;
   // Keep executing the search to find the *last* sourceMappingURL to avoid
   // picking up sourceMappingURLs from comments, strings, etc.
   let lastMatch, match;
-  // eslint-disable-next-line no-cond-assign
-  while (match = re.exec(source)) {
+  // oxlint-disable-next-line no-cond-assign
+  while ((match = re.exec(source))) {
     lastMatch = match;
   }
   if (!lastMatch) {
@@ -134,17 +133,17 @@ function retrieveSourceMapURL (source: string): string | null {
   return lastMatch[1];
 }
 
-function mergeSourceMap (incomingSourceMapConv: SourceMapConverter, outgoingSourceMapConv: SourceMapConverter): SourceMapConverter {
+function mergeSourceMap(incomingSourceMapConv: SourceMapConverter, outgoingSourceMapConv: SourceMapConverter): SourceMapConverter {
   return fromJSON(transfer({ fromSourceMap: outgoingSourceMapConv.toObject(), toSourceMap: incomingSourceMapConv.toObject() }));
 }
 
-function copyPropertyIfExists (name: string, from: SourceMapConverter, to: SourceMapConverter): void {
+function copyPropertyIfExists(name: string, from: SourceMapConverter, to: SourceMapConverter): void {
   if (from.getProperty(name)) {
     to.setProperty(name, from.getProperty(name));
   }
 }
 
-function reconnectSourceMap (inMap: SourceMapConverter, outMap: SourceMapConverter): SourceMapConverter {
+function reconnectSourceMap(inMap: SourceMapConverter, outMap: SourceMapConverter): SourceMapConverter {
   const reMap = mergeSourceMap(inMap, outMap);
   copyPropertyIfExists('sources', inMap, reMap);
   copyPropertyIfExists('sourceRoot', inMap, reMap);

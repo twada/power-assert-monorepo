@@ -5,11 +5,11 @@ const examplePattern = 'examples/**/*.test.mts';
 export default defineConfig({
   plugins: [
     powerAssert({
-      include: [examplePattern],
-    }),
+      include: [examplePattern]
+    })
   ],
   test: {
-    include: [examplePattern],
+    include: [examplePattern]
     // ...
-  },
+  }
 });
