@@ -29,12 +29,12 @@
     ".": {
       "module-sync": {
         "types": "./dist/transpiler-core.d.mts",
-        "dev": "./src/transpiler-core.mts",
+        "power-assert-dev": "./src/transpiler-core.mts",
         "default": "./dist/transpiler-core.mjs"
       },
       "import": {
         "types": "./dist/transpiler-core.d.mts",
-        "dev": "./src/transpiler-core.mts",
+        "power-assert-dev": "./src/transpiler-core.mts",
         "default": "./dist/transpiler-core.mjs"
       }
     },
@@ -58,6 +58,6 @@
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
+    "test": "node --conditions=power-assert-dev --test 'src/**/__tests__/**/*test.mts'"
   }
 }
