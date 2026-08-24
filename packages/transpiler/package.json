@@ -11,7 +11,7 @@
   "bugs": "https://github.com/twada/power-assert-monorepo/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/twada/power-assert-monorepo.git",
+    "url": "git+https://github.com/twada/power-assert-monorepo.git",
     "directory": "packages/transpiler"
   },
   "license": "MIT",
