@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "bump-minor-pre-major": true,
+  "include-component-in-tag": true,
+  "plugins": [
+    { "type": "node-workspace", "updatePeerDependencies": true }
+  ],
+  "packages": {
+    "packages/transpiler-core": { "component": "transpiler-core" },
+    "packages/transpiler": { "component": "transpiler" },
+    "packages/runtime": { "component": "runtime" },
+    "packages/node": { "component": "node" },
+    "packages/rollup-plugin-power-assert": { "component": "rollup-plugin-power-assert" },
+    "packages/swc-plugin-power-assert": {
+      "component": "swc-plugin-power-assert",
+      "extra-files": [
+        { "type": "generic", "path": "Cargo.toml" }
+      ]
+    }
+  }
+}
