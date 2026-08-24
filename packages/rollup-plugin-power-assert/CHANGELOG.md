@@ -1,11 +1,13 @@
+# Changelog
+
 ## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.2.0) (2025-07-01)
 
-#### Features
+### Features
 
 * [feat: "stepwise" assertion format for LLM-friendly output](https://github.com/twada/power-assert-monorepo/pull/23)
 
 
-### 0.1.1
+## 0.1.1
 
   * [chore] upgrade transpiler to v0.4.0
   * [chore] upgrade runtime to v0.2.1
@@ -14,7 +16,7 @@
 ## [0.1.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.1.0) (2024-04-25)
 
 
-#### Features
+### Features
 
 * **rollup-plugin-power-assert:**
   * initial release of [Rollup/Vite/Vitest plugin](https://github.com/twada/power-assert-monorepo/pull/7)
