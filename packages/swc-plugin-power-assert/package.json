@@ -28,7 +28,6 @@
     "package.json"
   ],
   "scripts": {
-    "version": "cargo-set-version set-version $(cat ./package.json | jq -r '.version') && git add ./Cargo.toml && git add ../../Cargo.lock",
     "example": "npm run example:cli",
     "example:cli": "RUST_BACKTRACE=1 swc ./examples/bowling.test.mjs -o ./tmp/bowling.test.mjs && node --enable-source-maps --test ./tmp/bowling.test.mjs",
     "example:import": "SWCRC=true node --enable-source-maps --import @swc-node/register/esm-register --test ./examples/bowling.test.mjs",
