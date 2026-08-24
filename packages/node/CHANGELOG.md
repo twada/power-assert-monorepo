@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.0](https://github.com/twada/power-assert-monorepo/compare/node-v0.6.0...node-v0.7.0) (2026-08-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **node:** async hooks via module.register() are replaced with sync hooks via module.registerHooks(). Requires Node.js >= 22.18.0.
+
+### Features
+
+* **node:** replace async module.register with sync module.registerHooks ([aad50b6](https://github.com/twada/power-assert-monorepo/commit/aad50b6d8512e241788bf1203436e8ae4507c92a))
+* **node:** use module.registerHooks to register power-assert hooks ([fcb2ab8](https://github.com/twada/power-assert-monorepo/commit/fcb2ab87d2849c23070a67d82f65676276e39677))
+
+
+### Bug Fixes
+
+* **node:** lower minimum Node.js version to 22.15.0 ([01fb7e3](https://github.com/twada/power-assert-monorepo/commit/01fb7e33bee58b92ae0735b86fb8375591d881b1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @power-assert/transpiler bumped from ^0.6.0 to ^0.7.0
+
 ## [0.6.0](https://github.com/twada/power-assert-monorepo/releases/tag/node-0.6.0) (2025-07-01)
 
 ### Features
