@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.1](https://github.com/twada/power-assert-monorepo/compare/rollup-plugin-power-assert-v0.2.0...rollup-plugin-power-assert-v0.2.1) (2026-08-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @power-assert/transpiler bumped from ^0.6.0 to ^0.7.0
+
 ## [0.2.0](https://github.com/twada/power-assert-monorepo/releases/tag/rollup-plugin-power-assert-v0.2.0) (2025-07-01)
 
 ### Features

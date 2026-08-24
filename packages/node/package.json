@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/node",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "power-assert custom hook for Node Test Runner",
   "author": {
     "name": "Takuto WADA",
@@ -67,7 +67,7 @@
     "testing"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.6.0"
+    "@power-assert/transpiler": "^0.7.0"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.3.1"
