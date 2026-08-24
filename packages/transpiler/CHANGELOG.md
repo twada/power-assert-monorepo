@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/twada/power-assert-monorepo/compare/transpiler-v0.6.0...transpiler-v0.7.0) (2026-08-24)
+
+
+### Features
+
+* **transpiler:** add sync version of transpile functions ([485c7fc](https://github.com/twada/power-assert-monorepo/commit/485c7fc1fdcd2b2be75aa10182711432770c5e45))
+* **transpiler:** add sync version of transpileWithSeparatedSourceMap ([2ebdedb](https://github.com/twada/power-assert-monorepo/commit/2ebdedbae851e10c46b8b50321373620712afb1c))
+
 ## [0.6.0](https://github.com/twada/power-assert-monorepo/releases/tag/transpiler-v0.6.0) (2025-07-01)
 
 ### Features
