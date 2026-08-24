@@ -3,6 +3,14 @@ name: Release
 on:
   push:
     branches: [ main ]
+  # escape hatch: re-run the publish leg manually when it failed after
+  # release-please has already created the GitHub Releases and tags
+  # (re-running the failed job would reuse the old workflow definition)
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: 'Re-publish target paths as JSON array (e.g. ["packages/runtime"])'
+        required: true
 
 permissions: {}
 
@@ -61,3 +69,40 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ github.token }}
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: npm              # waits here until the required reviewer approves
+    permissions:
+      contents: read
+      id-token: write        # OIDC token exchange (this job only)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # default shallow fetch is fine: tests do not depend on git history
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          # deliberately no dependency caching in the release flow (cache poisoning mitigation)
+      - name: Install npm with trusted publishing support
+        # exact-pinned on purpose; review manually when bumping
+        run: npm install -g npm@11.15.0 # zizmor: ignore[adhoc-packages]
+      - uses: dtolnay/rust-toolchain@a5f673d0ba8626c3977bb416a1612774bc82181b # 1.95.0
+        with:
+          targets: wasm32-wasip1
+      - run: npm ci --ignore-scripts
+      - run: npm run build:dist
+      - run: npm run test:dist
+      - name: Publish released packages
+        env:
+          PATHS_RELEASED: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.paths || needs.release-please.outputs.paths_released }}
+        run: |
+          echo "$PATHS_RELEASED" | jq -r '.[]' | while read -r path; do
+            echo "Publishing $path"
+            npm publish --workspace "$path" --provenance --access public
+          done
