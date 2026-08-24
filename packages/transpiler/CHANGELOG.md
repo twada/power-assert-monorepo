@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.1](https://github.com/twada/power-assert-monorepo/compare/transpiler-v0.7.0...transpiler-v0.7.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* rename dev export condition to package-unique power-assert-dev ([c880922](https://github.com/twada/power-assert-monorepo/commit/c880922f127fdec1aae5de17e22fd30b920f0b5b))
+* rename dev export condition to package-unique power-assert-dev ([5bf0642](https://github.com/twada/power-assert-monorepo/commit/5bf06423d93b2d7a5fcd4f07d5f8db468b27faf3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @power-assert/transpiler-core bumped from ^0.5.0 to ^0.5.1
+
 ## [0.7.0](https://github.com/twada/power-assert-monorepo/compare/transpiler-v0.6.0...transpiler-v0.7.0) (2026-08-24)
 
 

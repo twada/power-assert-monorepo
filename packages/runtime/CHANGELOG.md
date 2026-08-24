@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/twada/power-assert-monorepo/compare/runtime-v0.3.1...runtime-v0.3.2) (2026-08-24)
+
+
+### Bug Fixes
+
+* rename dev export condition to package-unique power-assert-dev ([c880922](https://github.com/twada/power-assert-monorepo/commit/c880922f127fdec1aae5de17e22fd30b920f0b5b))
+* rename dev export condition to package-unique power-assert-dev ([5bf0642](https://github.com/twada/power-assert-monorepo/commit/5bf06423d93b2d7a5fcd4f07d5f8db468b27faf3))
+
 ## [0.3.1](https://github.com/twada/power-assert-monorepo/releases/tag/runtime-v0.3.1) (2025-10-02)
 
 ### Bug Fixes
