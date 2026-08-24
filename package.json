@@ -17,7 +17,7 @@
     "@types/estree": "^1.0.1",
     "@types/multi-stage-sourcemap": "^0.3.0",
     "@types/node": "^25.0.0",
-    "oxfmt": "^0.50.0",
+    "oxfmt": "^0.63.0",
     "oxlint": "^1.64.0",
     "rimraf": "^6.0.0",
     "typescript": "^6.0.0"
