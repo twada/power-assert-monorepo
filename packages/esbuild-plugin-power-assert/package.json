@@ -25,10 +25,10 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.6.0"
+    "@power-assert/transpiler": "*"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.3.1"
+    "@power-assert/runtime": "*"
   },
   "devDependencies": {
     "esbuild": "^0.28.0"
