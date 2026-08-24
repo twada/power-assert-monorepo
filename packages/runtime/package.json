@@ -29,12 +29,12 @@
     ".": {
       "module-sync": {
         "types": "./dist/runtime.d.mts",
-        "dev": "./src/runtime.mts",
+        "power-assert-dev": "./src/runtime.mts",
         "default": "./dist/runtime.mjs"
       },
       "import": {
         "types": "./dist/runtime.d.mts",
-        "dev": "./src/runtime.mts",
+        "power-assert-dev": "./src/runtime.mts",
         "default": "./dist/runtime.mjs"
       }
     },
@@ -49,6 +49,6 @@
   ],
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
-    "test": "node --conditions=dev --test 'src/**/__tests__/**/*test.mts'"
+    "test": "node --conditions=power-assert-dev --test 'src/**/__tests__/**/*test.mts'"
   }
 }

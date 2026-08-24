@@ -4,6 +4,8 @@
 
 Accepted
 
+Amended by [ADR-009](./adr-009-package-unique-dev-condition.md): the `dev` condition described below was later renamed to the package-unique `power-assert-dev`, because the generic name broke downstream consumers running Node.js with their own `--conditions=dev`.
+
 ## Context
 
 The power-assert monorepo has been using a hybrid TypeScript development approach where:

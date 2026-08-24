@@ -31,8 +31,8 @@
     "compile": "tsc --build tsconfig.build.json",
     "build:swc": "npm run test -w swc-plugin-power-assert && npm run build -w swc-plugin-power-assert",
     "test:dist": "node --test --test-reporter=dot 'packages/**/dist/**/*_test.mjs'",
-    "test:prove": "prove --exec 'node --conditions=dev --test --test-reporter=tap' -r packages --ext=_test.mts",
-    "test:dev": "node --conditions=dev --test --test-reporter=dot 'packages/**/src/**/__tests__/**/*_test.mts'",
+    "test:prove": "prove --exec 'node --conditions=power-assert-dev --test --test-reporter=tap' -r packages --ext=_test.mts",
+    "test:dev": "node --conditions=power-assert-dev --test --test-reporter=dot 'packages/**/src/**/__tests__/**/*_test.mts'",
     "test": "npm run lint && npm run test:dev"
   },
   "workspaces": [
