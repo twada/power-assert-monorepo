@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-power-assert",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "power-assert rollup plugin",
   "author": {
     "name": "Takuto WADA",
@@ -50,12 +50,12 @@
     "package.json"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.7.0",
-    "@power-assert/transpiler-core": "^0.5.0",
+    "@power-assert/transpiler": "^0.7.1",
+    "@power-assert/transpiler-core": "^0.5.1",
     "@rollup/pluginutils": "^5.1.0"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.3.1"
+    "@power-assert/runtime": "^0.3.2"
   },
   "devDependencies": {
     "rollup": "^4.2.0",

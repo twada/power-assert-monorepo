@@ -1,8 +1,8 @@
 {
-  "packages/transpiler-core": "0.5.0",
-  "packages/transpiler": "0.7.0",
-  "packages/runtime": "0.3.1",
-  "packages/node": "0.7.0",
-  "packages/rollup-plugin-power-assert": "0.2.1",
-  "packages/swc-plugin-power-assert": "0.8.0"
+  "packages/transpiler-core": "0.5.1",
+  "packages/transpiler": "0.7.1",
+  "packages/runtime": "0.3.2",
+  "packages/node": "0.7.1",
+  "packages/rollup-plugin-power-assert": "0.2.2",
+  "packages/swc-plugin-power-assert": "0.8.1"
 }

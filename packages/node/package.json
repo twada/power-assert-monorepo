@@ -1,6 +1,6 @@
 {
   "name": "@power-assert/node",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "power-assert custom hook for Node Test Runner",
   "author": {
     "name": "Takuto WADA",
@@ -67,10 +67,10 @@
     "testing"
   ],
   "dependencies": {
-    "@power-assert/transpiler": "^0.7.0"
+    "@power-assert/transpiler": "^0.7.1"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.3.1"
+    "@power-assert/runtime": "^0.3.2"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",

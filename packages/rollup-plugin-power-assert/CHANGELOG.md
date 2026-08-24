@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.2](https://github.com/twada/power-assert-monorepo/compare/rollup-plugin-power-assert-v0.2.1...rollup-plugin-power-assert-v0.2.2) (2026-08-24)
+
+
+### Bug Fixes
+
+* rename dev export condition to package-unique power-assert-dev ([5bf0642](https://github.com/twada/power-assert-monorepo/commit/5bf06423d93b2d7a5fcd4f07d5f8db468b27faf3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @power-assert/transpiler bumped from ^0.7.0 to ^0.7.1
+    * @power-assert/transpiler-core bumped from ^0.5.0 to ^0.5.1
+  * peerDependencies
+    * @power-assert/runtime bumped from ^0.3.1 to ^0.3.2
+
 ## [0.2.1](https://github.com/twada/power-assert-monorepo/compare/rollup-plugin-power-assert-v0.2.0...rollup-plugin-power-assert-v0.2.1) (2026-08-24)
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.8.1](https://github.com/twada/power-assert-monorepo/compare/swc-plugin-power-assert-v0.8.0...swc-plugin-power-assert-v0.8.1) (2026-08-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * peerDependencies
+    * @power-assert/runtime bumped from ^0.3.1 to ^0.3.2
+
 ## [0.8.0](https://github.com/twada/power-assert-monorepo/releases/tag/swc-plugin-power-assert-v0.8.0) (2025-07-01)
 
 ### Features

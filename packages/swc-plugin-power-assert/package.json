@@ -1,6 +1,6 @@
 {
   "name": "swc-plugin-power-assert",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "SWC plugin for power-assert",
   "keywords": [
     "swc-plugin",
@@ -43,7 +43,7 @@
     "@swc/core": "^1.11.0"
   },
   "peerDependencies": {
-    "@power-assert/runtime": "^0.3.1"
+    "@power-assert/runtime": "^0.3.2"
   },
   "preferUnplugged": true
 }
