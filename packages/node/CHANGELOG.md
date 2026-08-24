@@ -9,7 +9,6 @@
 
 ### Features
 
-* **node:** expose `sync` for sync version ([2e2d14f](https://github.com/twada/power-assert-monorepo/commit/2e2d14f4ba84144388a18e98c9e9ae29705d35b7))
 * **node:** replace async module.register with sync module.registerHooks ([aad50b6](https://github.com/twada/power-assert-monorepo/commit/aad50b6d8512e241788bf1203436e8ae4507c92a))
 * **node:** use module.registerHooks to register power-assert hooks ([fcb2ab8](https://github.com/twada/power-assert-monorepo/commit/fcb2ab87d2849c23070a67d82f65676276e39677))
 
