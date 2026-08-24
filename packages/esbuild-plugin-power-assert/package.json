@@ -1,6 +1,7 @@
 {
   "name": "esbuild-plugin-power-assert",
   "version": "0.0.0",
+  "private": true,
   "description": "power-assert esbuild plugin",
   "author": {
     "name": "Takuto WADA",
