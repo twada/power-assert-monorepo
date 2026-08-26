@@ -128,12 +128,69 @@ Verified real-world setups:
    renovate `semanticCommits`). release-please's own release PR title
    (`chore(main): release ...`) passes type/scope-restricted lints.
 
+## Ecosystem survey 3: BREAKING CHANGE details under squash merge
+
+A follow-up question: with squash merge and a `BLANK` body preset, only the
+PR title survives, so the detailed `BREAKING CHANGE:` footer that
+Conventional Commits prescribes would be lost from the CHANGELOG. How do
+real setups handle this?
+
+release-please's breaking-note extraction works as follows: with `!` alone
+(`feat!:`), the title becomes the note; with a `BREAKING CHANGE:` /
+`BREAKING-CHANGE:` footer, the footer text becomes the note. The README's
+own squash guidance is to write footers into the squash commit body.
+
+Three observed approaches:
+
+- **Title-only (Google's own practice).** release-please's own breaking
+  commits (e.g. `feat(deps)!: update octokit to v20 (#2490)`,
+  `feat!: require node 18+ (#2069)`) carry no footer at all; the
+  "⚠ BREAKING CHANGES" sections of its CHANGELOG are one-line titles.
+  Details are left to docs and manually edited GitHub Releases.
+- **`PR_BODY` preset carrying footers (npm's practice) — verified
+  end-to-end.** npm/cli commit
+  [d36945d](https://github.com/npm/cli/commit/d36945dec26ffdc6899b3dc561260cd1b980a2f8)
+  is `fix!: do not unwrap single-item arrays in --json output` with body
+  `BREAKING CHANGE: npm view --json now always returns an array.` — and
+  npm/cli's v12.0.0 CHANGELOG shows exactly the footer text as the
+  breaking note. Multi-sentence notes with migration instructions in that
+  CHANGELOG all arrived the same way (the PR description, carried into the
+  squash body by `squash_merge_commit_message: PR_BODY`, contains the
+  footer).
+- **`BLANK` preset + writing the footer by hand at merge time.** The
+  preset is a default, not a ceiling: the merge dialog's extended
+  description accepts a footer when needed (Vite's "edit commit message"
+  maintainer instruction is this style). If forgotten,
+  `BEGIN_COMMIT_OVERRIDE` in the merged PR body works retroactively under
+  squash (though not under plain merges).
+
+The failure mode is documented in the wild:
+[npm/cli#9838](https://github.com/npm/cli/pull/9838) records an npm 12
+breaking change that landed as plain `feat:` (no `!`, no footer), was
+classified as a regular feature, and was omitted from the v12.0.0 breaking
+notes. The recovery procedure (spelled out in that commit message): never
+rewrite the merged commit; hand-edit the root CHANGELOG via a docs PR, and
+fix the already-published GitHub Release separately with
+`gh release edit --notes-file` after saving its full body. Their preventive
+rule: breaking commits must use both the `!` marker and a
+`BREAKING CHANGE:` footer.
+
+Note that PR-title linting cannot enforce any of this: titles are a single
+line, so the lint can only see `!`. Footer presence is a matter of
+convention and review (a PR-template section or a danger-style check on the
+PR body are possible supplements).
+
 ## Implications for this repository
 
 This repository deliberately keeps plain merge commits (ADR-010), so the
 operative mitigation remains the duplicate-entry check plus hand-editing
-the release PR (RELEASING.md). If a future decision moves to squash-based
-automation, the minimal target configuration is: squash-only with
-`PR_TITLE` + `BLANK` presets pinned as code, plus
-action-semantic-pull-request as a required check (absinthe's wiring applies
-almost verbatim); no release-please changes would be needed.
+the release PR (RELEASING.md). Plain merges also have a hidden advantage
+here: branch commits' `BREAKING CHANGE:` footers survive in history as-is
+and reach release-please unchanged, so the breaking-note problem above
+does not arise. If a future decision moves to squash-based automation, the
+minimal target configuration is: squash-only with `PR_TITLE` + `BLANK`
+presets pinned as code, plus action-semantic-pull-request as a required
+check (absinthe's wiring applies almost verbatim); no release-please
+changes would be needed — but one operational rule is added: write the
+`BREAKING CHANGE:` footer into the squash body at merge time (or fix it
+afterwards with `BEGIN_COMMIT_OVERRIDE`).
