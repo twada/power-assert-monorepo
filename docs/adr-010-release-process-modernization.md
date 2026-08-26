@@ -133,7 +133,9 @@ is [RELEASING.md](../RELEASING.md).
   changelog (`chore:`/`ci:`/`docs:` in PRs #38/#39/#41) or they predate
   release-please's scan range (PR #26, released manually as runtime 0.3.1).
   Mitigated by a duplicate-entry check in the release PR review steps plus
-  the hand-edit procedure (both in RELEASING.md)
+  the hand-edit procedure (both in RELEASING.md). Full analysis and a survey
+  of how the ecosystem avoids the problem (squash-merge + PR-title linting):
+  [investigations/2026-08-27-release-please-changelog-duplication-research.en.md](./investigations/2026-08-27-release-please-changelog-duplication-research.en.md)
 - `updatePeerDependencies` rewrites peer ranges even when the released
   version already satisfies them, pulling the dependent package into the
   release with a patch bump despite having no code changes (e.g.
