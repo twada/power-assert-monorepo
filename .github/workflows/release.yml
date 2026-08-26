@@ -33,8 +33,10 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  # release-please does not update package-lock.json (googleapis/release-please#1993)
-  # nor Cargo.lock, so push a sync commit onto the release PR branch.
+  # Sync generated lockfiles on the release PR branch. The node-workspace
+  # plugin updates the workspace entries in package-lock.json by itself
+  # (despite googleapis/release-please#1993), so in practice this job covers
+  # Cargo.lock and acts as a safety net — usually a no-op.
   # Note: this push does not trigger CI on the PR (GITHUB_TOKEN-created events
   # do not fire workflows), and release.yml itself only triggers on main push,
   # so no workflow loop occurs.
