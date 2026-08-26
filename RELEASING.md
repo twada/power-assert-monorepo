@@ -58,14 +58,19 @@ Released packages: `@power-assert/transpiler-core`, `@power-assert/transpiler`,
    links (a wrong major bump or a `v0.0.0`-based compare link means tag
    matching is broken), and always review the diff of `.github/workflows` and
    lockfiles before approving anything.
-   Also check the CHANGELOGs for **duplicate entries**: when a merged PR's
-   title is in Conventional Commits form, GitHub's merge commit carries that
-   title in its body, and release-please may extract it as an extra entry
-   alongside the PR's actual commits (observed with PR #42, where the merge
-   commit produced a second `fix:` entry; the trigger conditions are not fully
-   understood, so check every release). Remove the duplicate — the entry
-   linking the merge commit — by hand-editing the release PR per the
-   CHANGELOG policy above.
+   Also check the CHANGELOGs for **duplicate entries**: release-please
+   deliberately splits a commit's message body on paragraph-leading
+   Conventional Commits lines and treats each as a separate commit, with no
+   option to disable this (googleapis/release-please#2476, closed as not
+   planned). A duplicate is therefore expected whenever (1) a PR lands as a
+   plain merge commit — GitHub puts the PR title in the merge commit body —
+   and (2) the PR title is in Conventional Commits form with a
+   changelog-visible type (`fix:`/`feat:`; `chore:`/`ci:`/`docs:` titles are
+   parsed too but produce no visible entry), and (3) the PR's branch commits
+   carry Conventional Commits messages for the same change — the norm in
+   this repository (observed with PR #42, where the merge commit produced a
+   second `fix:` entry). Remove the duplicate — the entry linking the merge
+   commit — by hand-editing the release PR per the CHANGELOG policy above.
 2. **Approve the `npm` environment deployment**
    (Actions → the waiting Release run → Review deployments → `npm`).
 3. The publish job runs `npm ci --ignore-scripts`, `npm run build:dist`,
