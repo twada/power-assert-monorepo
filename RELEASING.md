@@ -83,11 +83,11 @@ Released packages: `@power-assert/transpiler-core`, `@power-assert/transpiler`,
   packages that already published successfully, e.g.
   `["packages/runtime", "packages/node"]`. Re-running the failed job would
   reuse the old workflow definition — always use the manual dispatch.
-- Tags are currently deletable (tag ruleset and immutable releases are
-  deliberately deferred), so deleting a tag and re-releasing is still an
-  option during the ramp-up period. Once immutable releases are enabled,
-  failed versions become permanent gaps: accept the gap and release the next
-  number.
+- Tags are protected by the `protect tags` ruleset (no deletion, no
+  force-push, no re-pointing; creation stays open for release-please) and
+  releases are immutable once published. **A failed version is a permanent
+  gap** — accept the gap and release the next number. Never attempt to
+  delete or re-point a released tag.
 - **Break-glass (OIDC/trusted-publishing outage)**: on npmjs.com create a
   granular access token (7-day expiry, limited to the affected packages),
   publish locally with it, delete the token immediately afterwards, and
@@ -110,4 +110,4 @@ Released packages: `@power-assert/transpiler-core`, `@power-assert/transpiler`,
 | `.github/workflows/release.yml` | release-please job + release-PR lockfile sync job + publish job (environment `npm`, OIDC, per-package publish loop, `workflow_dispatch` recovery path) |
 | `release-please-config.json` / `.release-please-manifest.json` | manifest-mode config: `bump-minor-pre-major`, `include-component-in-tag` (`<component>-vX.Y.Z` tags), node-workspace plugin with `updatePeerDependencies`, `Cargo.toml` extra-files |
 | npm package settings (×6) | Trusted Publisher: repo `twada/power-assert-monorepo`, workflow `release.yml` (filename only), environment `npm`, allowed action `npm publish` only. Publishing access: 2FA required, tokens disallowed |
-| GitHub repo settings | Environment `npm` (required reviewer, deployment branch `main` only, no admin bypass), branch ruleset `protect main` (PR required, no force-push/deletion, no bypass), read-only default workflow permissions |
+| GitHub repo settings | Environment `npm` (required reviewer, deployment branch `main` only, no admin bypass), branch ruleset `protect main` (PR required, no force-push/deletion, no bypass), tag ruleset `protect tags` (no deletion/force-push/update, creation open, no bypass), immutable releases enabled, read-only default workflow permissions |
