@@ -4,7 +4,10 @@
 
 Accepted (implemented 2026-08-24/25; first release through the new pipeline:
 `@power-assert/node` 0.7.0, `@power-assert/transpiler` 0.7.0,
-`rollup-plugin-power-assert` 0.2.1)
+`rollup-plugin-power-assert` 0.2.1. A second, six-package release on
+2026-08-25 additionally exercised the Cargo path — `extra-files` version
+rewrite, `Cargo.lock` sync, `prepack` cargo build — and the peer-dependency
+cascade)
 
 ## Context
 
@@ -75,10 +78,15 @@ Adopt a push-driven, tokenless release pipeline with two human gates:
    `git+https` repository URLs (required for sigstore provenance
    verification), a `main` branch ruleset (PR required, no force-push, no
    bypass), and read-only default workflow permissions.
-9. **Deferred to a later phase**: tag rulesets and immutable releases. During
-   the ramp-up period tags remain deletable, preserving the option to delete
-   and re-release on publish failure. `workflow_dispatch` with an explicit
-   paths input serves as the recovery path for partial publish failures.
+9. **Tag protection and immutable releases were deliberately deferred past
+   the ramp-up period**, keeping tags deletable so a failed publish could be
+   recovered by deleting the tag and re-releasing. After two successful
+   releases through the pipeline, both were applied (2026-08-25): a
+   `protect tags` ruleset (tag deletion, force-push and re-pointing
+   forbidden; creation left open for release-please; no bypass actors) and
+   repository-wide immutable releases. A failed version is now a permanent
+   gap — release the next number. `workflow_dispatch` with an explicit paths
+   input remains the recovery path for partial publish failures.
 
 The full analysis, alternatives comparison (vs. Changesets), and rollout plan
 live in the (untracked) Japanese planning documents; the operational runbook
@@ -111,3 +119,15 @@ is [RELEASING.md](../RELEASING.md).
 - Recovering a failed publish requires a manual `workflow_dispatch` with an
   explicit paths input, because re-running a failed job reuses the stale
   workflow definition and `paths_released` is empty on dispatch
+- GitHub's merge commits carry the PR title in their body; when that title is
+  in Conventional Commits form, release-please may extract it as an extra
+  changelog entry alongside the PR's actual commits (observed once, while an
+  equivalent earlier merge did not duplicate — the trigger conditions are
+  unclear). Mitigated by a duplicate-entry check in the release PR review
+  steps plus the hand-edit procedure (both in RELEASING.md)
+- `updatePeerDependencies` rewrites peer ranges even when the released
+  version already satisfies them, pulling the dependent package into the
+  release with a patch bump despite having no code changes (e.g.
+  swc-plugin-power-assert 0.8.1 when runtime went 0.3.1 → 0.3.2). Accepted:
+  peer ranges stay pointed at the versions actually tested together, and the
+  extra release is harmless
