@@ -180,6 +180,42 @@ line, so the lint can only see `!`. Footer presence is a matter of
 convention and review (a PR-template section or a danger-style check on the
 PR body are possible supplements).
 
+### Pitfall: never write the literal override marker in a PR body
+
+The override extraction in
+[src/commit.ts](https://github.com/googleapis/release-please/blob/main/src/commit.ts)
+is not a structured parse but a naive substring split:
+
+```ts
+const overrideMessage = (
+  commit.pullRequest.body.split('BEGIN_COMMIT_OVERRIDE')[1] || ''
+)
+  .split('END_COMMIT_OVERRIDE')[0]
+  .trim();
+```
+
+Consequences, discovered first-hand while writing the pull request for
+this very report (its body mentioned the marker by name, which armed the
+override with the rest of the body as the message):
+
+- Any occurrence of the exact string `BEGIN_COMMIT_OVERRIDE` anywhere in a
+  merged PR's body triggers the mechanism — including a prose mention, and
+  backticks do not protect it.
+- With no `END_COMMIT_OVERRIDE`, everything from the marker to the end of
+  the body becomes the override message.
+- The override replaces the message of every commit release-please
+  associates with that PR. If the extracted text contains no conventional
+  commit lines, those commits simply contribute nothing — silently.
+- The README's claim that the override "will not work with plain merges"
+  is only partly reflected in the code: commit-to-PR association has a
+  fallback to the first associated pull request, so the replacement can
+  still apply under a plain-merge history.
+
+Rule of thumb: in PR bodies, refer to the mechanism without spelling the
+marker (e.g. "the commit-override markers"). Files and commit messages are
+safe places for the literal string — release-please reads the marker only
+from PR bodies.
+
 ## Implications for this repository
 
 This repository deliberately keeps plain merge commits (ADR-010), so the
