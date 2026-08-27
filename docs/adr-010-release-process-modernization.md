@@ -9,6 +9,11 @@ Accepted (implemented 2026-08-24/25; first release through the new pipeline:
 rewrite, `Cargo.lock` sync, `prepack` cargo build — and the peer-dependency
 cascade)
 
+Amended by [ADR-011](./adr-011-squash-merge-pr-body-as-commit-body.md)
+(2026-08-27): the plain-merge strategy assumed below, and its
+duplicate-changelog-entry trade-off, are superseded by a gradual
+transition to squash merge with the PR body as the commit body.
+
 ## Context
 
 The npm supply-chain threat model has shifted from "malicious package code" to
@@ -135,7 +140,10 @@ is [RELEASING.md](../RELEASING.md).
   Mitigated by a duplicate-entry check in the release PR review steps plus
   the hand-edit procedure (both in RELEASING.md). Full analysis and a survey
   of how the ecosystem avoids the problem (squash-merge + PR-title linting):
-  [investigations/2026-08-27-release-please-changelog-duplication-research.en.md](./investigations/2026-08-27-release-please-changelog-duplication-research.en.md)
+  [investigations/2026-08-27-release-please-changelog-duplication-research.en.md](./investigations/2026-08-27-release-please-changelog-duplication-research.en.md).
+  Superseded for squash-merged PRs by
+  [ADR-011](./adr-011-squash-merge-pr-body-as-commit-body.md) — the check
+  now applies only to plain merges made during the transition
 - `updatePeerDependencies` rewrites peer ranges even when the released
   version already satisfies them, pulling the dependent package into the
   release with a patch bump despite having no code changes (e.g.
