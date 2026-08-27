@@ -119,12 +119,23 @@ is [RELEASING.md](../RELEASING.md).
 - Recovering a failed publish requires a manual `workflow_dispatch` with an
   explicit paths input, because re-running a failed job reuses the stale
   workflow definition and `paths_released` is empty on dispatch
-- GitHub's merge commits carry the PR title in their body; when that title is
-  in Conventional Commits form, release-please may extract it as an extra
-  changelog entry alongside the PR's actual commits (observed once, while an
-  equivalent earlier merge did not duplicate — the trigger conditions are
-  unclear). Mitigated by a duplicate-entry check in the release PR review
-  steps plus the hand-edit procedure (both in RELEASING.md)
+- GitHub's merge commits carry the PR title in their body, and release-please
+  deliberately splits commit bodies on paragraph-leading Conventional Commits
+  lines, treating each as a separate commit (`splitMessages()` in its commit
+  parser; there is no option to disable it, and upstream closed the report —
+  googleapis/release-please#2476 — as not planned). A duplicate changelog
+  entry is therefore expected whenever (1) a PR lands as a plain merge
+  commit, (2) its title is in Conventional Commits form with a
+  changelog-visible type (`fix:`/`feat:`), and (3) its branch commits carry
+  Conventional Commits messages for the same change — the norm in this
+  repository (observed with PR #42). Earlier merges with Conventional
+  Commits titles did not duplicate because their types are hidden from the
+  changelog (`chore:`/`ci:`/`docs:` in PRs #38/#39/#41) or they predate
+  release-please's scan range (PR #26, released manually as runtime 0.3.1).
+  Mitigated by a duplicate-entry check in the release PR review steps plus
+  the hand-edit procedure (both in RELEASING.md). Full analysis and a survey
+  of how the ecosystem avoids the problem (squash-merge + PR-title linting):
+  [investigations/2026-08-27-release-please-changelog-duplication-research.en.md](./investigations/2026-08-27-release-please-changelog-duplication-research.en.md)
 - `updatePeerDependencies` rewrites peer ranges even when the released
   version already satisfies them, pulling the dependent package into the
   release with a patch bump despite having no code changes (e.g.
