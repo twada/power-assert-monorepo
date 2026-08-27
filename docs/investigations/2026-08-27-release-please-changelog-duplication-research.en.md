@@ -218,15 +218,39 @@ from PR bodies.
 
 ## Implications for this repository
 
-This repository deliberately keeps plain merge commits (ADR-010), so the
-operative mitigation remains the duplicate-entry check plus hand-editing
-the release PR (RELEASING.md). Plain merges also have a hidden advantage
-here: branch commits' `BREAKING CHANGE:` footers survive in history as-is
-and reach release-please unchanged, so the breaking-note problem above
-does not arise. If a future decision moves to squash-based automation, the
-minimal target configuration is: squash-only with `PR_TITLE` + `BLANK`
-presets pinned as code, plus action-semantic-pull-request as a required
-check (absinthe's wiring applies almost verbatim); no release-please
-changes would be needed — but one operational rule is added: write the
-`BREAKING CHANGE:` footer into the squash body at merge time (or fix it
-afterwards with `BEGIN_COMMIT_OVERRIDE`).
+This repository originally kept plain merge commits (ADR-010), where the
+operative mitigation is the duplicate-entry check plus hand-editing the
+release PR (RELEASING.md). Plain merges also have a hidden advantage:
+branch commits' `BREAKING CHANGE:` footers survive in history as-is and
+reach release-please unchanged, so the breaking-note problem above does
+not arise.
+
+**Decision (2026-08-27): transition gradually to squash merge**, starting
+with PR #47 as a trial. The chosen presets are `PR_TITLE` +
+**`PR_BODY`** ("Pull request title and description"), not `BLANK`. The
+deciding concern was durability of intent outside GitHub: with a blank
+body, the detailed rationale lives only in the PR (a proprietary silo),
+and leaving GitHub would lose it; with `PR_BODY`, the PR description —
+written to the same quality bar as a commit message — becomes the squash
+commit body and persists in git itself. This is npm's proven configuration
+(survey 3), and it keeps two properties for free: `BREAKING CHANGE:`
+footers written in the PR description reach the CHANGELOG through the
+squash body, and the rare PR that carries more than one releasable unit
+can still express it as bare Conventional Commits paragraphs in the
+description (the `splitMessages()` behavior becomes a feature). The two
+documented pitfalls apply as operating rules: an *unintentional* bare
+Conventional Commits paragraph in a PR body becomes an extra changelog
+entry, and the literal commit-override marker must never be spelled in a
+PR body.
+
+The underlying model: the atomic, revertable unit of history is the
+squashed PR. PRs are expected to shrink toward single-intent changes
+(behavior changes and structure changes separated at the PR level, in the
+tidy-first sense — structure-change PRs take `refactor:`/`chore:` titles
+and correctly stay out of the changelog), so multi-unit PRs should become
+rare. During the transition, plain merges and squash merges may coexist;
+release-please handles both. Once squash becomes the norm, the plain-merge
+duplicate-check procedure in RELEASING.md and the "commit-override does
+not work here" notes should be revised, and action-semantic-pull-request
+can be added as a required check (absinthe's wiring applies almost
+verbatim).
