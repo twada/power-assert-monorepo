@@ -18,13 +18,13 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rustc-hash = "2"
-swc_core = { version = "65.0.*", features = ["ecma_plugin_transform"] }
+swc_core = { version = "77.1.*", features = ["ecma_plugin_transform"] }
 bytes-str = "0.2.*"
 
 [dev-dependencies]
-swc_ecma_transforms_testing = "46.0.*"
-swc_ecma_parser = "39.0.*"
-testing = "22.0.*"
+swc_ecma_transforms_testing = "53.0.*"
+swc_ecma_parser = "45.1.*"
+testing = "27.0.*"
 
 # dealing with "the trait `Hash` is not implemented for `serde_json::Value`"
 serde_json = "1.0.*"
