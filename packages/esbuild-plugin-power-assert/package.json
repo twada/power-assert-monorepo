@@ -31,7 +31,7 @@
     "@power-assert/runtime": "*"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0"
+    "esbuild": "^0.28.2"
   },
   "scripts": {
     "example": "node build.mjs && node --test --enable-source-maps tmp/bowling.test.js",

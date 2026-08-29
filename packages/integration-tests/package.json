@@ -8,9 +8,9 @@
     "@power-assert/transpiler": "*",
     "@power-assert/node": "*",
     "@power-assert/runtime": "*",
-    "@swc/core": "^1.10.0",
+    "@swc/core": "^1.16.1",
     "swc-plugin-power-assert": "*",
-    "source-map": "^0.7.4"
+    "source-map": "^0.8.0"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",

@@ -51,10 +51,10 @@
     "estree-walker": "^3.0.3"
   },
   "devDependencies": {
-    "@types/estree": "^1.0.1",
-    "acorn": "^8.10.0",
-    "astring": "^1.8.6",
-    "meriyah": "^4.3.7"
+    "@types/estree": "^1.0.9",
+    "acorn": "^8.18.0",
+    "astring": "^1.9.0",
+    "meriyah": "^7.3.2"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
