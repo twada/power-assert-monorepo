@@ -28,12 +28,15 @@
     "clean:all": "npm run build:clean --workspaces --if-present",
     "lint": "oxlint packages",
     "fmt": "oxfmt packages",
+    "fmt:check": "oxfmt --check packages",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "check": "npm run lint && npm run fmt:check && npm run typecheck",
     "compile": "tsc --build tsconfig.build.json",
     "build:swc": "npm run test -w swc-plugin-power-assert && npm run build -w swc-plugin-power-assert",
     "test:dist": "node --test --test-reporter=dot 'packages/**/dist/**/*_test.mjs'",
     "test:prove": "prove --exec 'node --conditions=power-assert-dev --test --test-reporter=tap' -r packages --ext=_test.mts",
     "test:dev": "node --conditions=power-assert-dev --test --test-reporter=dot 'packages/**/src/**/__tests__/**/*_test.mts'",
-    "test": "npm run lint && npm run test:dev"
+    "test": "npm run check && npm run test:dev"
   },
   "workspaces": [
     "packages/transpiler-core",

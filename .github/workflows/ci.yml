@@ -30,7 +30,7 @@ jobs:
         # npm cache is acceptable here (non-release CI); release workflow must not use caching
         cache: 'npm'
     - run: npm ci
-    - run: npm run lint
+    - run: npm run check
     - run: npm run test:dev
 
     - name: Setup Rust
