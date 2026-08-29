@@ -2,12 +2,9 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     // whole-repo type check without building project references:
-    // resolve workspace imports to source .mts files instead of dist typings
-    "paths": {
-      "@power-assert/transpiler-core": ["./packages/transpiler-core/src/transpiler-core.mts"],
-      "@power-assert/transpiler": ["./packages/transpiler/src/transpile-with-sourcemap.mts"],
-      "@power-assert/runtime": ["./packages/runtime/src/runtime.mts"]
-    },
+    // the power-assert-dev condition resolves workspace imports to source
+    // .mts files (each package's exports lists it ahead of "types")
+    "customConditions": ["power-assert-dev"],
     "composite": false,
     "declaration": false,
     "declarationMap": false,
