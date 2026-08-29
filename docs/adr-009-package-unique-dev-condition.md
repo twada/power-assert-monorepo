@@ -6,6 +6,8 @@ Accepted
 
 Amends [ADR-005](./adr-005-node-typescript-type-stripping-migration.md).
 
+Amended by [ADR-012](./adr-012-build-free-typecheck-via-custom-conditions.md): the `power-assert-dev` condition later gained a second role — resolving workspace imports to sources for build-free type checking — which makes its position ahead of `"types"` in each `exports` map load-bearing.
+
 ## Context
 
 ADR-005 introduced a `dev` custom condition into the `exports` maps of the published packages, pointing at TypeScript sources (`./src/*.mts`). Running the monorepo's own tests with `node --conditions=dev` resolves inter-package imports to `.mts` sources, which Node.js executes directly via type stripping.

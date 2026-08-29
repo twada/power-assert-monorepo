@@ -6,6 +6,8 @@ Accepted
 
 Amended by [ADR-009](./adr-009-package-unique-dev-condition.md): the `dev` condition described below was later renamed to the package-unique `power-assert-dev`, because the generic name broke downstream consumers running Node.js with their own `--conditions=dev`.
 
+See also [ADR-012](./adr-012-build-free-typecheck-via-custom-conditions.md): the deferral of type checking to `build:dist` that this migration introduced was later closed by a build-free whole-repository type check resolving workspace imports through the same condition.
+
 ## Context
 
 The power-assert monorepo has been using a hybrid TypeScript development approach where:

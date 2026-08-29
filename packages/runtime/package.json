@@ -28,13 +28,13 @@
   "exports": {
     ".": {
       "module-sync": {
-        "types": "./dist/runtime.d.mts",
         "power-assert-dev": "./src/runtime.mts",
+        "types": "./dist/runtime.d.mts",
         "default": "./dist/runtime.mjs"
       },
       "import": {
-        "types": "./dist/runtime.d.mts",
         "power-assert-dev": "./src/runtime.mts",
+        "types": "./dist/runtime.d.mts",
         "default": "./dist/runtime.mjs"
       }
     },

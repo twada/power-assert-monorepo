@@ -29,13 +29,13 @@
   "exports": {
     ".": {
       "module-sync": {
-        "types": "./dist/rollup-plugin-power-assert.d.mts",
         "power-assert-dev": "./src/rollup-plugin-power-assert.mts",
+        "types": "./dist/rollup-plugin-power-assert.d.mts",
         "default": "./dist/rollup-plugin-power-assert.mjs"
       },
       "import": {
-        "types": "./dist/rollup-plugin-power-assert.d.mts",
         "power-assert-dev": "./src/rollup-plugin-power-assert.mts",
+        "types": "./dist/rollup-plugin-power-assert.d.mts",
         "default": "./dist/rollup-plugin-power-assert.mjs"
       }
     },

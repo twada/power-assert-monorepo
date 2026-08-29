@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // whole-repo type check without building project references:
+    // the power-assert-dev condition resolves workspace imports to source
+    // .mts files (each package's exports lists it ahead of "types")
+    "customConditions": ["power-assert-dev"],
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.typecheck.tsbuildinfo"
+  },
+  "include": ["./packages/*/src/**/*.mts"]
+}

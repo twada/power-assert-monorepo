@@ -23,25 +23,25 @@
   "exports": {
     ".": {
       "module-sync": {
-        "types": "./dist/register.d.mts",
         "power-assert-dev": "./src/register.mts",
+        "types": "./dist/register.d.mts",
         "default": "./dist/register.mjs"
       },
       "import": {
-        "types": "./dist/register.d.mts",
         "power-assert-dev": "./src/register.mts",
+        "types": "./dist/register.d.mts",
         "default": "./dist/register.mjs"
       }
     },
     "./hooks": {
       "module-sync": {
-        "types": "./dist/hooks.d.mts",
         "power-assert-dev": "./src/hooks.mts",
+        "types": "./dist/hooks.d.mts",
         "default": "./dist/hooks.mjs"
       },
       "import": {
-        "types": "./dist/hooks.d.mts",
         "power-assert-dev": "./src/hooks.mts",
+        "types": "./dist/hooks.d.mts",
         "default": "./dist/hooks.mjs"
       }
     },
