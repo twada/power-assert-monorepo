@@ -4,6 +4,8 @@
 
 Accepted
 
+Amended by [ADR-013](./adr-013-sync-hooks-importattributes-hardening.md) — the migration overlooked that sync hooks also intercept CJS `require()` calls, whose load context carries no `importAttributes`; the resulting crash and the shared-context-mutation hazard are addressed there.
+
 ## Context
 
 The `@power-assert/node` package uses Node.js module hooks to intercept and transpile test files at load time. Previously, it relied on `module.register()` to register asynchronous customization hooks (`resolve` and `load`) that ran in a separate loader thread.
@@ -18,6 +20,8 @@ Node.js has deprecated `module.register()` in favor of `module.registerHooks()`,
 | Hook signatures | `async function resolve(...)`, `async function load(...)` | Sync function signatures (`ResolveHookSync`, `LoadHookSync`) |
 | Registration | Indirect — passes a specifier URL to a hooks file | Direct — passes hook function references |
 | I/O in hooks | `await readFile()`, `await transpile()` | `readFileSync()`, `transpileSync()` |
+| CJS `require()` calls | Not intercepted | Intercepted, with a sparser hook context (see [ADR-013](./adr-013-sync-hooks-importattributes-hardening.md)) |
+| Hook context objects | Structured-clone copies in the loader thread — safe to mutate | Shared in-thread objects — mutation is hazardous (see [ADR-013](./adr-013-sync-hooks-importattributes-hardening.md)) |
 | Available since | Node.js 20.6.0 | Node.js 22.15.0 |
 
 ### Development progression

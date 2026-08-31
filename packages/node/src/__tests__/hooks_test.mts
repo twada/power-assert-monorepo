@@ -11,7 +11,7 @@ describe('sync hooks registered via module.registerHooks', () => {
   // Unlike module.register(), sync hooks also intercept CJS require() calls.
   // On that path Node.js does not provide `importAttributes` in the load context,
   // so hooks must not assume its presence.
-  // see: https://github.com/twada/power-assert-monorepo/blob/main/docs/adr-013-importattributes-normalization-on-cjs-require-path.md
+  // see: https://github.com/twada/power-assert-monorepo/blob/main/docs/adr-013-sync-hooks-importattributes-hardening.md
   test('CJS require() of a builtin module after hooks registration does not crash', () => {
     const args: string[] = [];
     if (process.execArgv.includes('--conditions=power-assert-dev')) {
