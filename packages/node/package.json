@@ -79,6 +79,7 @@
     "demo": "node --conditions=power-assert-dev --enable-source-maps --import @power-assert/node --test examples/demo.test.mjs",
     "test:js": "node --conditions=power-assert-dev --enable-source-maps --import @power-assert/node --test examples/bowling.test.mjs | grep 'examples/bowling.test.mjs:110:7'",
     "test:ts": "node --conditions=power-assert-dev --experimental-strip-types --enable-source-maps --import @power-assert/node --test examples/bowling.test.mts | grep 'examples/bowling.test.mts:114:7'",
-    "test": "npm run test:js && npm run test:ts"
+    "test:hooks": "node --conditions=power-assert-dev --test 'src/**/__tests__/**/*test.mts'",
+    "test": "npm run test:js && npm run test:ts && npm run test:hooks"
   }
 }

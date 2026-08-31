@@ -52,7 +52,8 @@ export const resolve: ResolveHookSync = function resolve(specifier: string, cont
   if (!isModule) {
     return nextResolveWithShortCircuitFalse(specifier, context);
   }
-  const { importAttributes } = context;
+  // importAttributes is missing from the context on the CJS require() path that sync hooks also intercept
+  const importAttributes = context.importAttributes ?? {};
   // MEMO: need to mutate importAttributes directly since shallow copy of importAttributes with object rest spread operator does not work in this case
   importAttributes.powerAssert = 'power-assert';
   // const extraAttrs = { powerAssert: 'power-assert' };
@@ -81,7 +82,9 @@ export const load: LoadHookSync = function load(url: string, context: LoadHookCo
     const loaded = nextLoad(url, context);
     return { ...loaded, shortCircuit: false };
   };
-  const { importAttributes, format } = context;
+  const { format } = context;
+  // importAttributes is missing from the context on the CJS require() path that sync hooks also intercept
+  const importAttributes = context.importAttributes ?? {};
   if (!importAttributes.powerAssert) {
     return nextLoadWithShortCircuitFalse(url, context);
   }
