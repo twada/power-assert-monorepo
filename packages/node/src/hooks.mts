@@ -54,13 +54,10 @@ export const resolve: ResolveHookSync = function resolve(specifier: string, cont
   }
   // importAttributes is missing from the context on the CJS require() path that sync hooks also intercept
   const importAttributes = context.importAttributes ?? {};
-  // MEMO: need to mutate importAttributes directly since shallow copy of importAttributes with object rest spread operator does not work in this case
-  importAttributes.powerAssert = 'power-assert';
-  // const extraAttrs = { powerAssert: 'power-assert' };
+  // in-thread sync hook contexts are shared objects and can be non-extensible, so augment a copy instead of mutating the original
   const resolved: ResolveFnOutput = {
     format: format === 'module-typescript' ? 'module-typescript' : 'module',
-    // importAttributes: { ...importAttributes, ...extraAttrs },
-    importAttributes,
+    importAttributes: { ...importAttributes, powerAssert: 'power-assert' },
     shortCircuit: false,
     url
   };
@@ -88,9 +85,9 @@ export const load: LoadHookSync = function load(url: string, context: LoadHookCo
   if (!importAttributes.powerAssert) {
     return nextLoadWithShortCircuitFalse(url, context);
   }
-  delete importAttributes.powerAssert;
-
-  const { source: rawSource } = nextLoadWithShortCircuitFalse(url, context);
+  // default load rejects unknown import attributes, so pass a cleansed copy downstream instead of deleting from the shared context
+  const { powerAssert: _powerAssert, ...cleansedAttributes } = importAttributes;
+  const { source: rawSource } = nextLoadWithShortCircuitFalse(url, { ...context, importAttributes: cleansedAttributes });
   assert(rawSource !== undefined, 'rawSource should not be undefined');
   let incomingCode = rawSource.toString();
   if (format === 'module-typescript') {
