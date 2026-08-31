@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/twada/power-assert-monorepo/compare/node-v0.7.1...node-v0.7.2) (2026-08-31)
+
+
+### Bug Fixes
+
+* **node:** tolerate missing importAttributes on CJS require() path ([#54](https://github.com/twada/power-assert-monorepo/issues/54)) ([08e809f](https://github.com/twada/power-assert-monorepo/commit/08e809f7a4701b048c4c4890c7797e345ab164fb))
+
 ## [0.7.1](https://github.com/twada/power-assert-monorepo/compare/node-v0.7.0...node-v0.7.1) (2026-08-24)
 
 
