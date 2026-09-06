@@ -70,7 +70,7 @@ describe('power-assert demo', () => {
 Create a `vite.config.js` [configuration file](https://vitejs.dev/guide/using-plugins.html) and import the plugin:
 
 ```js
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { powerAssert } from 'rollup-plugin-power-assert';
 const testPattern = 'examples/**/__tests__/**/*.test.mts';
 
