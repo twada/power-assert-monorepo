@@ -54,7 +54,7 @@
     "@types/estree": "^1.0.9",
     "acorn": "^8.18.0",
     "astring": "^1.9.0",
-    "meriyah": "^7.3.2"
+    "meriyah": "^7.3.3"
   },
   "scripts": {
     "build:clean": "rimraf dist && rm -f tsconfig.tsbuildinfo",
