@@ -8,7 +8,7 @@
     "@power-assert/transpiler": "*",
     "@power-assert/node": "*",
     "@power-assert/runtime": "*",
-    "@swc/core": "^1.16.1",
+    "@swc/core": "^1.16.2",
     "swc-plugin-power-assert": "*",
     "source-map": "^0.8.0"
   },
