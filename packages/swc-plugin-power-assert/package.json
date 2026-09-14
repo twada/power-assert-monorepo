@@ -40,7 +40,7 @@
   "devDependencies": {
     "@swc-node/register": "^1.12.1",
     "@swc/cli": "^0.8.1",
-    "@swc/core": "^1.16.1"
+    "@swc/core": "^1.16.2"
   },
   "peerDependencies": {
     "@power-assert/runtime": "^0.3.2"
